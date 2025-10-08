@@ -4,7 +4,8 @@ use leptos_router::{
     components::{Route, Router, Routes},
     StaticSegment,
 };
-// use singlestage::*;
+use singlestage::*;
+use crate::pages::Login;
 
 pub fn shell(options: LeptosOptions) -> impl IntoView {
     view! {
@@ -38,15 +39,16 @@ pub fn App() -> impl IntoView {
         <Title text="Welcome to Leptos"/>
 
         // content for this welcome page
-        // <ThemeProvider>
+        <ThemeProvider>
         <Router>
             <main>
                 <Routes fallback=|| "Page not found.".into_view()>
-                    <Route path=StaticSegment("") view=HomePage/>
+                    <Route path=StaticSegment("") view= Login/>
+                    <Route path=StaticSegment("/home") view=HomePage/>
                 </Routes>
             </main>
         </Router>
-        // </ThemeProvider>
+        </ThemeProvider>
     }
 }
 
@@ -59,6 +61,7 @@ fn HomePage() -> impl IntoView {
 
     view! {
         <h1>"Welcome to Leptos!"</h1>
-        <button class="bg-red-400 px-2 py-4 rounded rounded-2xl" on:click=on_click>"Click Me: "{count}</button>
+        <Button class="bg-red-400 mr-4" on:click=on_click>"Click Me: "{count}</Button>
+        <Button>"Test Button"</Button>
     }
 }
