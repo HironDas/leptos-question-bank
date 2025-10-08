@@ -16,7 +16,7 @@ leptos_meta = { version = "0.8.0" }
 tokio = { version = "1", features = ["rt-multi-thread"], optional = true }
 wasm-bindgen = { version = "0.2.104", optional = true }
 # openssl = "0.10.73"
-singlestage = "0.2.0"
+singlestage = "0.2.1"
 
 [features]
 hydrate = [
