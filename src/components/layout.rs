@@ -3,6 +3,8 @@ use leptos_router::components::A;
 use leptos_router::components::Outlet;
 use singlestage::*;
 
+use crate::components::ThemeSwitcher;
+
 #[component]
 fn SidebarButton() -> impl IntoView {
     let sidebar = expect_context::<SidebarContext>();
@@ -51,29 +53,29 @@ pub fn Layout() -> impl IntoView {
                     <SidebarMenuItem>
                         <SidebarMenuButton>
                             <A href="/home">
-                                {icon!(icondata::LuInfo)} <span>"Introduction"</span>
+                                {icon!(icondata::LuLayoutDashboard)} <span>"Dashboard"</span>
                             </A>
                         </SidebarMenuButton>
                     </SidebarMenuItem>
                     <SidebarMenuItem>
                         <SidebarMenuButton>
-                            <A href="/install">
-                                {icon!(icondata::LuComputer)} <span>"Install"</span>
+                            <A href="/set-question">
+                                {icon!(icondata::AiFileExclamationOutlined)} <span>"Set Question"</span>
                             </A>
                         </SidebarMenuButton>
                     </SidebarMenuItem>
                     <SidebarMenuItem>
                         <SidebarMenuButton>
-                            <A href="/theme-provider">
-                                {icon!(icondata::LuPaintBucket)}
-                                <span>"Theme Provider"</span>
+                            <A href="/view">
+                                {icon!(icondata::AiFileSearchOutlined)}
+                                <span>"View Questions"</span>
                             </A>
                         </SidebarMenuButton>
                     </SidebarMenuItem>
                     <SidebarMenuItem>
                         <SidebarMenuButton>
-                            <A href="/icon-macro">
-                                {icon!(icondata::LuImage)} <span>"Icon Macro"</span>
+                            <A href="/history">
+                                {icon!(icondata::AiHistoryOutlined)} <span>"Exam History"</span>
                             </A>
                         </SidebarMenuButton>
                     </SidebarMenuItem>
@@ -94,6 +96,7 @@ pub fn Layout() -> impl IntoView {
                     <SidebarTrigger>
                         <SidebarButton />
                     </SidebarTrigger>
+                    <ThemeSwitcher/>
                 </div>
             </header>
             <div class="mx-2 sm:mx-12 my-8">

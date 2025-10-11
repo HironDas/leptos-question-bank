@@ -18,6 +18,7 @@ wasm-bindgen = { version = "0.2.104", optional = true }
 # openssl = "0.10.73"
 singlestage = "0.2.1"
 icondata = "0.6.0"
+web-sys = { version = "0.3.81", features = ["MediaQueryList", "HtmlDocument"] }
 
 [features]
 hydrate = [

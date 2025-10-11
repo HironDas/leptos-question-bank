@@ -4,7 +4,7 @@ use leptos_router::{
     StaticSegment, components::{ParentRoute, Route, Router, Routes}
 };
 use singlestage::*;
-use crate::pages::Login;
+use crate::pages::{Login, NotFound};
 use crate::pages::HomePage;
 use crate::components::Layout;
 
@@ -43,7 +43,7 @@ pub fn App() -> impl IntoView {
         <ThemeProvider>
         <Router>
             <main>
-                <Routes fallback=|| "Page not found.".into_view()>
+                <Routes fallback={move || view! { <NotFound/> }}>
                     <Route path=StaticSegment("") view= Login/>
                     <ParentRoute path=StaticSegment("") view=Layout>
                         <Route path=StaticSegment("/home") view=HomePage/>
