@@ -1,6 +1,6 @@
 use leptos::prelude::*;
-use leptos_router::components::A;
 use leptos_router::components::Outlet;
+use leptos_router::components::A;
 use singlestage::*;
 
 use crate::components::ThemeSwitcher;
@@ -48,7 +48,11 @@ pub fn Layout() -> impl IntoView {
                 </div>
             </A>
             </SidebarHeader>
+            <SidebarSeparator/>
             <SidebarContent>
+            <SidebarGroup>
+            <SidebarGroupLabel>"Question Bank"</SidebarGroupLabel>
+            <SidebarGroupContent>
                 <SidebarMenu>
                     <SidebarMenuItem>
                         <SidebarMenuButton>
@@ -80,8 +84,33 @@ pub fn Layout() -> impl IntoView {
                         </SidebarMenuButton>
                     </SidebarMenuItem>
                 </SidebarMenu>
+                </SidebarGroupContent>
+                </SidebarGroup>
                 <SidebarSeparator/>
-                </SidebarContent>
+                <SidebarGroup>
+                <SidebarGroupLabel>"Settings"</SidebarGroupLabel>
+                <SidebarGroupContent>
+                    <SidebarMenu>
+                       
+                        <SidebarMenuItem>
+                            <SidebarMenuButton>
+                                <A href="/academic-classes">
+                                    {icon!(icondata::LuSchool)} <span>"Classes"</span>
+                                </A>
+                            </SidebarMenuButton>
+                        </SidebarMenuItem>
+
+                         <SidebarMenuItem>
+                            <SidebarMenuButton>
+                                <A href="/profile">
+                                    {icon!(icondata::LuUserCog)} <span>"Profile"</span>
+                                </A>
+                            </SidebarMenuButton>
+                        </SidebarMenuItem>
+                    </SidebarMenu>
+                </SidebarGroupContent>
+                </SidebarGroup>
+            </SidebarContent>
                 <SidebarFooter>
                     <div class="content-center ml-2 bg-(--primary) rounded-sm">
                         <p class="text-center text-sm text-(--primary-foreground)">"v-"{env!("CARGO_PKG_VERSION")}</p>

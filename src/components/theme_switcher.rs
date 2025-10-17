@@ -1,4 +1,3 @@
-use leptos::leptos_dom::logging::console_log;
 use leptos::prelude::*;
 use leptos::wasm_bindgen::JsCast;
 use singlestage::*;
@@ -7,14 +6,13 @@ use singlestage::*;
 pub fn ThemeSwitcher() -> impl IntoView {
     let theme_context = expect_context::<ThemeProviderContext>();
     let prefers_dark = RwSignal::new(false);
-    let selected_theme = RwSignal::new("red".to_string());
+    let selected_theme = RwSignal::new("default".to_string());
 
     // TODO: Make reactive
     Effect::new(move || {
-        // Use web_sys::window() and handle the Result/Option returned by match_media
-        let media_query = web_sys::window()
-            .and_then(|w| w.match_media("(prefers-color-scheme: dark)").ok())
-            .flatten();
+        let media_query = window()
+            .match_media("(prefers-color-scheme: dark)")
+            .unwrap_or(None);
 
         if let Some(media_query) = media_query.as_ref() {
             let matches = media_query.matches();
@@ -32,8 +30,7 @@ pub fn ThemeSwitcher() -> impl IntoView {
                 .split(";")
                 .map(|cookie| {
                     let split = cookie.split("=").collect::<Vec<&str>>();
-                    console_log(&format!("cookie: {:#?}", &split));
-                    
+
                     match split[0].trim() {
                         "theme" => theme = split[1],
                         "theme_mode" => theme_mode = split[1],
@@ -42,11 +39,7 @@ pub fn ThemeSwitcher() -> impl IntoView {
                 })
                 .count();
 
-            match theme_mode {
-                "dark" => theme_context.mode.set(Mode::Dark),
-                "light" => theme_context.mode.set(Mode::Light),
-                _ => theme_context.mode.set(Mode::Auto),
-            }
+            theme_context.mode.set(Mode::from(theme_mode));
 
             if !theme.is_empty() {
                 selected_theme.set(theme.to_string());
@@ -55,36 +48,33 @@ pub fn ThemeSwitcher() -> impl IntoView {
     });
 
     let swap_theme = move |_| {
-        let mode;
         match theme_context.mode.get_untracked() {
-            Mode::Auto => {
-                if prefers_dark.get_untracked() {
-                    theme_context.mode.set(Mode::Light);
-                    mode = "light";
-                } else {
-                    theme_context.mode.set(Mode::Dark);
-                    mode = "dark";
-                }
-            }
             Mode::Dark => {
                 theme_context.mode.set(Mode::Light);
-                mode = "light"
             }
             Mode::Light => {
                 theme_context.mode.set(Mode::Dark);
-                mode = "dark"
+            }
+            _ => {
+                if prefers_dark.get_untracked() {
+                    theme_context.mode.set(Mode::Light);
+                } else {
+                    theme_context.mode.set(Mode::Dark);
+                }
             }
         };
 
         let _ = document()
             .unchecked_ref::<web_sys::HtmlDocument>()
-            .set_cookie(&format!("theme_mode={}; Path=/", mode).as_str());
+            .set_cookie(
+                format!("theme_mode={}; Path=/", theme_context.mode.get_untracked()).as_str(),
+            );
     };
 
     Effect::new(move || {
         let _ = document()
             .unchecked_ref::<web_sys::HtmlDocument>()
-            .set_cookie(&format!("theme={}; Path=/", selected_theme.get()).as_str());
+            .set_cookie(format!("theme={}; Path=/", selected_theme.get()).as_str());
 
         theme_context
             .theme
@@ -129,22 +119,21 @@ pub fn ThemeSwitcher() -> impl IntoView {
                     </optgroup>
                 </Select>
             </Tooltip>
-
             <Tooltip side="bottom" value="Toggle dark mode">
                 <Button variant="outline" size="sm-icon" on:click=swap_theme>
-                    <Show when=move || { theme_context.mode.get() == Mode::Light }>
-                        <span>{icon!(icondata::LuSun)}</span>
-                    </Show>
-                    <Show when=move || { theme_context.mode.get() == Mode::Dark }>
-                        <span>{icon!(icondata::LuMoon)}</span>
-                    </Show>
-                    <Show when=move || { theme_context.mode.get() == Mode::Auto }>
-                        <span class="block dark:hidden">{icon!(icondata::LuSun)}</span>
-                        <span class="hidden dark:block">{icon!(icondata::LuMoon)}</span>
-                    </Show>
+                    {move || match theme_context.mode.get() {
+                        Mode::Light => view! { <span>{icon!(icondata::LuSun)}</span> }.into_any(),
+                        Mode::Dark => view! { <span>{icon!(icondata::LuMoon)}</span> }.into_any(),
+                        _ => {
+                            view! {
+                                <span class="block dark:hidden">{icon!(icondata::LuSun)}</span>
+                                <span class="hidden dark:block">{icon!(icondata::LuMoon)}</span>
+                            }
+                                .into_any()
+                        }
+                    }}
                 </Button>
             </Tooltip>
-
             <Tooltip side="bottom" align="end" value="User profile">
                 <Avatar class="size-8 cursor-pointer">
                     <AvatarFallback class="bg-(--primary) text-(--primary-foreground)">"H"</AvatarFallback>
