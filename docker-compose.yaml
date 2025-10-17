@@ -1,0 +1,16 @@
+version: '3.8'
+services:
+  leptos-dev:
+    build:
+      context: .
+      dockerfile: DockerfileDev
+    volumes:
+      - .:/app
+      - cargo-cache:/usr/local/cargo/registry
+    working_dir: /app
+    ports:
+      - "8000:3000"
+    command: bash -c "cargo leptos watch"
+
+volumes:
+  cargo-cache:
