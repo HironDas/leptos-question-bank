@@ -28,7 +28,7 @@ then
         -p "${DB_PORT}":5432 \
         --restart=always \
         --name question_bank_postgres \
-        -d postgres \
+        -d postgres:17 \
         postgres -N 1000
 fi
 

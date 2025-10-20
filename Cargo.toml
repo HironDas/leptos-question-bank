@@ -19,6 +19,12 @@ wasm-bindgen = { version = "0.2.104", optional = true }
 singlestage = "0.3.1"
 icondata = "0.6.0"
 web-sys = { version = "0.3.81", features = ["MediaQueryList", "HtmlDocument"] }
+chrono = "0.4.42"
+
+[dependencies.sqlx]
+version = "0.8.6"
+features = ["runtime-tokio-rustls", "postgres", "macros", "uuid", "chrono", "migrate"]
+default-features =  false
 
 [features]
 hydrate = [
