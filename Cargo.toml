@@ -20,11 +20,13 @@ singlestage = "0.3.1"
 icondata = "0.6.0"
 web-sys = { version = "0.3.81", features = ["MediaQueryList", "HtmlDocument"] }
 chrono = "0.4.42"
+uuid = { version = "1.18.1", features = ["v4"], optional = true}
 
 [dependencies.sqlx]
 version = "0.8.6"
 features = ["runtime-tokio-rustls", "postgres", "macros", "uuid", "chrono", "migrate"]
 default-features =  false
+optional = true
 
 [features]
 hydrate = [
@@ -39,6 +41,8 @@ ssr = [
     "leptos/ssr",
     "leptos_meta/ssr",
     "leptos_router/ssr",
+    "dep:sqlx",
+    "dep:uuid",
 ]
 
 # Defines a size-optimized profile for the WASM bundle in release mode
