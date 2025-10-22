@@ -37,13 +37,12 @@ pub fn Login() -> impl IntoView {
                     "Log in"
                 </Button>
                 <p class="mt-4 text-center text-sm">
-                    "Don't have an account? "<a href="#" class="underline-offset-4 hover:underline">
+                    "Don't have an account? "<a href="/signup" class="underline-offset-4 hover:underline">
                         "Sign up"
                     </a>
                 </p>
             </CardFooter>
         </Card>
         </div>
-        
     }
 }

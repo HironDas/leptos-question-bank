@@ -4,7 +4,7 @@ use leptos_router::{
     StaticSegment, components::{ParentRoute, Route, Router, Routes}
 };
 use singlestage::*;
-use crate::pages::{Login, NotFound};
+use crate::pages::{Login, NotFound, Signup};
 use crate::pages::HomePage;
 use crate::components::Layout;
 
@@ -45,6 +45,7 @@ pub fn App() -> impl IntoView {
             <main>
                 <Routes fallback={move || view! { <NotFound/> }}>
                     <Route path=StaticSegment("") view= Login/>
+                    <Route path=StaticSegment("/signup") view= Signup/>
                     <Route path=StaticSegment("/health") view={move|| view!{}}/>
                     <ParentRoute path=StaticSegment("") view=Layout>
                         <Route path=StaticSegment("/home") view=HomePage/>
@@ -55,5 +56,3 @@ pub fn App() -> impl IntoView {
         </ThemeProvider>
     }
 }
-
-
