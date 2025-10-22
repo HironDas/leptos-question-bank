@@ -21,6 +21,7 @@ icondata = "0.6.0"
 web-sys = { version = "0.3.81", features = ["MediaQueryList", "HtmlDocument"] }
 chrono = "0.4.42"
 uuid = { version = "1.18.1", features = ["v4"], optional = true}
+axum-server = { version = "0.7.2", optional = true }
 
 [dependencies.sqlx]
 version = "0.8.6"
@@ -43,7 +44,9 @@ ssr = [
     "leptos_router/ssr",
     "dep:sqlx",
     "dep:uuid",
+    "dep:axum-server"
 ]
+test-fullstack = ["ssr", "hydrate"]
 
 # Defines a size-optimized profile for the WASM bundle in release mode
 [profile.wasm-release]
@@ -52,6 +55,10 @@ opt-level = 'z'
 lto = true
 codegen-units = 1
 panic = "abort"
+
+[dev-dependencies]
+reqwest = "0.12.24"
+tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
 
 [package.metadata.leptos]
 # The name used by wasm-bindgen/cargo-leptos for the JS/WASM bundle. Defaults to the crate name

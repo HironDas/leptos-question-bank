@@ -1,0 +1,83 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug unit tests in library 'leptos_question_bank'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--lib",
+                    "--package=leptos-question-bank"
+                ],
+                "filter": {
+                    "name": "leptos_question_bank",
+                    "kind": "lib"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug executable 'leptos-question-bank'",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--bin=leptos-question-bank",
+                    "--package=leptos-question-bank"
+                ],
+                "filter": {
+                    "name": "leptos-question-bank",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug unit tests in executable 'leptos-question-bank'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--bin=leptos-question-bank",
+                    "--package=leptos-question-bank"
+                ],
+                "filter": {
+                    "name": "leptos-question-bank",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug integration test 'api'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--test=api",
+                    "--package=leptos-question-bank"
+                ],
+                "filter": {
+                    "name": "api",
+                    "kind": "test"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        }
+    ]
+}

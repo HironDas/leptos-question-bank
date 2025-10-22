@@ -45,6 +45,7 @@ pub fn App() -> impl IntoView {
             <main>
                 <Routes fallback={move || view! { <NotFound/> }}>
                     <Route path=StaticSegment("") view= Login/>
+                    <Route path=StaticSegment("/health") view={move|| view!{}}/>
                     <ParentRoute path=StaticSegment("") view=Layout>
                         <Route path=StaticSegment("/home") view=HomePage/>
                     </ParentRoute>
