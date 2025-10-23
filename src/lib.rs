@@ -1,8 +1,7 @@
-
-
 pub mod app;
-pub mod pages;
 pub mod components;
+pub mod domain;
+pub mod pages;
 
 #[cfg(feature = "hydrate")]
 #[wasm_bindgen::prelude::wasm_bindgen]
@@ -16,12 +15,12 @@ pub fn hydrate() {
 use axum_server::Server;
 
 #[cfg(feature = "ssr")]
-pub async fn run(listener: std::net::TcpListener)->Result<(), std::io::Error>{
+pub async fn run(listener: std::net::TcpListener) -> Result<(), std::io::Error> {
+    use crate::app::*;
     use axum::Router;
     use leptos::logging::log;
     use leptos::prelude::*;
     use leptos_axum::{generate_route_list, LeptosRoutes};
-    use crate::app::*;
 
     let conf = get_configuration(None).unwrap();
     let addr = conf.leptos_options.site_addr;
@@ -41,15 +40,13 @@ pub async fn run(listener: std::net::TcpListener)->Result<(), std::io::Error>{
     // `axum::Server` is a re-export of `hyper::Server`
     log!("listening on http://{}", &addr);
     // let listener = tokio::net::TcpListener::bind(&addr).await.unwrap();
-   // let listener = std::net::TcpListener::bind(&addr)?;
+    // let listener = std::net::TcpListener::bind(&addr)?;
     // axum::serve(listener, app.into_make_service())
     //     .await
     //     .unwrap()
 
     let server = Server::from_tcp(listener);
-    server
-        .serve(app.into_make_service())
-        .await?;
+    server.serve(app.into_make_service()).await?;
     // Ok(server)
     Ok(())
 }
