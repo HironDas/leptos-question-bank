@@ -68,7 +68,7 @@ mod tests {
         any::<u64>().prop_map(|seed| {
             let mut rng = StdRng::seed_from_u64(seed);
             let email = SafeEmail(EN).fake_with_rng(&mut rng);
-            println!("Generated Email: {}", email);
+            // println!("Generated Email: {}", email);
             UserEmailFixture(email)
         })
     }
