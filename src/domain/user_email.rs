@@ -10,7 +10,7 @@ impl UserEmail {
             Ok(UserEmail(s))
         } else {
             // Err("Invalid user email".to_string())
-            Err(ValidationError::new("Invalid user email"))
+            Err(ValidationError::new("INVALID_EMAIL").with_message("Invalid user email".into()))
         }
     }
 }

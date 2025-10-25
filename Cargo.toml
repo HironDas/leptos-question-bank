@@ -23,7 +23,10 @@ chrono = "0.4.42"
 uuid = { version = "1.18.1", features = ["v4"], optional = true}
 axum-server = { version = "0.7.2", optional = true }
 validator = { version = "0.20.0", features = ["derive"] }
-serde = "1.0.228"
+serde = { version = "1.0.228", features = ["derive"] }
+config = { version = "0.15.18", optional = true }
+secrecy = { version = "0.10.3", features = ["serde"] }
+serde-aux = "4.7.0"
 
 [dependencies.sqlx]
 version = "0.8.6"
@@ -46,7 +49,8 @@ ssr = [
     "leptos_router/ssr",
     "dep:sqlx",
     "dep:uuid",
-    "dep:axum-server"
+    "dep:axum-server",
+    "dep:config"
 ]
 test-fullstack = ["ssr", "hydrate"]
 

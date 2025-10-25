@@ -1,25 +1,28 @@
-use crate::domain::{user_email::UserEmail, user_password::UserPassword};
-use leptos::prelude::*;
-use validator::{Validate, ValidationError};
+use crate::domain::{user_email::UserEmail, user_password::UserPassword, user_username::Username};
+use validator::Validate;
 
 #[derive(Debug, Clone, PartialEq, Eq, Validate)]
 pub struct NewUser {
-    #[validate(custom(function = "validate_unique_email"))]
+    pub username: Username,
     pub email: UserEmail,
     pub password: UserPassword,
     #[validate(must_match(other = "password", message = "Passwords do not match"))]
     pub confirm_password: UserPassword,
 }
 
-fn validate_unique_email(email: &UserEmail) -> Result<(), ValidationError> {
-    if email.as_ref().contains('@') {
-        Ok(())
-    } else {
-        Err(ValidationError::new("Already exists"))
-    }
-}
+#[cfg(test)]
+mod tests {
+    use super::*;
 
-#[server]
-async fn check_email(email: String) -> Result<(), ServerFnError> {
-    todo!()
+    #[test]
+    fn test_new_user_validation() {
+        let new_user = NewUser {
+            username: Username::parse("test_user".to_string()).unwrap(),
+            email: UserEmail::parse("test@example.com".to_string()).unwrap(),
+            password: UserPassword::parse("Hiron@12345".to_string()).unwrap(),
+            confirm_password: UserPassword::parse("Hiron@12345".to_string()).unwrap(),
+        };
+
+        assert!(new_user.validate().is_ok());
+    }
 }

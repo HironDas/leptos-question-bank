@@ -1,5 +1,6 @@
 pub mod app;
 pub mod components;
+pub mod configuration;
 pub mod domain;
 pub mod pages;
 
@@ -49,4 +50,16 @@ pub async fn run(listener: std::net::TcpListener) -> Result<(), std::io::Error> 
     server.serve(app.into_make_service()).await?;
     // Ok(server)
     Ok(())
+}
+
+#[cfg(feature = "ssr")]
+use sqlx::PgPool;
+#[cfg(feature = "ssr")]
+pub fn connection_pool() -> PgPool {
+    use sqlx::PgPoolOptions;
+    PgPoolOptions::new()
+        .max_connections(5)
+        .connect(&leptos_options.database_url)
+        .await
+        .expect("Failed to connect to database")
 }

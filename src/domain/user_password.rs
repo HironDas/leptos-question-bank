@@ -26,7 +26,8 @@ fn validate_password(password: &str) -> Result<(), ValidationError> {
         || !has_special
         || !has_lower
     {
-        return Err(ValidationError::new("Include At least one special character, one uppercase letter, and one digit & minimum 8-16 characters"));
+        return Err(ValidationError::new("INVALID_PASSWORD")
+            .with_message("Include At least one special character, one uppercase letter, and one digit & minimum 8-16 characters".into()));
     }
 
     Ok(())
