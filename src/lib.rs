@@ -13,10 +13,8 @@ pub fn hydrate() {
 }
 
 #[cfg(feature = "ssr")]
-use axum::{body::Body, extract::FromRef, http::Request, response::IntoResponse};
-#[cfg(feature = "ssr")]
 use axum_server::Server;
-use leptos::{config::LeptosOptions, prelude::expect_context};
+
 #[cfg(feature = "ssr")]
 use sqlx::PgPool;
 
@@ -45,7 +43,7 @@ impl Application {
         ))?;
 
         let port = listener.local_addr().unwrap().port();
-        let application_server = run(listener, connection_pool.await).await?;
+        let application_server = run(listener, connection_pool).await?;
 
         Ok(Self {
             port,
@@ -69,6 +67,8 @@ pub async fn run(
     listener: std::net::TcpListener,
     db_pool: PgPool,
 ) -> Result<(Server, IntoMakeService<axum::Router>), std::io::Error> {
+    use std::sync::Arc;
+
     use axum::Router;
     use leptos::logging::log;
     use leptos::prelude::*;
@@ -77,14 +77,16 @@ pub async fn run(
     use crate::app::App;
 
     let conf = get_configuration(None).unwrap();
+    let site_addr = listener.local_addr().expect("Failed to get local address");
     // let leptos_options = LeptosOptions {
-    //     site_addr: listener.local_addr().expect("Failed to get local address"),
+    //     site_addr: site_addr,
     //     ..conf.leptos_options
     // };
     let leptos_options = conf.leptos_options;
     let addr = leptos_options.site_addr;
     // Generate the list of routes in your Leptos App
     let routes = generate_route_list(App);
+    let db_pool = Arc::new(db_pool);
 
     // let app_state = AppState {
     //     db_pool: db_pool,
@@ -120,17 +122,10 @@ pub async fn run(
 }
 
 #[cfg(feature = "ssr")]
-pub async fn get_connection_pool(configuration: &DatabaseSettings) -> PgPool {
+pub fn get_connection_pool(configuration: &DatabaseSettings) -> PgPool {
     use sqlx::postgres::PgPoolOptions;
 
     PgPoolOptions::new()
         .acquire_timeout(std::time::Duration::from_secs(2))
         .connect_lazy_with(configuration.with_db())
 }
-
-// #[cfg(feature = "ssr")]
-// #[derive(Debug, Clone)]
-// pub struct AppState {
-//     pub leptos_options: LeptosOptions,
-//     pub db_pool: PgPool,
-// }
