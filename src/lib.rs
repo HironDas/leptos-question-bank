@@ -13,27 +13,94 @@ pub fn hydrate() {
 }
 
 #[cfg(feature = "ssr")]
+use axum::{body::Body, extract::FromRef, http::Request, response::IntoResponse};
+#[cfg(feature = "ssr")]
 use axum_server::Server;
+use leptos::{config::LeptosOptions, prelude::expect_context};
+#[cfg(feature = "ssr")]
+use sqlx::PgPool;
 
 #[cfg(feature = "ssr")]
-pub async fn run(listener: std::net::TcpListener) -> Result<(), std::io::Error> {
-    use crate::app::*;
+use crate::configuration::DatabaseSettings;
+use crate::{app::shell, configuration::Settings};
+
+#[cfg(feature = "ssr")]
+use axum::routing::IntoMakeService;
+
+#[cfg(feature = "ssr")]
+pub struct Application {
+    port: u16,
+    server: Server,
+    service: IntoMakeService<axum::Router>,
+}
+
+#[cfg(feature = "ssr")]
+impl Application {
+    #[cfg(feature = "ssr")]
+    pub async fn build(configuration: Settings) -> Result<Self, std::io::Error> {
+        let connection_pool = get_connection_pool(&configuration.database);
+        let listener = std::net::TcpListener::bind(format!(
+            "{}:{}",
+            configuration.application.host, configuration.application.port
+        ))?;
+
+        let port = listener.local_addr().unwrap().port();
+        let application_server = run(listener, connection_pool.await).await?;
+
+        Ok(Self {
+            port,
+            server: application_server.0,
+            service: application_server.1,
+        })
+    }
+
+    pub fn port(&self) -> u16 {
+        self.port
+    }
+
+    #[cfg(feature = "ssr")]
+    pub async fn run_until_stopped(self) -> Result<(), std::io::Error> {
+        self.server.serve(self.service).await
+    }
+}
+
+#[cfg(feature = "ssr")]
+pub async fn run(
+    listener: std::net::TcpListener,
+    db_pool: PgPool,
+) -> Result<(Server, IntoMakeService<axum::Router>), std::io::Error> {
     use axum::Router;
     use leptos::logging::log;
     use leptos::prelude::*;
     use leptos_axum::{generate_route_list, LeptosRoutes};
 
+    use crate::app::App;
+
     let conf = get_configuration(None).unwrap();
-    let addr = conf.leptos_options.site_addr;
+    // let leptos_options = LeptosOptions {
+    //     site_addr: listener.local_addr().expect("Failed to get local address"),
+    //     ..conf.leptos_options
+    // };
     let leptos_options = conf.leptos_options;
+    let addr = leptos_options.site_addr;
     // Generate the list of routes in your Leptos App
     let routes = generate_route_list(App);
 
+    // let app_state = AppState {
+    //     db_pool: db_pool,
+    //     leptos_options,
+    // };
+    //let value = app_state.clone();
     let app = Router::new()
-        .leptos_routes(&leptos_options, routes, {
-            let leptos_options = leptos_options.clone();
-            move || shell(leptos_options.clone())
-        })
+        .leptos_routes_with_context(
+            &leptos_options,
+            routes,
+            move || provide_context(db_pool.clone()),
+            {
+                let leptos_options = leptos_options.clone();
+                move || shell(leptos_options.clone())
+            },
+        )
         .fallback(leptos_axum::file_and_error_handler(shell))
         .with_state(leptos_options);
 
@@ -47,19 +114,23 @@ pub async fn run(listener: std::net::TcpListener) -> Result<(), std::io::Error> 
     //     .unwrap()
 
     let server = Server::from_tcp(listener);
-    server.serve(app.into_make_service()).await?;
+    //server.serve(app.into_make_service()).await?;
     // Ok(server)
-    Ok(())
+    Ok((server, app.into_make_service()))
 }
 
 #[cfg(feature = "ssr")]
-use sqlx::PgPool;
-#[cfg(feature = "ssr")]
-pub fn connection_pool() -> PgPool {
-    use sqlx::PgPoolOptions;
+pub async fn get_connection_pool(configuration: &DatabaseSettings) -> PgPool {
+    use sqlx::postgres::PgPoolOptions;
+
     PgPoolOptions::new()
-        .max_connections(5)
-        .connect(&leptos_options.database_url)
-        .await
-        .expect("Failed to connect to database")
+        .acquire_timeout(std::time::Duration::from_secs(2))
+        .connect_lazy_with(configuration.with_db())
 }
+
+// #[cfg(feature = "ssr")]
+// #[derive(Debug, Clone)]
+// pub struct AppState {
+//     pub leptos_options: LeptosOptions,
+//     pub db_pool: PgPool,
+// }

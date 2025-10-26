@@ -1,19 +1,18 @@
 {
-  "emmet.includeLanguages": {
-    "rust": "html",
-    "*.rs": "html"
-  },
-  "tailwindCSS.includeLanguages": {
-    "rust": "html",
-    "*.rs": "html"
-  },
-  "files.associations": {
-    "*.rs": "rust"
-  },
-  "editor.quickSuggestions": {
-    "other": "on",
-    "comments": "on",
-    "strings": true
-  },
-  "css.validate": false
+  "lsp": {
+    "rust-analyzer": {
+      "initialization_options": {
+        "cargo": {
+          "features": "all"
+        }
+      }
+    },
+    "tailwindcss-language-server": {
+      "settings": {
+        "includeLanguages": {
+          "rust": "html"
+        }
+      }
+    }
+  }
 }

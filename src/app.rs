@@ -1,12 +1,14 @@
+use crate::components::Layout;
+use crate::pages::HomePage;
+use crate::pages::{Login, NotFound, Signup};
+
 use leptos::prelude::*;
 use leptos_meta::{provide_meta_context, MetaTags, Stylesheet, Title};
 use leptos_router::{
-    StaticSegment, components::{ParentRoute, Route, Router, Routes}
+    components::{ParentRoute, Route, Router, Routes},
+    StaticSegment,
 };
 use singlestage::*;
-use crate::pages::{Login, NotFound, Signup};
-use crate::pages::HomePage;
-use crate::components::Layout;
 
 pub fn shell(options: LeptosOptions) -> impl IntoView {
     view! {
