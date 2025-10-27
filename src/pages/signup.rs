@@ -1,10 +1,14 @@
+use crate::server_function::signup;
 use leptos::prelude::*;
 use singlestage::*;
 
 #[component]
 pub fn Signup() -> impl IntoView {
+    let signup = ServerAction::<Signup>::new();
+
     view! {
         <div class="flex flex-col items-center justify-center min-h-screen px-4">
+            <ActionForm action=signup>
         <Card class="w-full sm:w-sm">
             <CardHeader>
                 <CardTitle>"Create new account"</CardTitle>
@@ -13,31 +17,43 @@ pub fn Signup() -> impl IntoView {
                 </CardDescription>
             </CardHeader>
             <CardContent>
-                <form class="form grid gap-6">
+                <div class="form grid gap-6">
                     <div class="grid gap-2">
                         <Label label_for="demo-card-form-username">"Username"</Label>
-                        <Input input_type="text" id="demo-card-form-username" />
+                        <Input name="username" input_type="text" id="demo-card-form-username" />
                     </div>
                     <div class="grid gap-2">
                         <Label label_for="demo-card-form-email">"Email"</Label>
-                        <Input input_type="email" id="demo-card-form-email" />
+                        <Input name="email" input_type="email" id="demo-card-form-email" />
                     </div>
                     <div class="grid gap-2">
                         <Label label_for="demo-card-form-password">"Password"</Label>
-                        <Input input_type="password" id="demo-card-form-password" />
+                        <Input name="password" input_type="password" id="demo-card-form-password" />
                     </div>
                     <div class="grid gap-2">
                         <Label label_for="demo-card-form-cpassword">"Confirm Password"</Label>
-                        <Input input_type="password" id="demo-card-form-cpassword" />
+                        <Input name="confirm_password" input_type="password" id="demo-card-form-cpassword" />
                     </div>
-                </form>
+                </div>
             </CardContent>
             <CardFooter class="flex flex-col items-center gap-2">
-                <Button button_type="button" class="w-full">
+                <Button button_type="submit" class="w-full">
                     "Sign up"
                 </Button>
             </CardFooter>
         </Card>
+            </ActionForm>
         </div>
     }
+}
+
+#[server]
+async fn signup(
+    username: String,
+    email: String,
+    password: String,
+    confirm_password: String,
+) -> Result<(), ServerFnError> {
+    // TODO: Implement signup logic
+    Ok(())
 }
