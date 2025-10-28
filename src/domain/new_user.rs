@@ -1,8 +1,9 @@
 use crate::domain::{user_email::UserEmail, user_password::UserPassword, user_username::Username};
 use pwhash::bcrypt;
+use serde::{Deserialize, Serialize};
 use validator::Validate;
 
-#[derive(Debug, Clone, PartialEq, Eq, Validate)]
+#[derive(Debug, Clone, PartialEq, Eq, Validate, Deserialize, Serialize)]
 pub struct NewUser {
     pub username: Username,
     pub email: UserEmail,
@@ -12,20 +13,6 @@ pub struct NewUser {
 }
 
 impl NewUser {
-    pub fn new(
-        username: String,
-        email: String,
-        password: String,
-        confirm_password: String,
-    ) -> Self {
-        NewUser {
-            username: Username::parse(username).unwrap(),
-            email: UserEmail::parse(email).unwrap(),
-            password: UserPassword::parse(password).unwrap(),
-            confirm_password: UserPassword::parse(confirm_password).unwrap(),
-        }
-    }
-
     pub fn hash_password(&self) -> String {
         bcrypt::hash(self.password.as_ref()).unwrap()
     }

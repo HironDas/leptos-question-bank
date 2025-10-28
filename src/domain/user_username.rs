@@ -1,6 +1,7 @@
+use serde::{Deserialize, Serialize};
 use validator::ValidationError;
 
-#[derive(Debug, Eq, PartialEq, Clone)]
+#[derive(Debug, Eq, PartialEq, Clone, Deserialize, Serialize)]
 pub struct Username(String);
 
 impl Username {

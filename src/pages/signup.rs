@@ -1,10 +1,10 @@
+use crate::server_function::signup::*;
 use leptos::prelude::*;
 use singlestage::*;
-use crate::server_function::signup::*;
 
 #[component]
 pub fn Signup() -> impl IntoView {
-    let signup = ServerAction::<Signup>::new();
+    let signup = ServerAction::<SignupAction>::new();
     let _value = signup.value();
 
     view! {
@@ -21,19 +21,19 @@ pub fn Signup() -> impl IntoView {
                     <div class="form grid gap-6">
                         <div class="grid gap-2">
                             <Label label_for="demo-card-form-username">"Username"</Label>
-                            <Input name="username" input_type="text" id="demo-card-form-username" />
+                            <Input name="user[username]" input_type="text" id="demo-card-form-username" />
                         </div>
                         <div class="grid gap-2">
                             <Label label_for="demo-card-form-email">"Email"</Label>
-                            <Input name="email" input_type="email" id="demo-card-form-email" />
+                            <Input name="user[email]" input_type="email" id="demo-card-form-email" />
                         </div>
                         <div class="grid gap-2">
                             <Label label_for="demo-card-form-password">"Password"</Label>
-                            <Input name="password" input_type="password" id="demo-card-form-password" />
+                            <Input name="user[password]" input_type="password" id="demo-card-form-password" />
                         </div>
                         <div class="grid gap-2">
                             <Label label_for="demo-card-form-cpassword">"Confirm Password"</Label>
-                            <Input name="confirm_password" input_type="password" id="demo-card-form-cpassword" />
+                            <Input name="user[confirm_password]" input_type="password" id="demo-card-form-cpassword" />
                         </div>
                     </div>
                 </CardContent>
