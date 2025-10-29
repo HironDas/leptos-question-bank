@@ -2,6 +2,7 @@ pub mod app;
 pub mod components;
 pub mod configuration;
 pub mod domain;
+pub mod error;
 pub mod pages;
 pub mod server_function;
 

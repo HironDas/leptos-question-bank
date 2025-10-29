@@ -10,7 +10,9 @@ impl UserEmail {
             Ok(UserEmail(s))
         } else {
             // Err("Invalid user email".to_string())
-            Err(ValidationError::new("INVALID_EMAIL").with_message("Invalid user email".into()))
+            // let code = StatusCode::UNPROCESSABLE_ENTITY.as_str();
+            Err(ValidationError::new("UNPROCESSABLE_ENTITY")
+                .with_message("Invalid user email".into()))
         }
     }
 }

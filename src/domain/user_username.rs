@@ -7,7 +7,7 @@ pub struct Username(String);
 impl Username {
     pub fn parse(input: String) -> Result<Self, ValidationError> {
         if input.len() < 3 || input.contains(' ') || input.len() > 20 {
-            Err(ValidationError::new("INVALID_USERNAME")
+            Err(ValidationError::new("UNPROCESSABLE_ENTITY")
                 .with_message("Username cannot be less than 3 characters and no spaces".into()))
         } else {
             Ok(Username(input))
