@@ -6,7 +6,7 @@ use leptos::prelude::*;
 use leptos_meta::{provide_meta_context, MetaTags, Stylesheet, Title};
 use leptos_router::{
     components::{ParentRoute, Route, Router, Routes},
-    StaticSegment,
+    Lazy, StaticSegment,
 };
 use singlestage::*;
 
@@ -46,8 +46,8 @@ pub fn App() -> impl IntoView {
         <Router>
             <main>
                 <Routes fallback={move || view! { <NotFound/> }}>
-                    <Route path=StaticSegment("") view= Login/>
-                    <Route path=StaticSegment("/signup") view= Signup/>
+                    <Route path=StaticSegment("") view = Login/>
+                    <Route path=StaticSegment("/signup") view={ Lazy::<Signup>::new()} />
                     <Route path=StaticSegment("/health") view={move|| view!{}}/>
                     <ParentRoute path=StaticSegment("") view=Layout>
                         <Route path=StaticSegment("/home") view=HomePage/>

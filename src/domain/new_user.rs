@@ -8,7 +8,11 @@ pub struct NewUser {
     pub username: Username,
     pub email: UserEmail,
     pub password: UserPassword,
-    #[validate(must_match(other = "password", message = "Passwords do not match"))]
+    #[validate(must_match(
+        other = "password",
+        message = "Passwords do not match",
+        code = "Unauthorized"
+    ))]
     pub confirm_password: UserPassword,
 }
 

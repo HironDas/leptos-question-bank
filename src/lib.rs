@@ -11,7 +11,7 @@ pub mod server_function;
 pub fn hydrate() {
     use crate::app::*;
     console_error_panic_hook::set_once();
-    leptos::mount::hydrate_body(App);
+    leptos::mount::hydrate_lazy(App);
 }
 
 #[cfg(feature = "ssr")]
@@ -79,7 +79,7 @@ pub async fn run(
     use crate::app::App;
 
     let conf = get_configuration(None).unwrap();
-    let site_addr = listener.local_addr().expect("Failed to get local address");
+    let _site_addr = listener.local_addr().expect("Failed to get local address");
     // let leptos_options = LeptosOptions {
     //     site_addr: site_addr,
     //     ..conf.leptos_options

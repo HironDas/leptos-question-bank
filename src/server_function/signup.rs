@@ -1,5 +1,9 @@
-use crate::domain::{
-    new_user::NewUser, user_email::UserEmail, user_password::UserPassword, user_username::Username,
+use crate::{
+    domain::{
+        new_user::NewUser, user_email::UserEmail, user_password::UserPassword,
+        user_username::Username,
+    },
+    error::QuestionBankError,
 };
 
 use leptos::prelude::*;
@@ -14,7 +18,7 @@ pub struct User {
 }
 
 impl TryFrom<User> for NewUser {
-    type Error = ValidationError;
+    type Error = QuestionBankError;
     fn try_from(value: User) -> Result<Self, Self::Error> {
         let username = Username::parse(value.username).map_err(|err| {
             println!("{}:{}", err.code, err.message.as_ref().unwrap());
@@ -52,9 +56,9 @@ impl TryFrom<User> for NewUser {
                 });
 
                 if let Some(error) = first_error {
-                    Err(error.clone())
+                    Err(error.clone().into())
                 } else {
-                    Err(ValidationError::new("Unknown error"))
+                    Err(ValidationError::new("Unknown error").into())
                 }
             }
         }
@@ -85,7 +89,13 @@ pub async fn signup_action(user: User) -> Result<(), ServerFnError> {
         .bind(new_user.email.as_ref())
         .bind(&password_hash)
         .execute(&*pool)
-        .await?;
+        .await
+        .map_err(|err| {
+            use leptos::logging::log;
+
+            log!("Sqlx Error: {:?}", err);
+            err
+        })?;
     }
     Ok(())
 }

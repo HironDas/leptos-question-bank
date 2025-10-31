@@ -1,19 +1,13 @@
 #[cfg(feature = "ssr")]
 use axum::{http::StatusCode, response::IntoResponse};
-use leptos::{
-    prelude::{FromServerFnError, ServerFnError},
-    server_fn::codec::JsonEncoding,
-};
 use std::fmt::Debug;
 use thiserror::Error;
 use validator::ValidationError;
 
-#[derive(Error, serde::Serialize, serde::Deserialize)]
+#[derive(Error)]
 pub enum QuestionBankError {
     #[error(transparent)]
-    ValidationError(ValidationError),
-    #[error(transparent)]
-    DbError(#[from] sqlx::Error),
+    ValidationError(#[from] ValidationError),
     #[error(transparent)]
     UnexpectedError(#[from] anyhow::Error),
 }
@@ -31,20 +25,12 @@ impl IntoResponse for QuestionBankError {
             QuestionBankError::ValidationError(err) => match err.code.as_ref() {
                 "UNPROCESSABLE_ENTITY" => StatusCode::UNPROCESSABLE_ENTITY,
                 "CONFLICT" => StatusCode::CONFLICT,
+                "Unauthorized" => StatusCode::UNAUTHORIZED,
                 _ => StatusCode::BAD_REQUEST,
             },
             QuestionBankError::UnexpectedError(_) => StatusCode::INTERNAL_SERVER_ERROR,
-            QuestionBankError::DbError(_) => StatusCode::INTERNAL_SERVER_ERROR,
         };
         (status, self.to_string()).into_response()
-    }
-}
-
-impl FromServerFnError for QuestionBankError {
-    type Encoder = JsonEncoding;
-
-    fn from_server_fn_error(value: leptos::prelude::ServerFnErrorErr) -> Self {
-        todo!()
     }
 }
 
