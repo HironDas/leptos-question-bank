@@ -57,9 +57,8 @@ pub fn Signup() -> impl IntoView {
                 </CardContent>
                 <CardFooter class="flex flex-col items-center gap-2">
                     <Button button_type="submit" class="w-full" attr:disabled=move|| pending.get()>
-                        "Sign up"
-                        <Show when = move ||pending.get() fallback= ||view!{""}>
-                        <Spinner />
+                        <Show when = move ||pending.get() fallback= ||view!{"Sign up"}>
+                        "Processing..."<Spinner />
                         </Show>
                     </Button>
                     <Show when= move|| has_error() fallback=||view!{""}>

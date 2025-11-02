@@ -110,3 +110,33 @@ async fn insert_new_user(user: NewUser) -> Result<(), QuestionBankError> {
     })
     .context("User Insert Failed! Please fill all fields correctly")?
 }
+
+// #[server]
+// pub async fn is_user_taken(username: String) -> Result<bool, ServerFnError> {
+//     #[cfg(feature = "ssr")]
+//     {
+//         use std::sync::Arc;
+
+//         use sqlx::PgPool;
+
+//         let exists = sqlx::query!(
+//             r#"
+//             SELECT EXISTS(SELECT 1 FROM users WHERE username = $1)
+//             "#,
+//             username
+//         )
+//         .fetch_one(expect_context::<Arc<PgPool>>())
+//         .await
+//         .map_err(|err| {
+//             use leptos::logging::log;
+
+//             log!("Sqlx Error: {:?}", err);
+//             err
+//             //QuestionBankError::UnexpectedError(err)
+//         })
+//         .context("User Insert Failed! Please fill all fields correctly")?
+//         .exists;
+//     }
+
+//     Ok(true)
+// }
