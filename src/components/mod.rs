@@ -2,4 +2,4 @@ mod layout;
 mod theme_switcher;
 pub use layout::Layout;
 pub use theme_switcher::ThemeSwitcher;
-mod ui;
+pub mod ui;

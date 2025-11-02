@@ -70,32 +70,43 @@ pub async fn signup_action(user: User) -> Result<(), ServerFnError> {
     leptos::logging::log!("Signup is clicked --");
     let new_user: NewUser = user.try_into()?;
 
-    let password_hash = new_user.hash_password();
-
     #[cfg(feature = "ssr")]
-    {
-        use sqlx::PgPool;
-        use std::sync::Arc;
+    insert_new_user(new_user).await?;
 
-        let pool = expect_context::<Arc<PgPool>>();
-
-        sqlx::query(
-            r#"
-            INSERT INTO users (username, email, password_hash)
-            VALUES ($1, $2, $3)
-            "#,
-        )
-        .bind(new_user.username.as_ref())
-        .bind(new_user.email.as_ref())
-        .bind(&password_hash)
-        .execute(&*pool)
-        .await
-        .map_err(|err| {
-            use leptos::logging::log;
-
-            log!("Sqlx Error: {:?}", err);
-            err
-        })?;
-    }
     Ok(())
+}
+
+#[cfg(feature = "ssr")]
+async fn insert_new_user(user: NewUser) -> Result<(), QuestionBankError> {
+    use anyhow::Context;
+    use sqlx::PgPool;
+    use std::sync::Arc;
+
+    let pool = expect_context::<Arc<PgPool>>();
+    let password_hash = user.hash_password();
+
+    sqlx::query(
+        r#"
+        INSERT INTO users (username, email, password_hash)
+        VALUES ($1, $2, $3)
+        "#,
+    )
+    .bind(user.username.as_ref())
+    .bind(user.email.as_ref())
+    .bind(&password_hash)
+    .execute(&*pool)
+    .await
+    .map(|result| {
+        use leptos::logging::log;
+        log!("User Inserted Successfully! and the id is {:?}", result);
+        Ok(())
+    })
+    .map_err(|err| {
+        use leptos::logging::log;
+
+        log!("Sqlx Error: {:?}", err);
+        err
+        //QuestionBankError::UnexpectedError(err)
+    })
+    .context("User Insert Failed! Please fill all fields correctly")?
 }
