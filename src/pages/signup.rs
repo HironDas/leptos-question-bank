@@ -90,17 +90,17 @@ pub fn Signup() -> impl IntoView {
                                 username.set(value);
                             } name="user[username]" input_type="text" id="demo-card-form-username" />
                             <Show when=move||!username.get().is_empty() && !check_user.get().unwrap().0 fallback={move||view!{<p>""</p>}}>
-                            <p class="text-red-500 text-xs">{check_user.get().unwrap().1}</p>
+                            <p class="text-(--destructive) text-xs">{check_user.get().unwrap().1}</p>
                             </Show>
                         </div>
                         <div class="grid gap-2">
                             <Label label_for="demo-card-form-email">"Email"</Label>
-                            <Input on:keyup = move |event| {
+                            <Input on:blur = move |event| {
                                 let value = event_target_value(&event);
                                 email.set(value);
                             } name="user[email]" input_type="email" id="demo-card-form-email" />
-                            <Show when=move||!email.get().is_empty() && !check_email.get().unwrap().0 fallback={move||view!{<p>""</p>}}>
-                                <p class="text-red-500 text-xs">{check_email.get().unwrap().1}</p>
+                            <Show when=move||!email.get().is_empty() && !check_email.get().unwrap().0 fallback={move||view!{<p class="text-xs">""</p>}}>
+                                <p class="text-(--destructive) text-xs">{check_email.get().unwrap().1}</p>
                             </Show>
                         </div>
                         <div class="grid gap-2">
