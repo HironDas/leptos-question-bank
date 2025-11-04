@@ -6,7 +6,7 @@ use leptos::prelude::*;
 use leptos_meta::{provide_meta_context, MetaTags, Stylesheet, Title};
 use leptos_router::{
     components::{ParentRoute, Route, Router, Routes},
-    Lazy, StaticSegment,
+    StaticSegment,
 };
 use singlestage::*;
 

@@ -71,8 +71,12 @@ pub async fn signup_action(user: User) -> Result<(), ServerFnError> {
     let new_user: NewUser = user.try_into()?;
 
     #[cfg(feature = "ssr")]
-    insert_new_user(new_user).await?;
+    {
+        use leptos_axum::redirect;
 
+        insert_new_user(new_user).await?;
+        redirect("/");
+    }
     Ok(())
 }
 

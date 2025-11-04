@@ -1,4 +1,5 @@
 use crate::domain::user_email::UserEmail;
+use crate::domain::user_password::UserPassword;
 use crate::server_function::signup::*;
 use crate::{components::ui::spinner::Spinner, domain::user_username::Username};
 
@@ -22,6 +23,8 @@ pub fn Signup() -> impl IntoView {
 
     let username = RwSignal::new(String::from(""));
     let email = RwSignal::new(String::from(""));
+    let password = RwSignal::new(String::from(""));
+    let confirm_password = RwSignal::new(String::from(""));
 
     let debounced_username = Memo::new(move |_| {
         let username = username.get();
@@ -31,6 +34,11 @@ pub fn Signup() -> impl IntoView {
     let debounced_email = Memo::new(move |_| {
         let email = email.get();
         UserEmail::parse(email)
+    });
+
+    let debounced_password = Memo::new(move |_| {
+        let password = password.get();
+        UserPassword::parse(password)
     });
 
     let check_user = Resource::new(
@@ -47,7 +55,7 @@ pub fn Signup() -> impl IntoView {
                     }
                 }
                 Err(err) => {
-                    // log!("Error: {}", err.message.as_ref().unwrap());
+                    log!("Error: {}", err.message.as_ref().unwrap());
                     (false, err.message.as_ref().unwrap().to_string())
                 }
             }
@@ -71,6 +79,27 @@ pub fn Signup() -> impl IntoView {
         },
     );
 
+    let check_password = Resource::new(
+        move || debounced_password.get(),
+        move |password| async move {
+            match password {
+                Ok(_) => (true, "".to_string()),
+                Err(err) => (false, err.message.as_ref().unwrap().to_string()),
+            }
+        },
+    );
+
+    let check_confirm_password = Resource::new(
+        move || (confirm_password.get(), password.get()),
+        move |(confirm_password, password)| async move {
+            if confirm_password == password {
+                (true, "".to_string())
+            } else {
+                (false, "Passwords do not match".to_string())
+            }
+        },
+    );
+
     view! {
         <div class="flex flex-col items-center justify-center min-h-screen px-4">
         <ActionForm action=signup>
@@ -89,9 +118,11 @@ pub fn Signup() -> impl IntoView {
                                 let value = event_target_value(&event);
                                 username.set(value);
                             } name="user[username]" input_type="text" id="demo-card-form-username" />
+                            <Transition fallback=|| view! { <p class ="text-xs">"Loading..."</p> }>
                             <Show when=move||!username.get().is_empty() && !check_user.get().unwrap().0 fallback={move||view!{<p>""</p>}}>
                             <p class="text-(--destructive) text-xs">{check_user.get().unwrap().1}</p>
                             </Show>
+                            </Transition>
                         </div>
                         <div class="grid gap-2">
                             <Label label_for="demo-card-form-email">"Email"</Label>
@@ -99,17 +130,35 @@ pub fn Signup() -> impl IntoView {
                                 let value = event_target_value(&event);
                                 email.set(value);
                             } name="user[email]" input_type="email" id="demo-card-form-email" />
+                            <Transition fallback=|| view! { <p class ="text-xs">"Loading..."</p> }>
                             <Show when=move||!email.get().is_empty() && !check_email.get().unwrap().0 fallback={move||view!{<p class="text-xs">""</p>}}>
                                 <p class="text-(--destructive) text-xs">{check_email.get().unwrap().1}</p>
                             </Show>
+                            </Transition>
                         </div>
                         <div class="grid gap-2">
                             <Label label_for="demo-card-form-password">"Password"</Label>
-                            <Input name="user[password]" input_type="password" id="demo-card-form-password" />
+                            <Input on:blur=move |event| {
+                                let value = event_target_value(&event);
+                                password.set(value);
+                            } name="user[password]" input_type="password" id="demo-card-form-password" />
+                            <Transition fallback=|| view! { <p class ="text-xs">"Loading..."</p> }>
+                            <Show when=move||!password.get().is_empty() && !check_password.get().unwrap().0 fallback=move||view!{<p class="text-xs">""</p>}>
+                                <p class="text-(--destructive) text-xs">{check_password.get().unwrap().1}</p>
+                            </Show>
+                            </Transition>
                         </div>
                         <div class="grid gap-2">
                             <Label label_for="demo-card-form-cpassword">"Confirm Password"</Label>
-                            <Input name="user[confirm_password]" input_type="password" id="demo-card-form-cpassword" />
+                            <Input on:blur=move |event| {
+                                let value = event_target_value(&event);
+                                confirm_password.set(value);
+                            } name="user[confirm_password]" input_type="password" id="demo-card-form-cpassword" />
+                            <Transition fallback=|| view! { <p class ="text-xs">"Loading..."</p> }>
+                            <Show when=move||!confirm_password.get().is_empty() && !check_confirm_password.get().unwrap().0 fallback=move||view!{<p class="text-xs">""</p>}>
+                                <p class="text-(--destructive) text-xs">{check_confirm_password.get().unwrap().1}</p>
+                            </Show>
+                            </Transition>
                         </div>
                     </div>
                 </CardContent>
