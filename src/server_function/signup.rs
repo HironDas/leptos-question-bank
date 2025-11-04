@@ -89,15 +89,15 @@ async fn insert_new_user(user: NewUser) -> Result<(), QuestionBankError> {
     let pool = expect_context::<Arc<PgPool>>();
     let password_hash = user.hash_password();
 
-    sqlx::query(
+    sqlx::query!(
         r#"
         INSERT INTO users (username, email, password_hash)
         VALUES ($1, $2, $3)
         "#,
+        user.username.as_ref(),
+        user.email.as_ref(),
+        &password_hash
     )
-    .bind(user.username.as_ref())
-    .bind(user.email.as_ref())
-    .bind(&password_hash)
     .execute(&*pool)
     .await
     .map(|result| {
