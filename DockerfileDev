@@ -1,4 +1,4 @@
-FROM lukemathwalker/cargo-chef:latest-rust-1.90.0
+FROM rust:latest
 
 RUN apt-get update && apt-get install lld clang -y
 RUN wget https://github.com/cargo-bins/cargo-binstall/releases/latest/download/cargo-binstall-x86_64-unknown-linux-musl.tgz
@@ -12,3 +12,9 @@ RUN cargo binstall -y cargo-leptos
 RUN rustup target add wasm32-unknown-unknown
 
 WORKDIR /app
+
+# Set any required env variables and
+ENV RUST_LOG="info"
+ENV LEPTOS_SITE_ADDR="0.0.0.0:3000"
+ENV LEPTOS_SITE_ROOT="site"
+EXPOSE 3000

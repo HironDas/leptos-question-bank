@@ -36,8 +36,8 @@ COPY --from=builder /app/target/release/leptos-question-bank /app/
 COPY --from=builder /app/target/site /app/site
 COPY --from=builder /app/Cargo.toml /app/
 
-# COPY configuration configuration
-# ENV APP_ENVIRONMENT=production
+COPY config config
+ENV APP_ENVIRONMENT=production
 
 # Set any required env variables and
 ENV RUST_LOG="info"
