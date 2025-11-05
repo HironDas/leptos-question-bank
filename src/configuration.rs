@@ -36,7 +36,7 @@ pub struct ApplicationSettings {
     #[serde(deserialize_with = "deserialize_number_from_string")]
     pub port: u16,
     pub host: String,
-    pub base_url: String,
+    // pub base_url: String,
 }
 
 #[derive(Debug, Deserialize, Clone)]
@@ -101,7 +101,8 @@ pub fn get_configuration() -> Result<Settings, config::ConfigError> {
         ))
         .add_source(config::File::from(
             configuration_directory.join(&environment_filename),
-        ))
+        ));
+    let settings = settings
         .add_source(
             config::Environment::with_prefix("APP")
                 .prefix_separator("_")
