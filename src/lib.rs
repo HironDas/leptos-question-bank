@@ -22,6 +22,7 @@ use sqlx::PgPool;
 
 #[cfg(feature = "ssr")]
 use crate::configuration::DatabaseSettings;
+#[cfg(feature = "ssr")]
 use crate::{app::shell, configuration::Settings};
 
 #[cfg(feature = "ssr")]
