@@ -11,10 +11,10 @@ use validator::{Validate, ValidationError};
 
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct User {
-    username: String,
-    email: String,
-    password: String,
-    confirm_password: String,
+    pub username: String,
+    pub email: String,
+    pub password: String,
+    pub confirm_password: String,
 }
 
 impl TryFrom<User> for NewUser {
