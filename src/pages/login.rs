@@ -1,10 +1,14 @@
 use leptos::prelude::*;
 use singlestage::*;
 
+use crate::server_function::login::Login;
+
 #[component]
 pub fn Login() -> impl IntoView {
+    let login = ServerAction::<Login>::new();
     view! {
         <div class="flex flex-col items-center justify-center min-h-screen px-4">
+        <ActionForm action=login>
         <Card class="w-full sm:w-sm">
             <CardHeader>
                 <CardTitle>"Log in to your account"</CardTitle>
@@ -13,27 +17,27 @@ pub fn Login() -> impl IntoView {
                 </CardDescription>
             </CardHeader>
             <CardContent>
-                <form class="form grid gap-6">
+                <div class="form grid gap-6">
                     <div class="grid gap-2">
-                        <Label label_for="demo-card-form-email">"Email"</Label>
-                        <Input input_type="email" id="demo-card-form-email" />
+                        <Label label_for="demo-card-form-email">"Username/Email"</Label>
+                        <Input input_type="text" name="login[id]" />
                     </div>
                     <div class="grid gap-2">
-                        <div class="flex items-center gap-2">
-                            <Label label_for="demo-card-form-password">"Password"</Label>
-                            <a
-                                href="#"
-                                class="ml-auto inline-block text-sm underline-offset-4 hover:underline"
-                            >
-                                "Forgot your password?"
-                            </a>
-                        </div>
-                        <Input input_type="password" id="demo-card-form-password" />
+                        // <div class="flex items-center gap-2">
+                            // <a
+                            //     href="#"
+                            //     class="ml-auto inline-block text-sm underline-offset-4 hover:underline"
+                            // >
+                            //     "Forgot your password?"
+                            // </a>
+                        // </div>
+                        <Label label_for="demo-card-form-password">"Password"</Label>
+                        <Input input_type="password" name="login[password]" />
                     </div>
-                </form>
+                </div>
             </CardContent>
             <CardFooter class="flex flex-col items-center gap-2">
-                <Button button_type="button" class="w-full">
+                <Button button_type="submit" class="w-full">
                     "Log in"
                 </Button>
                 <p class="mt-4 text-center text-sm">
@@ -43,6 +47,7 @@ pub fn Login() -> impl IntoView {
                 </p>
             </CardFooter>
         </Card>
+        </ActionForm>
         </div>
     }
 }

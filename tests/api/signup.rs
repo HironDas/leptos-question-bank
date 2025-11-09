@@ -1,15 +1,25 @@
 #[cfg(feature = "test-fullstack")]
 #[tokio::test]
 async fn signup_return_200_for_valid_input() {
-    use axum::Extension;
-    use leptos_question_bank::server_function::signup::{signup_action, User};
+    use leptos_question_bank::server_function::signup::{insert_new_user, User};
     use pwhash::bcrypt;
+    use std::{
+        //net::{IpAddr, Ipv4Addr},
+        sync::Arc,
+    };
 
     use crate::helpers::spawn_app;
+    // let _runtime = leptos_reactive::create_runtime();
+    // After (fixes the error during cargo test)
+    // let mut conf =
+    //     leptos::config::get_configuration(Some("Cargo.toml")).expect("Failed to get configuration");
 
     let app = spawn_app().await;
+    // conf.leptos_options.site_addr =
+    //     std::net::SocketAddr::new(IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1)), app.port);
 
-    leptos::provide_context(Extension(app.db_pool.clone()));
+    // println!("CONFIG: {:?}", conf);
+    // leptos::provide_context(Extension(app.db_pool.clone()));
 
     let user = User {
         username: "hiron".to_string(),
@@ -18,7 +28,12 @@ async fn signup_return_200_for_valid_input() {
         confirm_password: "Hiron@123".to_string(),
     };
 
-    signup_action(user.clone())
+    let pool = Arc::new(app.db_pool);
+    let new_user = user.clone().try_into().unwrap();
+
+    // leptos::context::provide_context(pool.clone());
+
+    insert_new_user(new_user, pool.clone())
         .await
         .expect("Signup action failed to run");
 
@@ -26,7 +41,7 @@ async fn signup_return_200_for_valid_input() {
         "SELECT username, active, password_hash FROM users WHERE email = $1",
         user.email
     )
-    .fetch_one(&app.db_pool)
+    .fetch_one(&*pool)
     .await
     .expect("Failed to fetch user");
 

@@ -10,6 +10,8 @@ pub struct TestApp {
 
 #[cfg(feature = "test-fullstack")]
 pub async fn spawn_app() -> TestApp {
+    let _runtime = leptos_reactive::create_runtime();
+
     use leptos_question_bank::{
         configuration::get_configuration, get_connection_pool, Application,
     };
@@ -20,7 +22,7 @@ pub async fn spawn_app() -> TestApp {
         c.application.port = 0;
         c
     };
-    configure_database(&configuration.database).await;
+    let db_pool = configure_database(&configuration.database).await;
 
     let application = Application::build(configuration.clone())
         .await
@@ -32,7 +34,7 @@ pub async fn spawn_app() -> TestApp {
 
     TestApp {
         address,
-        db_pool: get_connection_pool(&configuration.database),
+        db_pool: db_pool, //get_connection_pool(&configuration.database),
         port: application_port,
     }
 }

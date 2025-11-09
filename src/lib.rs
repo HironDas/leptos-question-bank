@@ -79,8 +79,11 @@ pub async fn run(
 
     use crate::app::App;
 
-    let conf = get_configuration(None).unwrap();
-    let _site_addr = listener.local_addr().expect("Failed to get local address");
+    let mut conf = get_configuration(Some("Cargo.toml")).unwrap();
+    let site_addr = listener.local_addr().expect("Failed to get local address");
+    conf.leptos_options.site_addr = site_addr;
+    log!("Configuration: {:?}", conf);
+    //std::net::SocketAddr::new(IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1)), app.port);
     // let leptos_options = LeptosOptions {
     //     site_addr: site_addr,
     //     ..conf.leptos_options
@@ -130,6 +133,6 @@ pub fn get_connection_pool(configuration: &DatabaseSettings) -> PgPool {
     use sqlx::postgres::PgPoolOptions;
     log!("Database configuration: {:?}", configuration);
     PgPoolOptions::new()
-        // .acquire_timeout(std::time::Duration::from_secs(2))
+        .acquire_timeout(std::time::Duration::from_secs(10))
         .connect_lazy_with(configuration.with_db())
 }

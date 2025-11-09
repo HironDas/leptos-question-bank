@@ -47,12 +47,12 @@ mod tests {
         );
         assert_eq!(
             Username::parse("j".to_string()),
-            Err(ValidationError::new("INVALID_USERNAME")
+            Err(ValidationError::new("UNPROCESSABLE_ENTITY")
                 .with_message("Username cannot be less than 3 characters and no spaces".into()))
         );
         assert_eq!(
             Username::parse("john doe".to_string()),
-            Err(ValidationError::new("INVALID_USERNAME")
+            Err(ValidationError::new("UNPROCESSABLE_ENTITY")
                 .with_message("Username cannot be less than 3 characters and no spaces".into()))
         );
     }

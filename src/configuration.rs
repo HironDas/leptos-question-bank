@@ -56,6 +56,7 @@ use sqlx::postgres::PgConnectOptions;
 impl DatabaseSettings {
     #[cfg(feature = "ssr")]
     pub fn without_db(&self) -> PgConnectOptions {
+        use leptos::logging::log;
         use secrecy::ExposeSecret;
         use sqlx::postgres::PgSslMode;
 
@@ -63,6 +64,7 @@ impl DatabaseSettings {
             true => PgSslMode::Require,
             false => PgSslMode::Prefer,
         };
+        // log!("Database Name: {}", self.database_name);
         PgConnectOptions::new()
             .host(&self.host)
             .port(self.port)

@@ -1,3 +1,5 @@
+use std::sync::Arc;
+
 use crate::{
     domain::{
         new_user::NewUser, user_email::UserEmail, user_password::UserPassword,
@@ -70,23 +72,23 @@ pub async fn signup_action(user: User) -> Result<(), ServerFnError> {
     leptos::logging::log!("Signup is clicked --");
     let new_user: NewUser = user.try_into()?;
 
+    let pool = expect_context::<Arc<PgPool>>();
     #[cfg(feature = "ssr")]
     {
         use leptos_axum::redirect;
-
-        insert_new_user(new_user).await?;
+        insert_new_user(new_user, pool).await?;
         redirect("/");
     }
     Ok(())
 }
 
 #[cfg(feature = "ssr")]
-async fn insert_new_user(user: NewUser) -> Result<(), QuestionBankError> {
+use sqlx::PgPool;
+#[cfg(feature = "ssr")]
+pub async fn insert_new_user(user: NewUser, pool: Arc<PgPool>) -> Result<(), QuestionBankError> {
     use anyhow::Context;
-    use sqlx::PgPool;
-    use std::sync::Arc;
 
-    let pool = expect_context::<Arc<PgPool>>();
+    // let pool = expect_context::<Arc<PgPool>>();
     let password_hash = user.hash_password();
 
     sqlx::query!(
@@ -143,8 +145,8 @@ pub async fn is_user_taken(username: String) -> Result<bool, ServerFnError> {
         .exists;
         //.context("User Insert Failed! Please fill all fields correctly")?
         //.exists;
+        log!("User Exists: {:?}", exists);
     }
-    log!("User Exists: {:?}", exists);
 
     Ok(exists.unwrap())
 }
