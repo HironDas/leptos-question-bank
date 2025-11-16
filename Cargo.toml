@@ -32,6 +32,8 @@ pwhash = { version = "1.0.0"}
 getrandom = { version = "0.2.16", features = ["js"] }
 thiserror = "2.0.17"
 anyhow = "1.0.100"
+axum-extra = { version = "0.12.2", optional = true, features = ["cookie"] }
+true = { version = "0.1.0", optional = true }
 
 [dependencies.sqlx]
 version = "0.8.6"
@@ -56,9 +58,11 @@ ssr = [
     "dep:sqlx",
     "dep:uuid",
     "dep:axum-server",
-    "dep:config"
+    "dep:config",
+    "dep:axum-extra"
 ]
 test-fullstack = ["ssr", "hydrate"]
+true = ["dep:true"]
 
 # Defines a size-optimized profile for the WASM bundle in release mode
 [profile.wasm-release]

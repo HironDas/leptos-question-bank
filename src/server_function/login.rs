@@ -1,6 +1,7 @@
-#[cfg(feature = "ssr")]
 use std::sync::Arc;
 
+#[cfg(feature = "ssr")]
+use axum_extra::extract::CookieJar;
 use leptos::prelude::*;
 
 use crate::{
@@ -40,15 +41,26 @@ impl TryFrom<LoginCredential> for DomainLogin {
 
 #[server]
 pub async fn login(login: LoginCredential) -> Result<(), ServerFnError> {
+    use leptos_axum::extract;
+    let jar: CookieJar = extract().await?;
     let login: DomainLogin = login.try_into()?;
     #[cfg(feature = "ssr")]
     {
+        use axum_extra::extract::cookie::Cookie;
         use leptos_axum::redirect;
         use sqlx::PgPool;
         use std::sync::Arc;
         let pool = expect_context::<Arc<PgPool>>();
         let user_id = user_logged_in(login, pool.clone()).await?;
-        let _session = store_session(user_id, pool.clone()).await?;
+        let session = store_session(user_id, pool.clone()).await?;
+
+        let c = Cookie::build(("session", session))
+            .path("/")
+            .http_only(true)
+            .secure(true)
+            .finish();
+        // let _ = jar.add(c);
+        //ResponseOptions::set_cookie(jar);
 
         redirect("/home");
     }
