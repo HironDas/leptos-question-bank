@@ -1,5 +1,6 @@
 use crate::domain::{user_email::UserEmail, user_password::UserPassword, user_username::Username};
 
+#[derive(Debug)]
 pub struct Login {
     pub email: Option<UserEmail>,
     pub username: Option<Username>,

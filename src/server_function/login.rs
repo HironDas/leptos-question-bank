@@ -1,8 +1,7 @@
-use std::sync::Arc;
-
-#[cfg(feature = "ssr")]
-use axum_extra::extract::CookieJar;
 use leptos::prelude::*;
+#[cfg(feature = "ssr")]
+use leptos_axum::ResponseOptions;
+use std::sync::Arc;
 
 use crate::{
     domain::{login::Login as DomainLogin, user_email::UserEmail, user_password::UserPassword},
@@ -41,12 +40,12 @@ impl TryFrom<LoginCredential> for DomainLogin {
 
 #[server]
 pub async fn login(login: LoginCredential) -> Result<(), ServerFnError> {
-    use leptos_axum::extract;
-    let jar: CookieJar = extract().await?;
+    let response: ResponseOptions = expect_context::<ResponseOptions>();
     let login: DomainLogin = login.try_into()?;
+    leptos::logging::log!("Login attempt: {:?}", login);
     #[cfg(feature = "ssr")]
     {
-        use axum_extra::extract::cookie::Cookie;
+        use axum::http::{header::SET_COOKIE, HeaderValue};
         use leptos_axum::redirect;
         use sqlx::PgPool;
         use std::sync::Arc;
@@ -54,14 +53,13 @@ pub async fn login(login: LoginCredential) -> Result<(), ServerFnError> {
         let user_id = user_logged_in(login, pool.clone()).await?;
         let session = store_session(user_id, pool.clone()).await?;
 
-        let c = Cookie::build(("session", session))
-            .path("/")
-            .http_only(true)
-            .secure(true)
-            .finish();
-        // let _ = jar.add(c);
-        //ResponseOptions::set_cookie(jar);
+        let max_age_seconds = 7 * 24 * 3600;
+        let cookie_value = HeaderValue::from_str(&format!(
+            "session={}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age={}",
+            session, max_age_seconds
+        ))?;
 
+        response.insert_header(SET_COOKIE, cookie_value);
         redirect("/home");
     }
     Ok(())
