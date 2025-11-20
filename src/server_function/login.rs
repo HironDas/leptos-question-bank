@@ -1,3 +1,4 @@
+// use axum_extra::extract::CookieJar;
 use leptos::prelude::*;
 #[cfg(feature = "ssr")]
 use leptos_axum::ResponseOptions;
@@ -40,20 +41,35 @@ impl TryFrom<LoginCredential> for DomainLogin {
 
 #[server]
 pub async fn login(login: LoginCredential) -> Result<(), ServerFnError> {
-    let response: ResponseOptions = expect_context::<ResponseOptions>();
+    let response = expect_context::<ResponseOptions>();
     let login: DomainLogin = login.try_into()?;
     leptos::logging::log!("Login attempt: {:?}", login);
     #[cfg(feature = "ssr")]
     {
         use axum::http::{header::SET_COOKIE, HeaderValue};
+        // use axum_extra::extract::cookie::Cookie;
         use leptos_axum::redirect;
+
         use sqlx::PgPool;
         use std::sync::Arc;
+        // use time::Duration;
+
         let pool = expect_context::<Arc<PgPool>>();
         let user_id = user_logged_in(login, pool.clone()).await?;
         let session = store_session(user_id, pool.clone()).await?;
 
         let max_age_seconds = 7 * 24 * 3600;
+        // let cookie = Cookie::build(("session", session))
+        //     .http_only(true)
+        //     .secure(true)
+        //     .same_site(axum_extra::extract::cookie::SameSite::Lax)
+        //     .path("/")
+        //     .max_age(Duration::seconds(max_age_seconds));
+
+        // let jar = jar.add(cookie);
+
+        // provide_context(jar);
+
         let cookie_value = HeaderValue::from_str(&format!(
             "session={}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age={}",
             session, max_age_seconds
@@ -143,6 +159,21 @@ pub async fn store_session(
 
     let session_id = uuid::Uuid::new_v4();
     let date = chrono::Local::now() + chrono::Duration::days(7);
+
+    sqlx::query!(
+        r#"DELETE FROM sessions where expires_at < $1"#,
+        &chrono::Local::now().naive_local()
+    )
+    .execute(&*pool)
+    .await
+    .map_err(|err| {
+        use leptos::logging::log;
+
+        log!("Failed to Delete expired session: {}", err);
+        err
+    })
+    .context("Failed to Delete expired session")?;
+
     sqlx::query!(
         r#"INSERT INTO sessions (user_id, session_token, expires_at) VALUES ($1, $2, $3)"#,
         &user_id,
