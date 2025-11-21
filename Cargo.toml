@@ -16,7 +16,6 @@ leptos_meta = { version = "0.8.0" }
 tokio = { version = "1", features = ["rt-multi-thread"], optional = true }
 wasm-bindgen = { version = "0.2", optional = true }
 # openssl = "0.10.73"
-singlestage = "0.3.1"
 icondata = "0.6.0"
 web-sys = { version = "0.3", features = ["MediaQueryList", "HtmlDocument"] }
 chrono = "0.4.42"
@@ -35,6 +34,7 @@ anyhow = "1.0.100"
 true = { version = "0.1.0", optional = true }
 axum-extra = { version = "0.12.2", features = ["cookie"] }
 time = "0.3.44"
+singlestage = "0.3.10"
 
 [dependencies.sqlx]
 version = "0.8.6"

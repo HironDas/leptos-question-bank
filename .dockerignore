@@ -2,6 +2,7 @@
 target/
 tests/
 Dockerfile
+DockerfileDev
 docker-compose.yml
 .git
 .gitignore
