@@ -13,7 +13,7 @@ COPY  --from=planner /app/recipe.json recipe.json
 RUN curl -Ls https://github.com/cargo-bins/cargo-binstall/releases/latest/download/cargo-binstall-x86_64-unknown-linux-musl.tgz | tar -xz && \
     mv cargo-binstall /usr/local/cargo/bin/
 
-RUN curl -Ls https://github.com/tailwindlabs/tailwindcss/releases/download/v4.1.17/tailwindcss-linux-arm64 -o tailwindcss && \
+RUN curl -Ls https://github.com/tailwindlabs/tailwindcss/releases/download/v4.1.17/tailwindcss-linux-x64 -o tailwindcss && \
     mv tailwindcss /usr/local/
 
 RUN chmod +x /usr/local/tailwindcss
