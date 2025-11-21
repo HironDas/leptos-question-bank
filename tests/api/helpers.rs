@@ -5,14 +5,14 @@ use sqlx::{Connection, Executor, PgConnection, PgPool};
 pub struct TestApp {
     pub address: String,
     pub db_pool: sqlx::PgPool,
-    pub port: u16,
+    pub _port: u16,
 }
 
 #[cfg(feature = "test-fullstack")]
 pub async fn spawn_app() -> TestApp {
-    use leptos_question_bank::{
-        configuration::get_configuration, get_connection_pool, Application,
-    };
+    let _runtime = leptos_reactive::create_runtime();
+
+    use leptos_question_bank::{configuration::get_configuration, Application};
 
     let configuration = {
         let mut c = get_configuration().expect("Failed to read configuration");
@@ -20,7 +20,7 @@ pub async fn spawn_app() -> TestApp {
         c.application.port = 0;
         c
     };
-    configure_database(&configuration.database).await;
+    let db_pool = configure_database(&configuration.database).await;
 
     let application = Application::build(configuration.clone())
         .await
@@ -32,8 +32,8 @@ pub async fn spawn_app() -> TestApp {
 
     TestApp {
         address,
-        db_pool: get_connection_pool(&configuration.database),
-        port: application_port,
+        db_pool: db_pool, //get_connection_pool(&configuration.database),
+        _port: application_port,
     }
 }
 

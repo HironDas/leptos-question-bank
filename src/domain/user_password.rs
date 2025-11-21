@@ -95,7 +95,7 @@ mod tests {
         (required, filler).prop_map(|((l, u, d, s), mut rest)| {
             let mut all = vec![l, u, d, s];
             all.append(&mut rest);
-            let mut rng = rand::thread_rng(); // Use the correct function to get a thread-local RNG
+            let mut rng = rand::rng(); // Use the correct function to get a thread-local RNG
             all.shuffle(&mut rng);
             all.into_iter().collect()
         })

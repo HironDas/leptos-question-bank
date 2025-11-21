@@ -1,6 +1,6 @@
 [package]
 name = "leptos-question-bank"
-version = "0.2.2"
+version = "0.3.0"
 edition = "2021"
 
 [lib]
@@ -32,6 +32,9 @@ pwhash = { version = "1.0.0"}
 getrandom = { version = "0.2.16", features = ["js"] }
 thiserror = "2.0.17"
 anyhow = "1.0.100"
+true = { version = "0.1.0", optional = true }
+axum-extra = { version = "0.12.2", features = ["cookie"] }
+time = "0.3.44"
 
 [dependencies.sqlx]
 version = "0.8.6"
@@ -56,9 +59,10 @@ ssr = [
     "dep:sqlx",
     "dep:uuid",
     "dep:axum-server",
-    "dep:config"
+    "dep:config",
 ]
 test-fullstack = ["ssr", "hydrate"]
+true = ["dep:true"]
 
 # Defines a size-optimized profile for the WASM bundle in release mode
 [profile.wasm-release]
@@ -70,10 +74,11 @@ panic = "abort"
 
 [dev-dependencies]
 fake = "4.4.0"
+leptos_reactive = "0.6.15"
 proptest = "1.8.0"
 rand = {version = "0.9.2"}
 reqwest = "0.12.24"
-tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
+tokio = { version = "1", features = ["macros", "rt-multi-thread", "full"] }
 
 [package.metadata.leptos]
 # The name used by wasm-bindgen/cargo-leptos for the JS/WASM bundle. Defaults to the crate name

@@ -177,6 +177,11 @@ pub fn Signup() -> impl IntoView {
                             </AlertDescription>
                         </Alert>
                     </Show>
+                    <p class="mt-4 text-center text-sm">
+                        "Already have an account! please "<a href="/" class="underline-offset-4 hover:underline">
+                            "Login"
+                        </a>
+                    </p>
                 </CardFooter>
             </Card>
         </ActionForm>
