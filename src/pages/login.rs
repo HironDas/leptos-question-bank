@@ -1,11 +1,12 @@
-use leptos::{logging::log, prelude::*};
+use leptos::prelude::*;
 use singlestage::*;
 
-use crate::server_function::login::Login;
+use crate::{components::ui::spinner::Spinner, server_function::login::Login};
 
 #[component]
 pub fn Login() -> impl IntoView {
     let login = ServerAction::<Login>::new();
+    let pending = login.pending();
     view! {
         <div class="flex flex-col items-center justify-center min-h-screen px-4">
         <ActionForm action=login>
@@ -37,8 +38,10 @@ pub fn Login() -> impl IntoView {
                 </div>
             </CardContent>
             <CardFooter class="flex flex-col items-center gap-2">
-                <Button button_type="submit" class="w-full">
-                    "Log in"
+                <Button button_type="submit" class="w-full" attr:disabled = move||pending.get()>
+                <Show when = move ||pending.get() fallback= ||view!{"Log in"}>
+                "Processing..."<Spinner />
+                </Show>
                 </Button>
                 <p class="mt-4 text-center text-sm">
                     "Don't have an account? "<a href="/signup" class="underline-offset-4 hover:underline">
