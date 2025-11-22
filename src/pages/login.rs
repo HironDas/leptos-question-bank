@@ -1,5 +1,6 @@
-use leptos::prelude::*;
+use leptos::{logging::log, prelude::*};
 use singlestage::*;
+// use web_sys::SubmitEvent;
 
 use crate::{components::ui::spinner::Spinner, server_function::login::Login};
 
@@ -7,9 +8,42 @@ use crate::{components::ui::spinner::Spinner, server_function::login::Login};
 pub fn Login() -> impl IntoView {
     let login = ServerAction::<Login>::new();
     let pending = login.pending();
+    let value = login.value();
+    let error_msg = RwSignal::new("".to_string());
+
+    // let on_submit = move |ev: SubmitEvent| {
+    //     let data = Login::from_event(&ev);
+    //     log!("Data:{:?}", data);
+    //     if let Ok(Login {
+    //         login: LoginCredential { id, password },
+    //     }) = data
+    //     {
+    //         if id == "" {
+    //             ev.prevent_default();
+    //             error_msg.set("Username/Email is empty. Please put a valid input.".to_string());
+    //         } else if password == "" {
+    //             ev.prevent_default();
+    //             error_msg.set("Password is empty! Please input the password.".to_owned());
+    //         }
+    //     } else {
+    //         ev.prevent_default();
+    //     }
+    // };
+
+    Effect::new(move || {
+        if value.get().is_some() {
+            if let Err(ServerFnError::ServerError(msg)) = value.get().unwrap() {
+                log!("err-->: {:#?}", msg);
+                error_msg.set(msg);
+            } else {
+                error_msg.set("".to_string());
+            }
+        }
+    });
+
     view! {
         <div class="flex flex-col items-center justify-center min-h-screen px-4">
-        <ActionForm action=login>
+        <ActionForm action=login >
         <Card class="w-full sm:w-sm">
             <CardHeader>
                 <CardTitle>"Log in to your account"</CardTitle>
@@ -43,9 +77,18 @@ pub fn Login() -> impl IntoView {
                 "Processing..."<Spinner />
                 </Show>
                 </Button>
+                <Show when= move||error_msg.get() !="" fallback=||view!{""}>
+                    <Alert variant="destructive">
+                        {icon!(icondata::FiAlertTriangle)}
+                        <AlertTitle>"Something went wrong!"</AlertTitle>
+                        <AlertDescription>
+                            {move||error_msg.get()}
+                        </AlertDescription>
+                    </Alert>
+                </Show>
                 <p class="mt-4 text-center text-sm">
                     "Don't have an account? "<a href="/signup" class="underline-offset-4 hover:underline">
-                        "Sign up"
+                    "Sign up "
                     </a>
                 </p>
             </CardFooter>

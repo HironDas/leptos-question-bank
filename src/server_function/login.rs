@@ -1,8 +1,10 @@
+// use anyhow::Context;
 // use axum_extra::extract::CookieJar;
-use leptos::prelude::*;
+use leptos::{logging::log, prelude::*};
 #[cfg(feature = "ssr")]
 use leptos_axum::ResponseOptions;
 use std::sync::Arc;
+// use validator::ValidationError;
 
 use crate::{
     domain::{login::Login as DomainLogin, user_email::UserEmail, user_password::UserPassword},
@@ -42,7 +44,21 @@ impl TryFrom<LoginCredential> for DomainLogin {
 #[server]
 pub async fn login(login: LoginCredential) -> Result<(), ServerFnError> {
     let response = expect_context::<ResponseOptions>();
-    let login: DomainLogin = login.try_into()?;
+    if login.id == "" {
+        return Err(ServerFnError::new(
+            "Username/Email is empty. Please put a valid input.",
+        ));
+    } else if login.password == "" {
+        return Err(ServerFnError::new(
+            "Password is empty! Please input the password.",
+        ));
+    }
+    let login: DomainLogin = login.try_into().map_err(|err: QuestionBankError| {
+        log!("validataion Error: {:?}", err);
+        ServerFnError::new("Invalid username or password! please try again.")
+    })?;
+    // .context("Invalid username or password, please try again")?;
+
     leptos::logging::log!("Login attempt: {:?}", login);
     #[cfg(feature = "ssr")]
     {
@@ -134,10 +150,10 @@ pub async fn user_logged_in(
             log!("Failed to fetch user: {}", err);
             err
         })
-        .context("invalid user or password")?,
+        .context("invalid username or password")?,
         _ => Err(QuestionBankError::ValidationError(
             ValidationError::new("UNPROCESSABLE_ENTITY")
-                .with_message("email and username both are missing".into()),
+                .with_message("email/username is empty".into()),
         ))?,
     };
 
@@ -145,8 +161,11 @@ pub async fn user_logged_in(
         Ok(user.id)
     } else {
         use anyhow::anyhow;
-
-        Err(anyhow!("Invalid user or password, please try again").into())
+        use leptos::logging::log;
+        log!("Passow doesnot matched!");
+        let err: QuestionBankError =
+            anyhow!("Invalid username or password, please try again").into();
+        Err(err)
     }
 }
 

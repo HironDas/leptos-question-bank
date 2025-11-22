@@ -149,13 +149,7 @@ pub async fn run(
         //     move || shell(leptos_options.clone())
         // }))
         //.fallback(leptos_handler)
-        .leptos_routes_with_handler(
-            routes,
-            leptos_axum::render_app_to_stream({
-                let leptos_options = app_state.leptos_options.clone();
-                move || shell(leptos_options.clone())
-            }),
-        )
+        .leptos_routes_with_handler(routes, leptos_handler)
         .fallback(leptos_error_handler)
         .with_state(app_state);
 
@@ -184,15 +178,24 @@ pub fn get_connection_pool(configuration: &DatabaseSettings) -> PgPool {
         .connect_lazy_with(configuration.with_db())
 }
 
-// #[cfg(feature = "ssr")]
-// async fn leptos_handler(State(state): State<AppState>, req: Request<Body>) -> impl IntoResponse {
-//     use leptos_axum::render_app_to_stream;
-//     let handler = render_app_to_stream({
-//         let options = state.leptos_options.clone();
-//         move || shell(options.clone())
-//     });
-//     handler(req).await.into_response()
-// }
+#[cfg(feature = "ssr")]
+async fn leptos_handler(
+    State(state): State<AppState>,
+    jar: CookieJar,
+    req: Request<Body>,
+) -> impl IntoResponse {
+    use leptos_axum::render_app_to_stream_with_context;
+    let handler = render_app_to_stream_with_context(
+        move || {
+            provide_context(jar.clone());
+        },
+        {
+            let options = state.leptos_options.clone();
+            move || shell(options.clone())
+        },
+    );
+    handler(req).await.into_response()
+}
 
 #[cfg(feature = "ssr")]
 async fn leptos_server_handler(
