@@ -82,7 +82,7 @@ pub fn Login() -> impl IntoView {
                         {icon!(icondata::FiAlertTriangle)}
                         <AlertTitle>"Something went wrong!"</AlertTitle>
                         <AlertDescription>
-                            {move||error_msg.get()}
+                            {error_msg}
                         </AlertDescription>
                     </Alert>
                 </Show>
