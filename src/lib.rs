@@ -2,9 +2,11 @@ pub mod app;
 pub mod components;
 pub mod configuration;
 pub mod domain;
-pub mod error;
 pub mod pages;
 pub mod server_function;
+pub mod util;
+
+pub use util::error;
 
 #[cfg(feature = "hydrate")]
 #[wasm_bindgen::prelude::wasm_bindgen]
@@ -102,6 +104,7 @@ pub async fn run(
     use std::sync::Arc;
 
     use crate::app::App;
+    // use crate::util::auth_middleware::auth_middleware;
     use axum::routing::get;
     use axum::Router;
     use leptos::logging::log;
@@ -123,6 +126,16 @@ pub async fn run(
         leptos_options,
         db_pool,
     };
+
+    // let api_protedted_router = Router::new()
+    //     .route(
+    //         "/api/{*fn_name}",
+    //         get(leptos_server_handler).post(leptos_server_handler),
+    //     )
+    //     .route_layer(axum::middleware::from_fn_with_state(
+    //         app_state.db_pool.clone(),
+    //         auth_middleware,
+    //     ));
 
     let app = Router::new()
         .route(
@@ -187,6 +200,7 @@ async fn leptos_handler(
     use leptos_axum::render_app_to_stream_with_context;
     let handler = render_app_to_stream_with_context(
         move || {
+            provide_context(state.db_pool.clone());
             provide_context(jar.clone());
         },
         {

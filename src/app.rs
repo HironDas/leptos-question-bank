@@ -1,5 +1,5 @@
 use crate::components::Layout;
-use crate::pages::HomePage;
+use crate::pages::{HomePage, UnAuthorized};
 use crate::pages::{Login, NotFound, Signup};
 
 use leptos::prelude::*;
@@ -39,7 +39,7 @@ pub fn App() -> impl IntoView {
         <Stylesheet id="leptos" href="/pkg/leptos-question-bank.css"/>
 
         // sets the document title
-        <Title text="Welcome to Leptos"/>
+        <Title text="Question Bank"/>
 
         // content for this welcome page
         <ThemeProvider>
@@ -47,7 +47,8 @@ pub fn App() -> impl IntoView {
             <main>
                 <Routes fallback={move || view! { <NotFound/> }}>
                     <Route path=StaticSegment("") view = Login/>
-                    <Route path=StaticSegment("/signup") view= Signup />
+                    <Route path=StaticSegment("/signup") view = Signup />
+                    <Route path=StaticSegment("/unauthorized") view = UnAuthorized />
                     <Route path=StaticSegment("/health") view={move|| view!{}}/>
                     <ParentRoute path=StaticSegment("") view=Layout>
                         <Route path=StaticSegment("/home") view=HomePage/>

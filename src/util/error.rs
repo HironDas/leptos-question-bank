@@ -10,6 +10,8 @@ pub enum QuestionBankError {
     ValidationError(#[from] ValidationError),
     #[error(transparent)]
     UnexpectedError(#[from] anyhow::Error),
+    #[error("Authentication Error!!")]
+    Authentication,
 }
 
 impl Debug for QuestionBankError {
@@ -29,6 +31,7 @@ impl IntoResponse for QuestionBankError {
                 _ => StatusCode::BAD_REQUEST,
             },
             QuestionBankError::UnexpectedError(_) => StatusCode::INTERNAL_SERVER_ERROR,
+            QuestionBankError::Authentication => StatusCode::UNAUTHORIZED,
         };
         (status, self.to_string()).into_response()
     }
