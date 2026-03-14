@@ -15,5 +15,12 @@
     "strings": true
   },
   "css.validate": false,
-  "rust-analyzer.cargo.features": "all"
+  "rust-analyzer.cargo.features": "all",
+  "dependi.rust.lockFileEnabled": false,
+   "editor.defaultFormatter": "rust-lang.rust-analyzer",
+  "[rust]": {
+    "editor.defaultFormatter": "rust-lang.rust-analyzer"
+  },
+  "rust-analyzer.rustfmt.overrideCommand": ["leptosfmt", "--stdin", "--rustfmt"],
+  "editor.formatOnSave": true
 }

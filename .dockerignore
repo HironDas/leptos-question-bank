@@ -8,3 +8,6 @@ docker-compose.yml
 .gitignore
 scripts/
 migrations/
+package.json
+pnpm-lock.yaml
+node_modules

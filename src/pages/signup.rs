@@ -100,6 +100,8 @@ pub fn Signup() -> impl IntoView {
         },
     );
 
+    let email_invalid = RwSignal::new(false);
+
     view! {
         <div class="flex flex-col items-center justify-center min-h-screen px-4">
         <ActionForm action=signup>
@@ -126,9 +128,10 @@ pub fn Signup() -> impl IntoView {
                         </div>
                         <div class="grid gap-2">
                             <Label label_for="demo-card-form-email">"Email"</Label>
-                            <Input on:blur = move |event| {
+                            <Input invalid = email_invalid on:blur = move |event| {
                                 let value = event_target_value(&event);
                                 email.set(value);
+                                //email_invalid.set(!email.get().is_empty() && !check_email.get().unwrap().0);
                             } name="user[email]" input_type="email" id="demo-card-form-email" />
                             <Transition fallback=|| view! { <p class ="text-xs">"Loading..."</p> }>
                             <Show when=move||!email.get().is_empty() && !check_email.get().unwrap().0 fallback={move||view!{<p class="text-xs">""</p>}}>

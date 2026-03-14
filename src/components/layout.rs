@@ -91,10 +91,10 @@ pub fn Layout() -> impl IntoView {
                 <SidebarGroupLabel>"Settings"</SidebarGroupLabel>
                 <SidebarGroupContent>
                     <SidebarMenu>
-                       
+
                         <SidebarMenuItem>
                             <SidebarMenuButton>
-                                <A href="/academic-classes">
+                                <A href="/academic-setting">
                                     {icon!(icondata::LuSchool)} <span>"Classes"</span>
                                 </A>
                             </SidebarMenuButton>

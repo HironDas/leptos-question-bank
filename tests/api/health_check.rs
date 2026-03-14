@@ -1,6 +1,6 @@
 #[cfg(feature = "test-fullstack")]
-#[tokio::test] 
-async fn health_check_works(){
+#[tokio::test]
+async fn health_check_works() {
     use crate::helpers::spawn_app;
 
     let app = spawn_app().await;
@@ -13,7 +13,7 @@ async fn health_check_works(){
         .send()
         .await
         .expect("Failed to execute request");
-    
+
     assert!(response.status().is_success());
     assert!(response.text().await.unwrap().contains(""));
 }
