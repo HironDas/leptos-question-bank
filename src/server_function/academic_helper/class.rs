@@ -17,13 +17,11 @@ pub async fn class(pool: Arc<PgPool>) -> Result<Vec<Class>, ServerFnError> {
         SELECT id, name, name_bn, "order"  FROM classes ORDER BY "order" ASC
         "#
     )
-    .try_map(|record| {
-        Ok(Class {
-            id: record.id as u32,
-            name: record.name,
-            name_bn: record.name_bn,
-            order: record.order as u32,
-        })
+    .map(|record| Class {
+        id: record.id as u32,
+        name: record.name,
+        name_bn: record.name_bn,
+        order: record.order as u32,
     })
     .fetch_all(&*pool)
     .await?;
@@ -32,7 +30,7 @@ pub async fn class(pool: Arc<PgPool>) -> Result<Vec<Class>, ServerFnError> {
 }
 
 #[server]
-pub async fn add_class(class: AddClassInput) -> Result<(), ServerFnError> {
+pub async fn add_class(class: AddClassInput) -> Result<Class, ServerFnError> {
     use validator::Validate;
     log!("Adding class: {:?}", class);
     if let Err(errors) = class.validate() {
@@ -46,9 +44,8 @@ pub async fn add_class(class: AddClassInput) -> Result<(), ServerFnError> {
             use std::sync::Arc;
             let pool = expect_context::<Arc<PgPool>>();
 
-            insert_class(pool, class).await.map_err(|e| e.into()).map(|_| ())
+            insert_class(pool, class).await.map_err(|e| e.into())
         }
-        
     }
 }
 
@@ -56,7 +53,7 @@ pub async fn add_class(class: AddClassInput) -> Result<(), ServerFnError> {
 pub async fn insert_class(
     pool: Arc<PgPool>,
     class: AddClassInput,
-) -> Result<(), QuestionBankError> {
+) -> Result<Class, QuestionBankError> {
     use anyhow::Context;
     log!("Inserting class: {:?}", class);
     let max_order = sqlx::query!(
@@ -75,32 +72,78 @@ pub async fn insert_class(
 
     sqlx::query!(
         r#"
-        INSERT INTO classes (name, name_bn, "order") VALUES ($1, $2, $3)
+        INSERT INTO classes (name, name_bn, "order") VALUES ($1, $2, $3) RETURNING id, name, name_bn, "order"
         "#,
         class.name,
         class.name_bn,
         new_order as i32
     )
-    .execute(&*pool)
+    .fetch_one(&*pool)
     .await
     .map(|result| {
         log!("Class Inserted Successfully! and the id is {:?}", result);
-        Ok(())
+        Class {
+            id: result.id as u32,
+            name: result.name,
+            name_bn: result.name_bn,
+            order: result.order as u32,
+        }
     })
     .map_err(|e| {
         log!("Failed to insert class: {}", e);
         e
     })
-    .context("Something Went wrong on saving class")?
+    .context("Something went wrong while inserting class!")
+    .map_err(QuestionBankError::from)
 }
 
 #[server]
-pub async fn update_class(class: UpdateClassInput) -> Result<(), ServerFnError> {
+pub async fn update_class(class: UpdateClassInput) -> Result<Class, ServerFnError> {
     use validator::Validate;
     if let Err(errors) = class.validate() {
         return Err(errors.into());
-    }else {
-        
-        Ok(())
+    } else {
+        #[cfg(feature = "ssr")]
+        {
+            use sqlx::PgPool;
+            use std::sync::Arc;
+            let pool = expect_context::<Arc<PgPool>>();
+            edit_class(pool, class).await.map_err(|e| e.into())
+        }
     }
+}
+
+#[cfg(feature = "ssr")]
+pub async fn edit_class(
+    pool: Arc<PgPool>,
+    class: UpdateClassInput,
+) -> Result<Class, QuestionBankError> {
+    use anyhow::Context;
+    sqlx::query!(
+        r#"
+            UPDATE classes SET name = $1, name_bn = $2 WHERE id = $3 returning id, name, name_bn, "order"
+            "#,
+        class.name,
+        class.name_bn,
+        class.class_id as i32
+    ).map(|record| {
+        Class {
+            id: record.id as u32,
+            name: record.name,
+            name_bn: record.name_bn,
+            order: record.order as u32,
+        }
+    })
+    .fetch_one(&*pool)
+    .await
+    .map(|result| {
+        log!("Class Updated Successfully! and the id is {:?}", result);
+        result
+    })
+    .map_err(|e| {
+        log!("Failed to update class: {}", e);
+        e
+    })
+    .context("Failed to update class")
+    .map_err(QuestionBankError::from)
 }

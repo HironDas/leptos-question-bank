@@ -1,4 +1,4 @@
-#[derive(serde::Serialize, serde::Deserialize, Debug, Clone)]
+#[derive(serde::Serialize, serde::Deserialize, Debug, Clone, PartialEq, Eq)]
 pub struct Class {
     pub id: u32,
     pub name: String,
@@ -6,7 +6,7 @@ pub struct Class {
     pub order: u32,
 }
 
-#[derive(serde::Serialize, serde::Deserialize, Debug, Clone)]
+#[derive(serde::Serialize, serde::Deserialize, Debug, Clone, PartialEq, Eq)]
 pub struct Subject {
     pub id: u32,
     pub title: String,
@@ -14,13 +14,14 @@ pub struct Subject {
     pub order: u32,
 }
 
-#[derive(serde::Serialize, serde::Deserialize, Debug, Clone)]
+#[derive(serde::Serialize, serde::Deserialize, Debug, Clone, PartialEq, Eq)]
 pub struct Chapter {
     pub id: u32,
     pub title: String,
     pub order: u32,
     pub class_id: u32,
     pub subject_id: u32,
+    pub question_count: u32,
 }
 
 use leptos::prelude::*;

@@ -32,6 +32,7 @@ impl IntoResponse for QuestionBankError {
             },
             QuestionBankError::UnexpectedError(_) => StatusCode::INTERNAL_SERVER_ERROR,
             QuestionBankError::Authentication => StatusCode::UNAUTHORIZED,
+            _ => StatusCode::INTERNAL_SERVER_ERROR,
         };
         (status, self.to_string()).into_response()
     }
