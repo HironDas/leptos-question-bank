@@ -20,13 +20,13 @@ ENV SINGLESTAGE_TAILWIND_PATH=/usr/local/bin/tailwindcss
 
 ENV LEPTOS_TAILWIND_VERSION=v4.1.17
 
-RUN cargo chef cook --release --recipe-path recipe.json -- --jobs 1
+RUN cargo chef cook --release --recipe-path recipe.json
 COPY . .
 ENV SQLX_OFFLINE=true
 ENV LEPTOS_WASM_BINDGEN_VERSION=0.2.105
 RUN rustup target add wasm32-unknown-unknown
 RUN cargo binstall cargo-leptos -y
-RUN cargo leptos build --release --split
+RUN cargo leptos build --release --split -j 1
 
 
 # Runtime stage
