@@ -24,7 +24,7 @@ jobs:
         with:
           registry: ${{ gitea.server_url }}
           username: ${{ gitea.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }} # Gitea automatically provides this
+          password: ${{ secrets.GITEA_TOKEN }} # Gitea automatically provides this
 
       - name: Extract Metadata
         id: meta
