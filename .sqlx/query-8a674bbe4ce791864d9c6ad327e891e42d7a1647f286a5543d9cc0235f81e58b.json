@@ -1,0 +1,42 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n        INSERT INTO classes (name, name_bn, \"order\") VALUES ($1, $2, $3) RETURNING id, name, name_bn, \"order\"\n        ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 1,
+        "name": "name",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 2,
+        "name": "name_bn",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 3,
+        "name": "order",
+        "type_info": "Int4"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Varchar",
+        "Varchar",
+        "Int4"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "8a674bbe4ce791864d9c6ad327e891e42d7a1647f286a5543d9cc0235f81e58b"
+}
