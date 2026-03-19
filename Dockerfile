@@ -13,12 +13,12 @@ COPY  --from=planner /app/recipe.json recipe.json
 RUN curl -Ls https://github.com/cargo-bins/cargo-binstall/releases/latest/download/cargo-binstall-x86_64-unknown-linux-musl.tgz | tar -xz && \
     mv cargo-binstall /usr/local/cargo/bin/
 # this Tailwind version works fine on railway server, for arm use tailwindcss-linux-arm64
-RUN curl -Ls https://github.com/tailwindlabs/tailwindcss/releases/download/v4.1.17/tailwindcss-linux-x64 -o tailwindcss && \
-    mv tailwindcss /usr/local/
+RUN curl -Ls https://github.com/tailwindlabs/tailwindcss/releases/download/v4.1.17/tailwindcss-linux-x64 -o /usr/local/bin/tailwindcss && \
+    chmod +x /usr/local/bin/tailwindcss
 
-RUN chmod +x /usr/local/tailwindcss
+ENV SINGLESTAGE_TAILWIND_PATH=/usr/local/bin/tailwindcss
 
-ENV SINGLESTAGE_TAILWIND_PATH=/usr/local/tailwindcss
+ENV LEPTOS_TAILWIND_VERSION=v4.1.17
 
 RUN cargo chef cook --release --recipe-path recipe.json
 COPY . .
