@@ -47,5 +47,5 @@ jobs:
           push: true
           tags: |
             ${{ steps.meta.outputs.tags }}
-            ://git.rynexus.com{{ gitea.repository }}:${{ github.event.inputs.version }}
+            ://git.rynexus.com${{ gitea.repository }}:${{ github.event.inputs.version }}
           labels: ${{ steps.meta.outputs.labels }}
