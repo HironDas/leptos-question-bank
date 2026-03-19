@@ -46,5 +46,5 @@ jobs:
           context: .
           push: true
           tags: |
-            ${{ steps.meta.outputs.tags || format('{0}/{1}:{2}', gitea.server_url,gitea.repository, github.event.inputs.version || 'latest') }}
+            ${{ steps.meta.outputs.tags || github.event.inputs.version || 'latest' }}
           labels: ${{ steps.meta.outputs.labels }}
