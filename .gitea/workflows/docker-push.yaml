@@ -5,6 +5,11 @@ on:
     tags:
       - 'v*' # Triggers on tags like v0.3.4
   workflow_dispatch: # Allows manual trigger
+    inputs:
+      version:
+        description: 'Image version (e.g., 0.3.4)'
+        required: true
+        default: 'latest'
 
 jobs:
   build-and-push:
