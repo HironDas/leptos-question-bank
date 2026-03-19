@@ -20,7 +20,7 @@ ENV SINGLESTAGE_TAILWIND_PATH=/usr/local/bin/tailwindcss
 
 ENV LEPTOS_TAILWIND_VERSION=v4.1.17
 
-RUN cargo chef cook --release --recipe-path recipe.json
+RUN cargo chef cook --release --recipe-path recipe.json -j 2
 COPY . .
 ENV SQLX_OFFLINE=true
 ENV LEPTOS_WASM_BINDGEN_VERSION=0.2.105
