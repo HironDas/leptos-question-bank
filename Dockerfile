@@ -26,7 +26,7 @@ ENV SQLX_OFFLINE=true
 ENV LEPTOS_WASM_BINDGEN_VERSION=0.2.105
 RUN rustup target add wasm32-unknown-unknown
 RUN cargo binstall cargo-leptos -y
-RUN cargo leptos build --release
+RUN cargo leptos build --release --split
 
 
 # Runtime stage
