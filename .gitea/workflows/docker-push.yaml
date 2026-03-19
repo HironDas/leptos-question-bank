@@ -9,6 +9,9 @@ on:
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
+    permissions:         # Add this section
+      contents: read
+      packages: write # Needed to push to Gitea's registry
     steps:
       - name: Checkout
         uses: actions/checkout@v4
