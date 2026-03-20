@@ -1,3 +1,11 @@
+## 0.4.0 (2026-03-20)
+
+### Breaking Changes
+
+#### docker push update
+
+- change image url in the yaml file
+
 ## 0.3.5 (2026-03-20)
 
 ### Features
