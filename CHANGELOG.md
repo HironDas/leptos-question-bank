@@ -1,3 +1,13 @@
+## 0.3.5 (2026-03-20)
+
+### Features
+
+- Update vps from 4gb to 8gb for better speed on build docker images
+
+### Fixes
+
+- change dockerfile to include lazy split build
+
 ## 0.3.4 (2026-03-18)
 
 ### Features
