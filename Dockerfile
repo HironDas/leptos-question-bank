@@ -27,9 +27,9 @@ ENV LEPTOS_WASM_BINDGEN_VERSION=0.2.114
 RUN rustup target add wasm32-unknown-unknown
 RUN cargo binstall cargo-leptos -y
 RUN cargo binstall wasm-bindgen-cli --version 0.2.114 -y
-# RUN cargo leptos build --release --split 
+RUN cargo leptos build --release --split 
 # Use environment variables to force 1 job and 1 codegen unit
-RUN CARGO_BUILD_JOBS=1 RUSTFLAGS="-C codegen-units=1" cargo leptos build --release --split
+# RUN CARGO_BUILD_JOBS=1 RUSTFLAGS="-C codegen-units=1" cargo leptos build --release --split
 
 
 
