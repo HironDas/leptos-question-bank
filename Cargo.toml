@@ -74,6 +74,14 @@ lto = true
 codegen-units = 1
 panic = "abort"
 
+[profile.release]
+opt-level = 'z'     # Optimize for size
+lto = true          # Link Time Optimization (removes dead code)
+codegen-units = 1   # Reduces parallel compilation for better compression
+panic = "abort"     # Removes stack unwinding code
+strip = true        # THE BIG ONE: Removes all debug symbols/text
+
+
 [dev-dependencies]
 fake = "4.4.0"
 leptos_reactive = "0.6.15"
