@@ -42,7 +42,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ${{ gitea.server_url }}/${{ gitea.repository }}
+          images: ${{ steps.registry_url.outputs.url }}/${{ gitea.repository }}
           tags: |
             type=semver,pattern={{version}}
             type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}
