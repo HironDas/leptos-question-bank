@@ -10,6 +10,13 @@ RUN cargo chef prepare --recipe-path recipe.json
 FROM chef AS builder
 COPY  --from=planner /app/recipe.json recipe.json
 
+# --- SPEED IMPROVEMENTS START HERE ---
+# 1. Use 3 out of 4 cores (leaves 1 for Gitea/System)
+ENV CARGO_BUILD_JOBS=3 
+# 2. Use the faster LLD linker you installed earlier
+ENV RUSTFLAGS="-C link-arg=-fuse-ld=lld"
+# -------------------------------------
+
 RUN curl -Ls https://github.com/cargo-bins/cargo-binstall/releases/latest/download/cargo-binstall-x86_64-unknown-linux-musl.tgz | tar -xz && \
     mv cargo-binstall /usr/local/cargo/bin/
 # this Tailwind version works fine on railway server, for arm use tailwindcss-linux-arm64
