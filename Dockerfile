@@ -14,7 +14,7 @@ COPY  --from=planner /app/recipe.json recipe.json
 # 1. Use 3 out of 4 cores (leaves 1 for Gitea/System)
 ENV CARGO_BUILD_JOBS=3 
 # 2. Use the faster LLD linker you installed earlier
-ENV RUSTFLAGS="-C link-arg=-fuse-ld=lld"
+# ENV RUSTFLAGS="-C link-arg=-fuse-ld=lld"
 # -------------------------------------
 
 RUN curl -Ls https://github.com/cargo-bins/cargo-binstall/releases/latest/download/cargo-binstall-x86_64-unknown-linux-musl.tgz | tar -xz && \
@@ -27,13 +27,14 @@ ENV SINGLESTAGE_TAILWIND_PATH=/usr/local/bin/tailwindcss
 
 ENV LEPTOS_TAILWIND_VERSION=v4.1.17
 
-RUN cargo chef cook --release --recipe-path recipe.json
 COPY . .
 ENV SQLX_OFFLINE=true
 ENV LEPTOS_WASM_BINDGEN_VERSION=0.2.114
 RUN rustup target add wasm32-unknown-unknown
 RUN cargo binstall cargo-leptos -y
 RUN cargo binstall wasm-bindgen-cli --version 0.2.114 -y
+
+RUN cargo chef cook --release --recipe-path recipe.json
 RUN cargo leptos build --release --split 
 # Use environment variables to force 1 job and 1 codegen unit
 # RUN CARGO_BUILD_JOBS=1 RUSTFLAGS="-C codegen-units=1" cargo leptos build --release --split
