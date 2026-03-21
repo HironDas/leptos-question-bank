@@ -1,3 +1,9 @@
+## 0.4.1 (2026-03-21)
+
+### Features
+
+- updates the Dockerfile
+
 ## 0.4.0 (2026-03-20)
 
 ### Breaking Changes
