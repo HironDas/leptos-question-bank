@@ -1,3 +1,9 @@
+## 0.4.6 (2026-03-22)
+
+### Fixes
+
+- remove jobs limit from dockerfile and add more optimization on cargo release
+
 ## 0.4.5 (2026-03-22)
 
 ### Fixes
