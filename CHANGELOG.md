@@ -1,3 +1,9 @@
+## 0.4.3 (2026-03-22)
+
+### Fixes
+
+- comment out the release code of the cargo.tomal to use the default one
+
 ## 0.4.2 (2026-03-22)
 
 ### Fixes
