@@ -1,3 +1,9 @@
+## 0.4.4 (2026-03-22)
+
+### Fixes
+
+- take cargo chef cook before copy file
+
 ## 0.4.3 (2026-03-22)
 
 ### Fixes
