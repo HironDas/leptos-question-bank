@@ -75,11 +75,12 @@ codegen-units = 1
 panic = "abort"
 
 [profile.release]
-opt-level = 'z'     # Optimize for size
-lto = true          # Link Time Optimization (removes dead code)
-codegen-units = 1   # Reduces parallel compilation for better compression
-panic = "abort"     # Removes stack unwinding code
-strip = true        # THE BIG ONE: Removes all debug symbols/text
+opt-level = 3        # Better performance than 'z' and often safer for hydration
+lto = "thin"         # Faster than 'true' but still very effective
+codegen-units = 1    # Keep this; it's great for optimization
+panic = "unwind"     # Safer for web apps to prevent total silent crashes
+strip = "debuginfo"  # Removes heavy debug data but keeps symbols needed for Wasm
+
 
 
 [dev-dependencies]

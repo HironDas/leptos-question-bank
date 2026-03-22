@@ -87,7 +87,8 @@ pub async fn login(login: LoginCredential) -> Result<(), ServerFnError> {
         // provide_context(jar);
 
         let cookie_value = HeaderValue::from_str(&format!(
-            "session={}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age={}",
+            // "session={}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age={}",
+            "session={}; Path=/; HttpOnly; SameSite=Lax; Max-Age={}",
             session, max_age_seconds
         ))?;
 
