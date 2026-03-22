@@ -1,6 +1,6 @@
 FROM lukemathwalker/cargo-chef:latest-rust-1.90.0 AS chef
 WORKDIR /app
-RUN apt-get update && apt-get install lld clang curl ca-certificates -y
+RUN apt-get update && apt-get install binaryen lld clang curl ca-certificates -y
 
 FROM chef AS planner
 COPY . .
@@ -27,14 +27,15 @@ ENV SINGLESTAGE_TAILWIND_PATH=/usr/local/bin/tailwindcss
 
 ENV LEPTOS_TAILWIND_VERSION=v4.1.17
 
+RUN cargo chef cook --release --recipe-path recipe.json
+
 COPY . .
 ENV SQLX_OFFLINE=true
-ENV LEPTOS_WASM_BINDGEN_VERSION=0.2.105
+ENV LEPTOS_WASM_BINDGEN_VERSION=0.2.114
 RUN rustup target add wasm32-unknown-unknown
 RUN cargo binstall cargo-leptos -y
-RUN cargo binstall wasm-bindgen-cli --version 0.2.105 -y
+RUN cargo binstall wasm-bindgen-cli --version 0.2.114 -y
 
-RUN cargo chef cook --release --recipe-path recipe.json
 RUN cargo leptos build --release --split 
 # Use environment variables to force 1 job and 1 codegen unit
 # RUN CARGO_BUILD_JOBS=1 RUSTFLAGS="-C codegen-units=1" cargo leptos build --release --split
