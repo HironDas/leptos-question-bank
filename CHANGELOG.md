@@ -1,3 +1,9 @@
+## 0.4.2 (2026-03-22)
+
+### Fixes
+
+- Remove secure tag from the cookies & updates profile.release optimization
+
 ## 0.4.1 (2026-03-21)
 
 ### Features
