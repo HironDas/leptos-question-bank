@@ -1,6 +1,6 @@
 FROM lukemathwalker/cargo-chef:latest-rust-1.90.0 AS chef
 WORKDIR /app
-RUN apt-get update && apt-get install binaryen lld clang curl ca-certificates -y
+RUN apt-get update && apt-get install lld clang curl ca-certificates -y
 
 FROM chef AS planner
 COPY . .
