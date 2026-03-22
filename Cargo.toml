@@ -81,6 +81,7 @@ codegen-units = 1    # Keep this; it's great for optimization
 panic = "unwind"     # Safer for web apps to prevent total silent crashes
 strip = true #"debuginfo"  # Removes heavy debug data but keeps symbols needed for Wasm
 
+
 [dev-dependencies]
 fake = "4.4.0"
 leptos_reactive = "0.6.15"
