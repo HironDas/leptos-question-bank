@@ -76,7 +76,7 @@ panic = "abort"
 
 [profile.release]
 opt-level = 3        # Better performance than 'z' and often safer for hydration
-lto = "thin"         # Faster than 'true' but still very effective
+lto = true #"thin"         # Faster than 'true' but still very effective
 codegen-units = 1    # Keep this; it's great for optimization
 panic = "unwind"     # Safer for web apps to prevent total silent crashes
 strip = true #"debuginfo"  # Removes heavy debug data but keeps symbols needed for Wasm

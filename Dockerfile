@@ -12,7 +12,7 @@ COPY  --from=planner /app/recipe.json recipe.json
 
 # --- SPEED IMPROVEMENTS START HERE ---
 # 1. Use 3 out of 4 cores (leaves 1 for Gitea/System)
-ENV CARGO_BUILD_JOBS=3 
+# ENV CARGO_BUILD_JOBS=3 
 # 2. Use the faster LLD linker you installed earlier
 # ENV RUSTFLAGS="-C link-arg=-fuse-ld=lld"
 # -------------------------------------
