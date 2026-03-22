@@ -1,3 +1,9 @@
+## 0.4.5 (2026-03-22)
+
+### Fixes
+
+- Set strip true for reduce size
+
 ## 0.4.4 (2026-03-22)
 
 ### Fixes
