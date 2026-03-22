@@ -17,7 +17,7 @@ ENV CARGO_BUILD_JOBS=3
 # ENV RUSTFLAGS="-C link-arg=-fuse-ld=lld"
 # -------------------------------------
 
-RUN curl -Ls https://github.com/cargo-bins/cargo-binstall/releases/latest/download/cargo-binstall-x86_64-unknown-linux-musl.tgz | tar -xz && \
+RUN curl -Ls https://github.com/cargo-bins/cargo-binstall/releases/download/v1.17.8/cargo-binstall-x86_64-unknown-linux-musl.tgz | tar -xz && \
     mv cargo-binstall /usr/local/cargo/bin/
 # this Tailwind version works fine on railway server, for arm use tailwindcss-linux-arm64
 RUN curl -Ls https://github.com/tailwindlabs/tailwindcss/releases/download/v4.1.17/tailwindcss-linux-x64 -o /usr/local/bin/tailwindcss && \
