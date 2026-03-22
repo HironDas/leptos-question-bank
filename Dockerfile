@@ -29,10 +29,10 @@ ENV LEPTOS_TAILWIND_VERSION=v4.1.17
 
 COPY . .
 ENV SQLX_OFFLINE=true
-ENV LEPTOS_WASM_BINDGEN_VERSION=0.2.114
+ENV LEPTOS_WASM_BINDGEN_VERSION=0.2.105
 RUN rustup target add wasm32-unknown-unknown
 RUN cargo binstall cargo-leptos -y
-RUN cargo binstall wasm-bindgen-cli --version 0.2.114 -y
+RUN cargo binstall wasm-bindgen-cli --version 0.2.105 -y
 
 RUN cargo chef cook --release --recipe-path recipe.json
 RUN cargo leptos build --release --split 
