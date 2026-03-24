@@ -33,7 +33,7 @@ Additionally, Cargo.toml may need updating as new versions of the dependencies a
 ## Running your project
 
 ```bash
-cargo leptos watch
+cargo leptos watch --split
 ```
 
 ## Installing Additional Tools
@@ -48,25 +48,32 @@ By default, `cargo-leptos` uses `nightly` Rust, `cargo-generate`, and `sass`. If
 
 ## Compiling for Release
 ```bash
-cargo leptos build --release
+cargo leptos build --release --split
 ```
 
 Will generate your server binary in target/release and your site package in target/site
 
 ## Testing Your Project
+Only the unit testing
 ```bash
-cargo leptos end-to-end
+cargo leptos test
+# or using cargo-watch
+# cargo watch -x 'cargo leptos test'
+```
+and for integration testiong 
+```bash
+cargo test --features test-fullstack
+# or using coargo-watch
+# cargo watch -x 'cargo test --features test-fullstack'
+```
+If you want all-together
+```bash
+cargo leptos test --features test-fullstack
 ```
 
-```bash
-cargo leptos end-to-end --release
-```
-
-Cargo-leptos uses Playwright as the end-to-end test tool.
-Tests are located in end2end/tests directory.
 
 ## Executing a Server on a Remote Machine Without the Toolchain
-After running a `cargo leptos build --release` the minimum files needed are:
+After running a `cargo leptos build --release --split` the minimum files needed are:
 
 1. The server binary located in `target/server/release`
 2. The `site` directory and all files within located in `target/site`
