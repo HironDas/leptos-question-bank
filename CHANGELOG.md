@@ -1,3 +1,10 @@
+
+## 0.4.7 (2026-03-24)
+
+### Documentation
+
+- Update the README and push it to main
+
 ## 0.4.6 (2026-03-22)
 
 ### Fixes
