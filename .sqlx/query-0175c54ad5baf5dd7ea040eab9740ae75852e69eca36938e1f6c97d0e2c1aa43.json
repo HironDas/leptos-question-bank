@@ -1,0 +1,41 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n        UPDATE subjects SET title = $1 WHERE id = $2 RETURNING id, title, class_id, \"order\"\n        ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 1,
+        "name": "title",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 2,
+        "name": "class_id",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 3,
+        "name": "order",
+        "type_info": "Int4"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Varchar",
+        "Int4"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "0175c54ad5baf5dd7ea040eab9740ae75852e69eca36938e1f6c97d0e2c1aa43"
+}

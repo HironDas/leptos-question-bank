@@ -1,6 +1,6 @@
 FROM lukemathwalker/cargo-chef:latest-rust-1.90.0 AS chef
 WORKDIR /app
-RUN apt-get update && apt-get install lld clang curl ca-certificates -y
+RUN apt-get update && apt-get install binaryen lld clang curl ca-certificates -y
 
 FROM chef AS planner
 COPY . .
@@ -10,23 +10,36 @@ RUN cargo chef prepare --recipe-path recipe.json
 FROM chef AS builder
 COPY  --from=planner /app/recipe.json recipe.json
 
-RUN curl -Ls https://github.com/cargo-bins/cargo-binstall/releases/latest/download/cargo-binstall-x86_64-unknown-linux-musl.tgz | tar -xz && \
+# --- SPEED IMPROVEMENTS START HERE ---
+# 1. Use 3 out of 4 cores (leaves 1 for Gitea/System)
+# ENV CARGO_BUILD_JOBS=3 
+# 2. Use the faster LLD linker you installed earlier
+# ENV RUSTFLAGS="-C link-arg=-fuse-ld=lld"
+# -------------------------------------
+
+RUN curl -Ls https://github.com/cargo-bins/cargo-binstall/releases/download/v1.17.8/cargo-binstall-x86_64-unknown-linux-musl.tgz | tar -xz && \
     mv cargo-binstall /usr/local/cargo/bin/
 # this Tailwind version works fine on railway server, for arm use tailwindcss-linux-arm64
-RUN curl -Ls https://github.com/tailwindlabs/tailwindcss/releases/download/v4.1.17/tailwindcss-linux-x64 -o tailwindcss && \
-    mv tailwindcss /usr/local/
+RUN curl -Ls https://github.com/tailwindlabs/tailwindcss/releases/download/v4.1.17/tailwindcss-linux-x64 -o /usr/local/bin/tailwindcss && \
+    chmod +x /usr/local/bin/tailwindcss
 
-RUN chmod +x /usr/local/tailwindcss
+ENV SINGLESTAGE_TAILWIND_PATH=/usr/local/bin/tailwindcss
 
-ENV SINGLESTAGE_TAILWIND_PATH=/usr/local/tailwindcss
+ENV LEPTOS_TAILWIND_VERSION=v4.1.17
 
 RUN cargo chef cook --release --recipe-path recipe.json
+
 COPY . .
 ENV SQLX_OFFLINE=true
-ENV LEPTOS_WASM_BINDGEN_VERSION=0.2.105
+ENV LEPTOS_WASM_BINDGEN_VERSION=0.2.114
 RUN rustup target add wasm32-unknown-unknown
 RUN cargo binstall cargo-leptos -y
-RUN cargo leptos build --release --split
+RUN cargo binstall wasm-bindgen-cli --version 0.2.114 -y
+
+RUN cargo leptos build --release --split 
+# Use environment variables to force 1 job and 1 codegen unit
+# RUN CARGO_BUILD_JOBS=1 RUSTFLAGS="-C codegen-units=1" cargo leptos build --release --split
+
 
 
 # Runtime stage

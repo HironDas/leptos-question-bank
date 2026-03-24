@@ -1,0 +1,22 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n        SELECT COALESCE(MAX(\"order\"), 0) as max_order FROM subjects WHERE class_id = $1\n        ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "max_order",
+        "type_info": "Int4"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int4"
+      ]
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "59a05dd6526fb8160615d5fe64b285c20c580c6ab12e2d58182aceb0bc9f742f"
+}
