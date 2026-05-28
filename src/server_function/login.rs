@@ -212,3 +212,54 @@ pub async fn store_session(
 
     Ok(session_id.to_string())
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn login_credential_with_email_parses_correctly() {
+        let cred = LoginCredential {
+            id: "test@example.com".to_string(),
+            password: "Hiron@12345".to_string(),
+        };
+        let result: Result<DomainLogin, _> = cred.try_into();
+        assert!(result.is_ok());
+        let login = result.unwrap();
+        assert!(login.email.is_some());
+        assert!(login.username.is_none());
+    }
+
+    #[test]
+    fn login_credential_with_username_parses_correctly() {
+        let cred = LoginCredential {
+            id: "testuser".to_string(),
+            password: "Hiron@12345".to_string(),
+        };
+        let result: Result<DomainLogin, _> = cred.try_into();
+        assert!(result.is_ok());
+        let login = result.unwrap();
+        assert!(login.username.is_some());
+        assert!(login.email.is_none());
+    }
+
+    #[test]
+    fn login_credential_with_invalid_id_fails() {
+        let cred = LoginCredential {
+            id: "ab".to_string(),
+            password: "Hiron@12345".to_string(),
+        };
+        let result: Result<DomainLogin, _> = cred.try_into();
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn login_credential_with_invalid_password_fails() {
+        let cred = LoginCredential {
+            id: "testuser".to_string(),
+            password: "weak".to_string(),
+        };
+        let result: Result<DomainLogin, _> = cred.try_into();
+        assert!(result.is_err());
+    }
+}

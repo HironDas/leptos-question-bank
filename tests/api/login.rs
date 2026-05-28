@@ -61,3 +61,21 @@ async fn create_user() -> TestApp {
         .expect("Signup action failed to run");
     app
 }
+
+#[cfg(feature = "test-fullstack")]
+#[tokio::test]
+async fn login_with_wrong_password_fails() {
+    use std::sync::Arc;
+
+    use leptos_question_bank::server_function::login::{user_logged_in, LoginCredential};
+
+    let app = create_user().await;
+    let pool = Arc::new(app.db_pool);
+    let login_user = LoginCredential {
+        id: "hiron".to_string(),
+        password: "Wrong@123".to_string(),
+    };
+    let login_user = login_user.try_into().expect("Parsing error");
+    let result = user_logged_in(login_user, pool.clone()).await;
+    assert!(result.is_err());
+}

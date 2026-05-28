@@ -62,6 +62,54 @@ mod tests {
         assert!(result.is_err());
     }
 
+    #[test]
+    fn password_too_short_is_rejected() {
+        let result = UserPassword::parse("Ab1!".to_string());
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn password_too_long_is_rejected() {
+        let result = UserPassword::parse("Abcdefgh1!Abcdefgh1!X".to_string());
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn password_without_uppercase_is_rejected() {
+        let result = UserPassword::parse("abcdefgh1!".to_string());
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn password_without_lowercase_is_rejected() {
+        let result = UserPassword::parse("ABCDEFGH1!".to_string());
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn password_without_digit_is_rejected() {
+        let result = UserPassword::parse("Abcdefgh!".to_string());
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn password_without_special_is_rejected() {
+        let result = UserPassword::parse("Abcdefgh1".to_string());
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn password_exactly_8_chars_is_accepted() {
+        let result = UserPassword::parse("Abcd12!@".to_string());
+        assert!(result.is_ok());
+    }
+
+    #[test]
+    fn password_exactly_16_chars_is_accepted() {
+        let result = UserPassword::parse("Abcdefgh12!@3456".to_string());
+        assert!(result.is_ok());
+    }
+
     // prop test
     fn safe_password_strategy() -> impl Strategy<Value = String> {
         use rand::seq::SliceRandom; // Bring the trait into scope

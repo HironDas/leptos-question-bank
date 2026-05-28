@@ -47,3 +47,31 @@ fn error_chain_fmt(e: &dyn std::error::Error, f: &mut std::fmt::Formatter<'_>) -
         Ok(())
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn validation_error_display() {
+        let err = ValidationError::new("TEST_CODE").with_message("Test error message".into());
+        let qb_err = QuestionBankError::ValidationError(err);
+        let display = format!("{}", qb_err);
+        assert!(display.contains("Test error message"));
+    }
+
+    #[test]
+    fn authentication_error_display() {
+        let err = QuestionBankError::Authentication;
+        let display = format!("{}", err);
+        assert!(display.contains("Authentication Error"));
+    }
+
+    #[test]
+    fn unexpected_error_display() {
+        let anyhow_err = anyhow::anyhow!("Something went wrong");
+        let qb_err = QuestionBankError::UnexpectedError(anyhow_err);
+        let display = format!("{}", qb_err);
+        assert!(display.contains("Something went wrong"));
+    }
+}

@@ -56,4 +56,37 @@ mod tests {
                 .with_message("Username cannot be less than 3 characters and no spaces".into()))
         );
     }
+
+    #[test]
+    fn username_exactly_3_chars_is_accepted() {
+        assert!(Username::parse("abc".to_string()).is_ok());
+    }
+
+    #[test]
+    fn username_exactly_20_chars_is_accepted() {
+        let name = "a".repeat(20);
+        assert!(Username::parse(name).is_ok());
+    }
+
+    #[test]
+    fn username_21_chars_is_rejected() {
+        let name = "a".repeat(21);
+        assert!(Username::parse(name).is_err());
+    }
+
+    #[test]
+    fn username_with_forbidden_slash_is_rejected() {
+        assert!(Username::parse("john/doe".to_string()).is_err());
+    }
+
+    #[test]
+    fn username_with_forbidden_angle_brackets_is_rejected() {
+        assert!(Username::parse("john<doe".to_string()).is_err());
+        assert!(Username::parse("john>doe".to_string()).is_err());
+    }
+
+    #[test]
+    fn username_with_only_letters_is_accepted() {
+        assert!(Username::parse("johndoe".to_string()).is_ok());
+    }
 }

@@ -62,6 +62,24 @@ mod tests {
         assert!(email.is_err());
     }
 
+    #[test]
+    fn empty_string_is_rejected() {
+        let email = UserEmail::parse("".to_string());
+        assert!(email.is_err());
+    }
+
+    #[test]
+    fn email_with_double_at_is_rejected() {
+        let email = UserEmail::parse("test@@example.com".to_string());
+        assert!(email.is_err());
+    }
+
+    #[test]
+    fn email_with_spaces_is_rejected() {
+        let email = UserEmail::parse("test @example.com".to_string());
+        assert!(email.is_err());
+    }
+
     // prop tests
     #[derive(Clone, Debug)]
     struct UserEmailFixture(pub String);

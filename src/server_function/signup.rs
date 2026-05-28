@@ -184,3 +184,56 @@ pub async fn is_email_exists(email: String) -> Result<bool, ServerFnError> {
 
     Ok(exists.unwrap())
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn user_try_into_new_user_succeeds_for_valid_input() {
+        let user = User {
+            username: "testuser".to_string(),
+            email: "test@example.com".to_string(),
+            password: "Hiron@12345".to_string(),
+            confirm_password: "Hiron@12345".to_string(),
+        };
+        let result: Result<NewUser, _> = user.try_into();
+        assert!(result.is_ok());
+    }
+
+    #[test]
+    fn user_try_into_new_user_fails_for_invalid_email() {
+        let user = User {
+            username: "testuser".to_string(),
+            email: "not-an-email".to_string(),
+            password: "Hiron@12345".to_string(),
+            confirm_password: "Hiron@12345".to_string(),
+        };
+        let result: Result<NewUser, _> = user.try_into();
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn user_try_into_new_user_fails_for_invalid_password() {
+        let user = User {
+            username: "testuser".to_string(),
+            email: "test@example.com".to_string(),
+            password: "weak".to_string(),
+            confirm_password: "weak".to_string(),
+        };
+        let result: Result<NewUser, _> = user.try_into();
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn user_try_into_new_user_fails_for_invalid_username() {
+        let user = User {
+            username: "ab".to_string(),
+            email: "test@example.com".to_string(),
+            password: "Hiron@12345".to_string(),
+            confirm_password: "Hiron@12345".to_string(),
+        };
+        let result: Result<NewUser, _> = user.try_into();
+        assert!(result.is_err());
+    }
+}

@@ -117,3 +117,49 @@ pub fn get_configuration() -> Result<Settings, config::ConfigError> {
 
     settings.try_deserialize::<Settings>()
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn environment_local_from_string() {
+        let env: Environment = "local".to_string().try_into().unwrap();
+        assert_eq!(env.as_str(), "local");
+    }
+
+    #[test]
+    fn environment_production_from_string() {
+        let env: Environment = "production".to_string().try_into().unwrap();
+        assert_eq!(env.as_str(), "production");
+    }
+
+    #[test]
+    fn environment_case_insensitive() {
+        let env: Environment = "PRODUCTION".to_string().try_into().unwrap();
+        assert_eq!(env.as_str(), "production");
+    }
+
+    #[test]
+    fn environment_invalid_string_is_rejected() {
+        let result: Result<Environment, _> = "staging".to_string().try_into();
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn environment_empty_string_is_rejected() {
+        let result: Result<Environment, _> = "".to_string().try_into();
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn application_settings_deserialization() {
+        // Verify the ApplicationSettings struct fields exist and types are correct
+        let settings = ApplicationSettings {
+            port: 3000,
+            host: "127.0.0.1".to_string(),
+        };
+        assert_eq!(settings.port, 3000);
+        assert_eq!(settings.host, "127.0.0.1");
+    }
+}
