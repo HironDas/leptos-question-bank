@@ -30,4 +30,24 @@ This project uses Git. See .gitignore for excluded files.
 
 ## Important Notes
 
-<!-- Add project-specific notes here -->
+### Playwright MCP
+
+This project includes `@playwright/mcp` (v0.0.75) for browser automation via MCP.
+
+**Config:** `mcp.json` at the project root.
+
+**MCP client setup** — point your MCP client to `mcp.json` or configure manually:
+
+```json
+{
+  "mcpServers": {
+    "playwright": {
+      "command": "npx",
+      "args": ["-y", "@playwright/mcp@latest"]
+    }
+  }
+}
+```
+
+**Usage:** ensure the dev server is running (`cargo leptos watch --split`), then the MCP
+server can navigate to `http://127.0.0.1:3000` and interact with the app.

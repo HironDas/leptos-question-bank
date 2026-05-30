@@ -1,14 +1,20 @@
 {
   "name": "end2end",
   "version": "1.0.0",
-  "description": "",
+  "description": "E2E tests for leptos-question-bank",
   "main": "index.js",
-  "scripts": {},
+  "scripts": {
+    "test": "npx playwright test",
+    "test:chromium": "npx playwright test --project=chromium",
+    "test:headed": "npx playwright test --headed",
+    "test:debug": "npx playwright test --debug",
+    "report": "npx playwright show-report"
+  },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "@playwright/test": "^1.44.1",
+    "@playwright/test": "^1.60.0",
     "@types/node": "^20.12.12",
     "typescript": "^5.4.5"
   }

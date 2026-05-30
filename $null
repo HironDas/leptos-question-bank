@@ -1,5 +1,0 @@
-unknown shorthand flag: 'e' in -e
-
-Usage:  docker rm [OPTIONS] CONTAINER [CONTAINER...]
-
-Run 'docker rm --help' for more information

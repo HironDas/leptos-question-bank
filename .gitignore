@@ -18,3 +18,8 @@ dist/
 site/
 00ol,k/
 .deepseek/
+
+*.txt
+*.bat
+*.ps1
+%SystemDrive%/

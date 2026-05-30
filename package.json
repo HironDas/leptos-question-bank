@@ -1,6 +1,7 @@
 {
   "version": "0.4.7",
   "devDependencies": {
+    "@playwright/mcp": "^0.0.75",
     "tailwindcss": "^4.1.17"
   }
 }
