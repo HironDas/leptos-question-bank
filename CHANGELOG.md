@@ -1,4 +1,11 @@
 
+## 0.4.8 (2026-05-30)
+
+### Features
+
+- Add view_question page and all backend service
+- generate question_table sql migration
+
 ## 0.4.7 (2026-03-24)
 
 ### Documentation
