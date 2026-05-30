@@ -1,5 +1,5 @@
 use crate::components::Layout;
-use crate::pages::{ClassSettingRoute, HomePage, UnAuthorized};
+use crate::pages::{ClassSettingRoute, HomePage, UnAuthorized, ViewQuestions};
 use crate::pages::{Login, NotFound, Signup};
 
 use leptos::prelude::*;
@@ -57,7 +57,7 @@ pub fn App() -> impl IntoView {
                             <Route path=StaticSegment("/home") view=HomePage />
                             // <Route path=StaticSegment("academic-setting") view=ClassSetting />
                             <Route path=StaticSegment("academic-setting") view=academic_setting />
-
+                            <Route path=StaticSegment("/view") view=ViewQuestions />
                         </ParentRoute>
                     </Routes>
                 </main>
