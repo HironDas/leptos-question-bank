@@ -1,11 +1,8 @@
 import type { PlaywrightTestConfig } from "@playwright/test";
 import { devices, defineConfig } from "@playwright/test";
+import path from "path";
 
-/**
- * Read environment variables from file.
- * https://github.com/motdotla/dotenv
- */
-// require('dotenv').config();
+const AUTH_FILE = path.join(__dirname, ".auth/user.json");
 
 /**
  * See https://playwright.dev/docs/test-configuration.
@@ -13,13 +10,12 @@ import { devices, defineConfig } from "@playwright/test";
 export default defineConfig({
   testDir: "./tests",
   /* Maximum time one test can run for. */
-  timeout: 30 * 1000,
+  timeout: 60 * 1000,
   expect: {
     /**
      * Maximum time expect() should wait for the condition to be met.
-     * For example in `await expect(locator).toHaveText();`
      */
-    timeout: 5000,
+    timeout: 10_000,
   },
   /* Run tests in files in parallel */
   fullyParallel: true,
@@ -34,72 +30,72 @@ export default defineConfig({
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
     /* Maximum time each action such as `click()` can take. Defaults to 0 (no limit). */
-    actionTimeout: 0,
+    actionTimeout: 10_000,
     /* Base URL to use in actions like `await page.goto('/')`. */
-    // baseURL: 'http://localhost:3000',
+    baseURL: "http://127.0.0.1:3000",
 
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     trace: "on-first-retry",
+
+    /* Take screenshot on failure */
+    screenshot: "only-on-failure",
   },
 
   /* Configure projects for major browsers */
   projects: [
+    /* ── Authentication setup — runs once before all browsers ─────── */
+    {
+      name: "setup",
+      testMatch: /auth\.setup\.ts/,
+    },
+
+    /* ── Diagnostic project — standalone, no auth dependency ──────── */
+    {
+      name: "dom-dump",
+      testMatch: /dom-dump\.spec\.ts/,
+    },
+
+    /* ── Browser projects — depend on setup for auth state ───────── */
     {
       name: "chromium",
       use: {
         ...devices["Desktop Chrome"],
+        /* Load cookies from the setup run */
+        storageState: AUTH_FILE,
       },
+      dependencies: ["setup"],
     },
 
     {
       name: "firefox",
       use: {
         ...devices["Desktop Firefox"],
+        storageState: AUTH_FILE,
       },
+      dependencies: ["setup"],
     },
 
     {
       name: "webkit",
       use: {
         ...devices["Desktop Safari"],
+        storageState: AUTH_FILE,
       },
+      dependencies: ["setup"],
     },
-
-    /* Test against mobile viewports. */
-    // {
-    //   name: 'Mobile Chrome',
-    //   use: {
-    //     ...devices['Pixel 5'],
-    //   },
-    // },
-    // {
-    //   name: 'Mobile Safari',
-    //   use: {
-    //     ...devices['iPhone 12'],
-    //   },
-    // },
-
-    /* Test against branded browsers. */
-    // {
-    //   name: 'Microsoft Edge',
-    //   use: {
-    //     channel: 'msedge',
-    //   },
-    // },
-    // {
-    //   name: 'Google Chrome',
-    //   use: {
-    //     channel: 'chrome',
-    //   },
-    // },
   ],
 
-  /* Folder for test artifacts such as screenshots, videos, traces, etc. */
-  // outputDir: 'test-results/',
-
   /* Run your local dev server before starting the tests */
-  // webServer: {
-  //   command: 'npm run start',
-  //   port: 3000,
-  // },
+  webServer: {
+    command: "cargo leptos watch --split",
+    url: "http://127.0.0.1:3000",
+    reuseExistingServer: !process.env.CI,
+    timeout: 120 * 1000,
+    cwd: "..",
+    stdout: "pipe",
+    stderr: "pipe",
+  },
+
+  /* Folder for test artifacts such as screenshots, videos, traces, etc. */
+  outputDir: "./test-results",
 });
