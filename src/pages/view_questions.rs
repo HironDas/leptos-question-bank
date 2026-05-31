@@ -1,9 +1,10 @@
+use crate::components::ui::empty_msg::EmptyMsg;
 use crate::domain::question::{AddQuestionInput, AddQuestionOptionInput, Question};
 use crate::server_function::academic_helper::chapter::subject_chapter;
 use crate::server_function::academic_helper::subject::subject;
 use crate::server_function::academic_setting::{academic_setting, Chapter, Class, Subject};
 use crate::server_function::question::{get_questions, AddQuestion};
-use icondata::{LuPlus, FiCheckCircle, MdiCloseCircle};
+use icondata::{FiCheckCircle, LuPlus, MdiCloseCircle};
 use leptos::{html, logging::log, prelude::*};
 use singlestage::*;
 
@@ -28,10 +29,14 @@ pub fn ViewQuestions() -> impl IntoView {
     let question_text_ref = NodeRef::<html::Textarea>::new();
     let answer_text_ref = NodeRef::<html::Textarea>::new();
     let option_refs = StoredValue::new(
-        (0..8).map(|_| NodeRef::<html::Input>::new()).collect::<Vec<_>>(),
+        (0..8)
+            .map(|_| NodeRef::<html::Input>::new())
+            .collect::<Vec<_>>(),
     );
     let option_check_refs = StoredValue::new(
-        (0..8).map(|_| NodeRef::<html::Input>::new()).collect::<Vec<_>>(),
+        (0..8)
+            .map(|_| NodeRef::<html::Input>::new())
+            .collect::<Vec<_>>(),
     );
     let option_count = RwSignal::new(4u32);
 
@@ -263,6 +268,20 @@ pub fn ViewQuestions() -> impl IntoView {
             .unwrap_or_default()
     });
 
+    let add_question_handler = move |_| {
+        question_text_ref.get().map(|el| el.set_value(""));
+        answer_text_ref.get().map(|el| el.set_value(""));
+        for i in 0..8usize {
+            option_refs.get_value()[i].get().map(|el| el.set_value(""));
+            option_check_refs.get_value()[i]
+                .get()
+                .map(|el| el.set_checked(false));
+        }
+        option_count.set(4);
+        question_type.set("objective".to_string());
+        question_dialog_open.set(true);
+    };
+
     view! {
         <div class="p-2 sm:p-0">
             <h1 class="text-2xl font-bold mb-6">"View Questions"</h1>
@@ -351,17 +370,7 @@ pub fn ViewQuestions() -> impl IntoView {
                     </h2>
                     <Button
                         size="small"
-                        on:click=move |_| {
-                            question_text_ref.get().map(|el| el.set_value(""));
-                            answer_text_ref.get().map(|el| el.set_value(""));
-                            for i in 0..8usize {
-                                option_refs.get_value()[i].get().map(|el| el.set_value(""));
-                                option_check_refs.get_value()[i].get().map(|el| el.set_checked(false));
-                            }
-                            option_count.set(4);
-                            question_type.set("objective".to_string());
-                            question_dialog_open.set(true);
-                        }
+                        on:click=add_question_handler
                     >
                         {icon!(LuPlus)}
                         "Add Question"
@@ -373,9 +382,18 @@ pub fn ViewQuestions() -> impl IntoView {
                     when=move || !questions.get().is_empty()
                     fallback=move || {
                         view! {
-                            <div class="text-center text-muted-foreground py-8 border rounded-md">
-                                <p>"No questions yet. Click 'Add Question' to create one."</p>
-                            </div>
+                            // <div class="text-center text-muted-foreground py-8 border rounded-md">
+                            //     <p>"No questions yet. Click 'Add Question' to create one."</p>
+                            // </div>
+                            <EmptyMsg
+                                button_on_click=add_question_handler
+                                button_text="Add Question".to_string()
+                                icon=icondata::LuNotebookText
+                                title=String::from("No Question Yet")
+                                description=String::from(
+                                    "No questions yet. Click 'Add Question' to create one.",
+                                )
+                            />
                         }
                     }
                 >

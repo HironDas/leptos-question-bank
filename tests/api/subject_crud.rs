@@ -5,10 +5,7 @@ async fn insert_subject_succeeds() {
 
     use leptos_question_bank::{
         domain::class::AddClassInput,
-        server_function::academic_helper::{
-            class::insert_class,
-            subject::insert_subject,
-        },
+        server_function::academic_helper::{class::insert_class, subject::insert_subject},
     };
 
     use crate::helpers::spawn_app;
@@ -76,9 +73,7 @@ async fn fetch_subjects_by_class_returns_correct_data() {
         .expect("Failed to insert Physics");
 
     // Fetch subjects for this class
-    let subjects = subject(class.id)
-        .await
-        .expect("Failed to fetch subjects");
+    let subjects = subject(class.id).await.expect("Failed to fetch subjects");
 
     assert_eq!(subjects.len(), 2);
     assert_eq!(subjects[0].order, 1);

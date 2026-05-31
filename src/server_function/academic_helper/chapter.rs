@@ -48,7 +48,6 @@ pub async fn add_chapter(title: String, subject_id: u32) -> Result<Chapter, Serv
             //.map(|_| ())
             .map_err(|e| e.into())
     }
-
 }
 
 #[cfg(feature = "ssr")]
@@ -111,7 +110,6 @@ pub async fn insert_chapter(
     .context("Something Went wrong on saving chapter")?
 }
 
-
 /// Documentation for [`update_chapter`]
 #[server]
 pub async fn update_chapter(title: String, chapter_id: u32) -> Result<Chapter, ServerFnError> {
@@ -138,9 +136,10 @@ pub async fn update_chapter(title: String, chapter_id: u32) -> Result<Chapter, S
 pub async fn edit_chapter(
     pool: Arc<PgPool>,
     title: String,
-    chapter_id: u32,) -> Result<Chapter, QuestionBankError> {
+    chapter_id: u32,
+) -> Result<Chapter, QuestionBankError> {
     use anyhow::Context;
-        sqlx::query!(
+    sqlx::query!(
             r#"
                 UPDATE chapters SET title = $1 WHERE id = $2 returning id, title, class_id, subject_id, question_count, "order"
                 "#,

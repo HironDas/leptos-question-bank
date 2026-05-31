@@ -7,7 +7,7 @@ use std::sync::Arc;
 use crate::error::QuestionBankError;
 use crate::{
     domain::class::{AddClassInput, UpdateClassInput},
-    server_function::academic_setting::{Class, Subject},
+    server_function::academic_setting::Class,
 };
 
 #[cfg(feature = "ssr")]

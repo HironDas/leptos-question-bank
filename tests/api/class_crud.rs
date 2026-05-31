@@ -1,43 +1,43 @@
 #[cfg(feature = "test-fullstack")]
 use crate::helpers::{spawn_app, TestApp};
 
-#[cfg(feature = "test-fullstack")]
-async fn create_user_and_class(app: &TestApp) -> (u32, String) {
-    use std::sync::Arc;
+// #[cfg(feature = "test-fullstack")]
+// async fn create_user_and_class(app: &TestApp) -> (u32, String) {
+//     use std::sync::Arc;
 
-    use leptos_question_bank::{
-        domain::class::AddClassInput,
-        server_function::{
-            academic_helper::class::insert_class,
-            signup::{insert_new_user, User},
-        },
-    };
+//     use leptos_question_bank::{
+//         domain::class::AddClassInput,
+//         server_function::{
+//             academic_helper::class::insert_class,
+//             signup::{insert_new_user, User},
+//         },
+//     };
 
-    let pool = Arc::new(app.db_pool.clone());
+//     let pool = Arc::new(app.db_pool.clone());
 
-    // Create a user first (may be needed for auth context)
-    let user = User {
-        username: "class_test".to_string(),
-        email: "class_test@example.com".to_string(),
-        password: "Hiron@123".to_string(),
-        confirm_password: "Hiron@123".to_string(),
-    };
-    let new_user = user.try_into().unwrap();
-    insert_new_user(new_user, pool.clone())
-        .await
-        .expect("Failed to create test user");
+//     // Create a user first (may be needed for auth context)
+//     let user = User {
+//         username: "class_test".to_string(),
+//         email: "class_test@example.com".to_string(),
+//         password: "Hiron@123".to_string(),
+//         confirm_password: "Hiron@123".to_string(),
+//     };
+//     let new_user = user.try_into().unwrap();
+//     insert_new_user(new_user, pool.clone())
+//         .await
+//         .expect("Failed to create test user");
 
-    // Insert a class
-    let class_input = AddClassInput {
-        name: "Class 9".to_string(),
-        name_bn: "নবম শ্রেণি".to_string(),
-    };
-    let class = insert_class(pool.clone(), class_input)
-        .await
-        .expect("Failed to insert class");
+//     // Insert a class
+//     let class_input = AddClassInput {
+//         name: "Class 9".to_string(),
+//         name_bn: "নবম শ্রেণি".to_string(),
+//     };
+//     let class = insert_class(pool.clone(), class_input)
+//         .await
+//         .expect("Failed to insert class");
 
-    (class.id, class.name)
-}
+//     (class.id, class.name)
+// }
 
 #[cfg(feature = "test-fullstack")]
 #[tokio::test]
@@ -45,7 +45,9 @@ async fn insert_class_succeeds() {
     let app = spawn_app().await;
     use std::sync::Arc;
 
-    use leptos_question_bank::{domain::class::AddClassInput, server_function::academic_helper::class::insert_class};
+    use leptos_question_bank::{
+        domain::class::AddClassInput, server_function::academic_helper::class::insert_class,
+    };
 
     let pool = Arc::new(app.db_pool.clone());
     let class_input = AddClassInput {
@@ -150,7 +152,9 @@ async fn insert_multiple_classes_auto_increments_order() {
     let app = spawn_app().await;
     use std::sync::Arc;
 
-    use leptos_question_bank::{domain::class::AddClassInput, server_function::academic_helper::class::insert_class};
+    use leptos_question_bank::{
+        domain::class::AddClassInput, server_function::academic_helper::class::insert_class,
+    };
 
     let pool = Arc::new(app.db_pool.clone());
 

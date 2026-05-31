@@ -2,14 +2,23 @@ use icondata::{AiEditOutlined, LuPlus};
 use leptos::{html, logging::log, prelude::*};
 use singlestage::*;
 
-use crate::{pages::class_setting::chapter_item::ChapterAccordionContent, server_function::{academic_helper::{chapter::{AddChapter, UpdateChapter, subject_chapter}, subject::UpdateSubject}, academic_setting::{Chapter, Subject}}};
+use crate::{
+    pages::class_setting::chapter_item::ChapterAccordionContent,
+    server_function::{
+        academic_helper::{
+            chapter::{subject_chapter, AddChapter, UpdateChapter},
+            subject::UpdateSubject,
+        },
+        academic_setting::{Chapter, Subject},
+    },
+};
 
 #[component]
 pub fn SubjectAccordionItem(
     subject: Memo<Subject>,
     update_subject_action: ServerAction<UpdateSubject>,
 ) -> impl IntoView {
-    let is_bangle = Memo::new(move|_| !subject.get().title.is_ascii());
+    let is_bangle = Memo::new(move |_| !subject.get().title.is_ascii());
     let subject_accordion_open = RwSignal::new(false);
     let chapter_dialog_open = RwSignal::new(false);
 
@@ -26,7 +35,11 @@ pub fn SubjectAccordionItem(
     let update_chapter_value = update_chapter_action.value();
 
     Effect::new(move || {
-        if update_chapter_value.get().map(|v| v.is_ok()).unwrap_or(false) {
+        if update_chapter_value
+            .get()
+            .map(|v| v.is_ok())
+            .unwrap_or(false)
+        {
             // chapter_dialog_open.set(false);
             let updated_chapter = update_chapter_value.get().unwrap().unwrap();
             chapters.update(move |chapters_vec| {
@@ -42,7 +55,7 @@ pub fn SubjectAccordionItem(
             chapter_dialog_open.set(false);
             chapters.update(move |chapters_vec| {
                 chapter_value.get().map(|new_chapter| {
-                    if let Ok(new_chapter) = new_chapter {  
+                    if let Ok(new_chapter) = new_chapter {
                         chapters_vec.push(new_chapter);
                     }
                 });
@@ -60,8 +73,9 @@ pub fn SubjectAccordionItem(
         }
     });
 
-    let has_expanded_once = Memo::new(move |prev_state| 
-        prev_state.copied().unwrap_or(false) || subject_accordion_open.get());
+    let has_expanded_once = Memo::new(move |prev_state| {
+        prev_state.copied().unwrap_or(false) || subject_accordion_open.get()
+    });
 
     let chapters_resource: Resource<Vec<Chapter>> = Resource::new(
         move || has_expanded_once.get(),

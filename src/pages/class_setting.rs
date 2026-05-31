@@ -7,9 +7,7 @@ use singlestage::*;
 use crate::{
     components::ui::empty_msg::EmptyMsg,
     server_function::{
-        academic_helper::
-            class::{AddClass, UpdateClass}
-        ,
+        academic_helper::class::{AddClass, UpdateClass},
         academic_setting::{academic_setting, Class},
     },
 };
@@ -274,7 +272,6 @@ impl LazyRoute for ClassSettingRoute {
     }
 }
 
-
 /// Documentation for [`PageSkeleton`]
 #[component]
 pub fn PageSkeleton() -> impl IntoView {
@@ -297,8 +294,8 @@ pub fn PageSkeleton() -> impl IntoView {
     }
 }
 
+pub mod chapter_item;
 pub mod class_item;
 pub mod subject_item;
-pub mod chapter_item;
 
 use class_item::ClassAccordionItem;

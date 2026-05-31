@@ -1,8 +1,17 @@
-use icondata::{LuPlus, LuInfo, AiEditOutlined};
+use icondata::{AiEditOutlined, LuPlus};
 use leptos::{html, logging::log, prelude::*};
 use singlestage::*;
 
-use crate::{pages::class_setting::subject_item::SubjectAccordionItem, server_function::{academic_helper::{class::UpdateClass, subject::{self, AddSubject, UpdateSubject}}, academic_setting::{Class, Subject}}};
+use crate::{
+    pages::class_setting::subject_item::SubjectAccordionItem,
+    server_function::{
+        academic_helper::{
+            class::UpdateClass,
+            subject::{self, AddSubject, UpdateSubject},
+        },
+        academic_setting::{Class, Subject},
+    },
+};
 
 #[component]
 pub fn ClassAccordionItem(

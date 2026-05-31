@@ -6,9 +6,7 @@ async fn insert_chapter_succeeds() {
     use leptos_question_bank::{
         domain::class::AddClassInput,
         server_function::academic_helper::{
-            chapter::insert_chapter,
-            class::insert_class,
-            subject::insert_subject,
+            chapter::insert_chapter, class::insert_class, subject::insert_subject,
         },
     };
 
