@@ -1,4 +1,4 @@
-version: '3.8'
+version: "3.8"
 services:
   leptos-dev:
     build:
@@ -10,7 +10,7 @@ services:
     working_dir: /app
     ports:
       - "8000:3000"
-    command: bash -c "cargo leptos watch"
+    command: bash -c "cargo leptos watch --split"
 
 volumes:
   cargo-cache:

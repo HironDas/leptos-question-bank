@@ -6,6 +6,11 @@ pub enum Syntex {
     Italic,
     Underscore,
     Dash,
+    Bullet,
+    Order,
+    Heading1,
+    Heading2,
+    Heading3,
 }
 
 impl Syntex {
@@ -15,6 +20,11 @@ impl Syntex {
             Self::Dash => "\\_\\_\\_\\_",
             Self::Italic => "_",
             Self::Underscore => "<ins>",
+            Self::Bullet => "- ",
+            Self::Order => "1. ",
+            Self::Heading1 => "# ",
+            Self::Heading2 => "## ",
+            Self::Heading3 => "### ",
         }
     }
 }
@@ -29,16 +39,24 @@ pub fn insert_markdown(textarea_ref: NodeRef<html::Textarea>, syntex: Syntex) {
         let selected_text = &value[start..end];
 
         let replacement = if selected_text.is_empty() {
-            if syntex.as_str() == "<ins>" {
-                format!("{}{}", "<ins>", "</ins>")
-            } else {
-                format!("{}{}", syntex.as_str(), syntex.as_str())
+            match syntex {
+                Syntex::Heading1
+                | Syntex::Heading2
+                | Syntex::Heading3
+                | Syntex::Bullet
+                | Syntex::Order => format!("{}", syntex.as_str()),
+                Syntex::Underscore => format!("{}{}", "<ins>", "</ins>"),
+                _ => format!("{}{}", syntex.as_str(), syntex.as_str()),
             }
         } else {
-            if syntex.as_str() == "<ins>" {
-                format!("{}{}{}", "<ins>", selected_text, "</ins>")
-            } else {
-                format!("{}{}{}", syntex.as_str(), selected_text, syntex.as_str())
+            match syntex {
+                Syntex::Heading1
+                | Syntex::Heading2
+                | Syntex::Heading3
+                | Syntex::Bullet
+                | Syntex::Order => format!("{}{}", syntex.as_str(), selected_text),
+                Syntex::Underscore => format!("{}{}{}", "<ins>", selected_text, "</ins>"),
+                _ => format!("{}{}{}", syntex.as_str(), selected_text, syntex.as_str()),
             }
         };
 
@@ -46,7 +64,14 @@ pub fn insert_markdown(textarea_ref: NodeRef<html::Textarea>, syntex: Syntex) {
         textarea.set_value(&new_value);
 
         let _ = textarea.focus();
-        let new_cursor_pos = (start + replacement.len()) as u32;
+        let new_cursor_pos = if selected_text.is_empty() {
+            match syntex {
+                Syntex::Dash => (start + replacement.len()) as u32,
+                _ => (start + syntex.as_str().to_string().len()) as u32,
+            }
+        } else {
+            (start + replacement.len()) as u32
+        };
         let _ = textarea.set_selection_range(new_cursor_pos, new_cursor_pos);
     }
 }

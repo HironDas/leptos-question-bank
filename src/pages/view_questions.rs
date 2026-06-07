@@ -277,7 +277,7 @@ pub fn ViewQuestions() -> impl IntoView {
                             </p>
                         </Show>
                     </h2>
-                    <a  href=move ||{format!("/question?class={}", selected_class_id.get())} class = "singlestage-btn-primary singlestage-btn-sm">
+                    <a  href=move ||{format!("/question?class={}&subject={}&chapter={}", selected_class_id.get(), selected_subject_id.get(), selected_chapter_id.get())} class = "singlestage-btn-primary singlestage-btn-sm">
                         {icon!(LuPlus)}
                         "Add Question"
                     </a>

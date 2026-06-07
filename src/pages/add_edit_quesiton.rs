@@ -1,7 +1,9 @@
 use icondata::{
-    LuBold, LuItalic, LuList, LuListOrdered, LuMinus, LuSigma, LuTable, LuUnderline, LuX,
+    LuBold, LuHeading1, LuHeading2, LuHeading3, LuItalic, LuList, LuListOrdered, LuMinus, LuSigma,
+    LuTable, LuUnderline, LuX,
 };
 use leptos::{html, prelude::*};
+use leptos_router::hooks::use_query_map;
 use singlestage::*;
 use web_sys::MouseEvent;
 
@@ -11,7 +13,7 @@ use crate::{
     util::insert_markdown_at_cursor::Syntex,
 };
 
-use crate::util::insert_markdown;
+use crate::util::insert_markdown_at_cursor::insert_markdown;
 
 #[component]
 pub fn AddEditQuestion() -> impl IntoView {
@@ -21,6 +23,25 @@ pub fn AddEditQuestion() -> impl IntoView {
         Medium,
         Hard,
     }
+
+    let query_map = use_query_map();
+
+    let chapter_id = move || query_map.read().get("chapter"); // chapter_id_u32.get_untracked();
+    let chapter_id = chapter_id()
+        .and_then(|val| val.parse::<u32>().ok())
+        .unwrap_or(0);
+
+    let class_id = move || query_map.read().get("class"); //class_id_u32.get_untracked();
+    let class_id = class_id()
+        .and_then(|val| val.parse::<u32>().ok())
+        .unwrap_or(0);
+
+    let subject_id = move || query_map.read().get("subject"); //subject_id_u32.get_untracked();
+    let subject_id = subject_id()
+        .and_then(|val| val.parse::<u32>().ok())
+        .unwrap_or(0);
+
+    // Effect::new(move || if class_id.ok_or("error") {});
 
     // --- Form refs ---
     let question_text_ref = NodeRef::<html::Textarea>::new();
@@ -84,9 +105,7 @@ pub fn AddEditQuestion() -> impl IntoView {
             .map(|el| el.value())
             .unwrap_or_default();
         let qtype = question_type.get_untracked();
-        let chapter_id = 1; // chapter_id_u32.get_untracked();
-        let class_id = 1; //class_id_u32.get_untracked();
-        let subject_id = 1; //subject_id_u32.get_untracked();
+
         let difficulty = question_difficulty.get_untracked();
         let answer = answer_text_ref
             .get()
@@ -118,9 +137,9 @@ pub fn AddEditQuestion() -> impl IntoView {
         let input = AddQuestionInput {
             question_text: text,
             question_type: qtype,
-            chapter_id,
-            class_id,
-            subject_id,
+            chapter_id: chapter_id,
+            class_id: class_id,
+            subject_id: subject_id,
             answer_text: answer,
             difficulty: difficulty as u32,
             options,
@@ -144,6 +163,8 @@ pub fn AddEditQuestion() -> impl IntoView {
         question_difficulty.set(Difficulty::Medium);
         // question_dialog_open.set(true);
     };
+
+    let preview = RwSignal::new(false);
 
     view! {
         <div class="w-full">
@@ -226,23 +247,33 @@ pub fn AddEditQuestion() -> impl IntoView {
                                 <div class="grid gap-2">
                                     <Label label_for="question_text" class="mb-2">"Question"</Label>
                                     <div class="flex h-4 items-center space-x-2 text-sm">
-                                        <Button on:click=move|ev| ev.prevent_default() variant="ghost">"Preview"</Button>
+                                    <Button on:click=move|ev| {ev.prevent_default(); preview.update(move|val| *val = !*val);} variant="ghost">{move || if preview.get()"Preview" else "Continue Editing"}</Button>
+                                        <Separator vertical=true />
+                                        <Tooltip value="Heading 1">
+                                        <Button on:click=move|ev|{ ev.prevent_default(); insert_markdown(question_text_ref, Syntex::Heading1)} variant="ghost" aria_label="Heading 1">{icon!(LuHeading1)}</Button>
+                                        </Tooltip>
+                                        <Tooltip value="Heading 2">
+                                        <Button on:click=move|ev|{ ev.prevent_default(); insert_markdown(question_text_ref, Syntex::Heading2)} variant="ghost" aria_label="Heading 2">{icon!(LuHeading2)}</Button>
+                                        </Tooltip>
+                                        <Tooltip value="Heading 3">
+                                        <Button on:click=move|ev|{ ev.prevent_default(); insert_markdown(question_text_ref, Syntex::Heading3)} variant="ghost" aria_label="Heading 3">{icon!(LuHeading3)}</Button>
+                                        </Tooltip>
                                         <Separator vertical=true />
                                         <Tooltip value="Add bold text">
                                         <Button on:click=move|ev|{ ev.prevent_default(); insert_markdown(question_text_ref, Syntex::Bold)} variant="ghost" aria_label="Toggle Bold">{icon!(LuBold)}</Button>
                                         </Tooltip>
                                         <Tooltip value="Add italic text">
-                                            <Button on:click=move|ev| ev.prevent_default() variant="ghost" aria_label="Toggle italic">{icon!(LuItalic)} </Button>
+                                            <Button on:click=move|ev|{ ev.prevent_default(); insert_markdown(question_text_ref, Syntex::Italic)} variant="ghost" aria_label="Toggle italic">{icon!(LuItalic)} </Button>
                                         </Tooltip>
                                         <Tooltip value="Add text underline">
-                                            <Button on:click=move|ev| ev.prevent_default() variant="ghost" aria_label="Underline">{icon!(LuUnderline)} </Button>
+                                            <Button on:click=move|ev|{ ev.prevent_default(); insert_markdown(question_text_ref, Syntex::Underscore)} variant="ghost" aria_label="Underline">{icon!(LuUnderline)} </Button>
                                         </Tooltip>
                                         <Tooltip value="Add Dash">
-                                            <Button on:click=move|ev| ev.prevent_default() variant="ghost" aria_label="Underline">{icon!(LuMinus)} </Button>
+                                            <Button on:click=move|ev|{ ev.prevent_default(); insert_markdown(question_text_ref, Syntex::Dash)} variant="ghost" aria_label="Underline">{icon!(LuMinus)} </Button>
                                         </Tooltip>
                                         <Separator vertical=true />
-                                        <Button on:click=move|ev| ev.prevent_default() variant="ghost" aria_label="Bullet-point">{icon!(LuList)} </Button>
-                                        <Button on:click=move|ev| ev.prevent_default() variant="ghost" aria_label="Ordered List">{icon!(LuListOrdered)} </Button>
+                                        <Button on:click=move|ev|{ ev.prevent_default(); insert_markdown(question_text_ref, Syntex::Bullet)} variant="ghost" aria_label="Bullet-point">{icon!(LuList)} </Button>
+                                        <Button on:click=move|ev|{ ev.prevent_default(); insert_markdown(question_text_ref, Syntex::Order)} variant="ghost" aria_label="Ordered List">{icon!(LuListOrdered)} </Button>
                                         <Separator vertical=true />
 
                                         <Popover>
@@ -255,11 +286,11 @@ pub fn AddEditQuestion() -> impl IntoView {
                                                         <FieldGroup class="[&_input]:w-20 gap-2">
                                                             <Field orientation="horizontal">
                                                                 <Tooltip side="right" align="center" value="Row">
-                                                                    <Input value="2" autofocus=true/>
+                                                                    <Input input_type="number" value="2" autofocus=true/>
                                                                 </Tooltip>
                                                                 <div>{icon!(LuX)}</div>
                                                                 <Tooltip side="left" align="center" value="Column">
-                                                                    <Input value="3"/>
+                                                                    <Input input_type="number" value="3"/>
                                                                 </Tooltip>
                                                                 <Button on:click=move|e|e.prevent_default()>"Add"</Button>
                                                             </Field>
