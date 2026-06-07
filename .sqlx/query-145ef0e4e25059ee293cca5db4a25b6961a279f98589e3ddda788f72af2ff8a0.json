@@ -1,0 +1,14 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n        UPDATE chapters SET question_count = question_count + 1 WHERE id = $1\n        ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Int4"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "145ef0e4e25059ee293cca5db4a25b6961a279f98589e3ddda788f72af2ff8a0"
+}

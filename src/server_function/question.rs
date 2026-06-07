@@ -14,10 +14,9 @@ pub async fn get_questions(chapter_id: u32) -> Result<Vec<Question>, ServerFnErr
         let rows = sqlx::query!(
             r#"
             SELECT id, question_text, question_type, chapter_id, class_id, subject_id,
-                   "order", answer_text, created_at
+                   difficulty, answer_text, created_at, updated_at
             FROM questions
             WHERE chapter_id = $1
-            ORDER BY "order" ASC
             "#,
             chapter_id as i32
         )
@@ -64,9 +63,10 @@ pub async fn get_questions(chapter_id: u32) -> Result<Vec<Question>, ServerFnErr
                 chapter_id: q.chapter_id as u32,
                 class_id: q.class_id as u32,
                 subject_id: q.subject_id as u32,
-                order: q.order as u32,
+                difficulty: q.difficulty as u32,
                 answer_text: q.answer_text,
                 created_at: q.created_at.to_string(),
+                updated_at: q.created_at.to_string(),
                 options,
             });
         }
@@ -98,36 +98,36 @@ pub async fn insert_question(
 ) -> Result<Question, crate::error::QuestionBankError> {
     use anyhow::Context;
 
-    // Get max order for this chapter
-    let max_order = sqlx::query!(
-        r#"
-        SELECT COALESCE(MAX("order"), 0) as max_order
-        FROM questions
-        WHERE chapter_id = $1
-        "#,
-        input.chapter_id as i32
-    )
-    .fetch_one(&*pool)
-    .await
-    .context("Failed to fetch max order")?;
+    // // Get max order for this chapter
+    // let max_order = sqlx::query!(
+    //     r#"
+    //     SELECT COALESCE(MAX("order"), 0) as max_order
+    //     FROM questions
+    //     WHERE chapter_id = $1
+    //     "#,
+    //     input.chapter_id as i32
+    // )
+    // .fetch_one(&*pool)
+    // .await
+    // .context("Failed to fetch max order")?;
 
-    let new_order = max_order.max_order.unwrap_or(0) + 1;
+    // let new_order = max_order.max_order.unwrap_or(0) + 1;
 
     let question_type_str = input.question_type.as_str();
 
     // Insert the question
     let question_row = sqlx::query!(
         r#"
-        INSERT INTO questions (question_text, question_type, chapter_id, class_id, subject_id, "order", answer_text)
+        INSERT INTO questions (question_text, question_type, chapter_id, class_id, subject_id, difficulty, answer_text)
         VALUES ($1, $2, $3, $4, $5, $6, $7)
-        RETURNING id, question_text, question_type, chapter_id, class_id, subject_id, "order", answer_text, created_at
+        RETURNING id, question_text, question_type, chapter_id, class_id, subject_id, difficulty, answer_text, created_at, updated_at
         "#,
         input.question_text,
         question_type_str,
         input.chapter_id as i32,
         input.class_id as i32,
         input.subject_id as i32,
-        new_order as i32,
+        input.difficulty as i32,
         input.answer_text.as_deref(),
     )
     .fetch_one(&*pool)
@@ -187,9 +187,10 @@ pub async fn insert_question(
         chapter_id: question_row.chapter_id as u32,
         class_id: question_row.class_id as u32,
         subject_id: question_row.subject_id as u32,
-        order: question_row.order as u32,
+        difficulty: question_row.difficulty as u32,
         answer_text: question_row.answer_text,
         created_at: question_row.created_at.to_string(),
+        updated_at: question_row.updated_at.to_string(),
         options,
     })
 }

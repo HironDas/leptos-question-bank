@@ -1,5 +1,5 @@
 #[cfg(feature = "test-fullstack")]
-use crate::helpers::{spawn_app, TestApp};
+use crate::helpers::spawn_app;
 
 // #[cfg(feature = "test-fullstack")]
 // async fn create_user_and_class(app: &TestApp) -> (u32, String) {

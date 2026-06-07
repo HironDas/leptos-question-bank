@@ -33,9 +33,10 @@ pub struct Question {
     pub chapter_id: u32,
     pub class_id: u32,
     pub subject_id: u32,
-    pub order: u32,
+    pub difficulty: u32,
     pub answer_text: Option<String>,
     pub created_at: String,
+    pub updated_at: String,
     #[serde(default)]
     pub options: Vec<QuestionOption>,
 }
@@ -60,6 +61,8 @@ pub struct AddQuestionInput {
     pub class_id: u32,
     #[validate(range(min = 1, message = "Subject is required"))]
     pub subject_id: u32,
+    #[validate(range(min = 0, max = 2, message = "Difficulty is required"))]
+    pub difficulty: u32,
     #[serde(default)]
     pub answer_text: Option<String>,
     #[serde(default)]

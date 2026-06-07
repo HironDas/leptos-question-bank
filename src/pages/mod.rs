@@ -1,3 +1,4 @@
+mod add_edit_quesiton;
 mod class_setting;
 mod home;
 mod login;
@@ -8,6 +9,7 @@ mod view_questions;
 
 pub use class_setting::ClassSettingRoute;
 
+pub use add_edit_quesiton::AddEditQuestion;
 pub use home::HomePage;
 pub use login::Login;
 pub use page_not_found::NotFound;

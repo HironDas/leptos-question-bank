@@ -1,0 +1,43 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n                INSERT INTO question_options (question_id, option_text, is_correct, \"order\")\n                VALUES ($1, $2, $3, $4)\n                RETURNING id, option_text, is_correct, \"order\"\n                ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 1,
+        "name": "option_text",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 2,
+        "name": "is_correct",
+        "type_info": "Bool"
+      },
+      {
+        "ordinal": 3,
+        "name": "order",
+        "type_info": "Int4"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int4",
+        "Text",
+        "Bool",
+        "Int4"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "1de580d57479e868cccc299a0d0b2172b29949a6e018c55b3049acf89cff1470"
+}
