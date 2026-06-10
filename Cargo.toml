@@ -38,6 +38,9 @@ singlestage = "0.4.1"
 leptos_drag_reorder = { version = "0.1.0", optional = true }
 true = { version = "0.1.0", optional = true }
 pulldown-cmark = "0.13.4"
+ratex-svg = "0.1.11"
+ratex-parser = "0.1.11"
+ratex-layout = "0.1.11"
 
 [dependencies.sqlx]
 version = "0.8.6"

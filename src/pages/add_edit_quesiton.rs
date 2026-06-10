@@ -2,7 +2,7 @@ use icondata::{
     LuBold, LuHeading1, LuHeading2, LuHeading3, LuItalic, LuList, LuListOrdered, LuMinus, LuSigma,
     LuTable, LuUnderline, LuX,
 };
-use leptos::{html, prelude::*};
+use leptos::{html, logging::log, prelude::*};
 use leptos_router::hooks::use_query_map;
 use singlestage::*;
 use web_sys::MouseEvent;
@@ -10,7 +10,7 @@ use web_sys::MouseEvent;
 use crate::{
     domain::question::{AddQuestionInput, AddQuestionOptionInput},
     server_function::question::AddQuestion,
-    util::insert_markdown_at_cursor::Syntex,
+    util::{insert_markdown_at_cursor::Syntex, preview_markdown::MarkdownViewer},
 };
 
 use crate::util::insert_markdown_at_cursor::insert_markdown;
@@ -46,6 +46,10 @@ pub fn AddEditQuestion() -> impl IntoView {
     // --- Form refs ---
     let question_text_ref = NodeRef::<html::Textarea>::new();
     let answer_text_ref = NodeRef::<html::Textarea>::new();
+    // let table_pop_ref = NodeRef::<html::Button>::new();
+    let table_row_ref = NodeRef::<html::Input>::new();
+    let table_column_ref = NodeRef::<html::Input>::new();
+
     let option_refs = StoredValue::new(
         (0..8)
             .map(|_| NodeRef::<html::Input>::new())
@@ -165,6 +169,13 @@ pub fn AddEditQuestion() -> impl IntoView {
     };
 
     let preview = RwSignal::new(false);
+    let (question_text, set_question_text) = signal(String::from(""));
+
+    Effect::new(move || {
+        if let Some(textarea) = question_text_ref.get() {
+            textarea.set_value(&question_text.get());
+        }
+    });
 
     view! {
         <div class="w-full">
@@ -247,7 +258,15 @@ pub fn AddEditQuestion() -> impl IntoView {
                                 <div class="grid gap-2">
                                     <Label label_for="question_text" class="mb-2">"Question"</Label>
                                     <div class="flex h-4 items-center space-x-2 text-sm">
-                                    <Button on:click=move|ev| {ev.prevent_default(); preview.update(move|val| *val = !*val);} variant="ghost">{move || if preview.get()"Preview" else "Continue Editing"}</Button>
+                                    <Button on:click=move|ev| {
+                                        ev.prevent_default();
+                                        preview.update(move|val| *val = !*val);
+                                        set_question_text.set(question_text_ref
+                                            .get()
+                                            .map(|el| el.value())
+                                            .unwrap_or_default());
+                                    } variant="ghost">{move || if !preview.get(){"Preview"} else {"Continue Editing"}}</Button>
+                                    <Show when=move||!preview.get() fallback= || view!{""}>
                                         <Separator vertical=true />
                                         <Tooltip value="Heading 1">
                                         <Button on:click=move|ev|{ ev.prevent_default(); insert_markdown(question_text_ref, Syntex::Heading1)} variant="ghost" aria_label="Heading 1">{icon!(LuHeading1)}</Button>
@@ -278,7 +297,7 @@ pub fn AddEditQuestion() -> impl IntoView {
 
                                         <Popover>
                                             <PopoverTrigger>
-                                                <Button button_type="button" variant="ghost" aria_label="Add a Table">{icon!(LuTable)} </Button>
+                                                <Button  button_type="button" variant="ghost" aria_label="Add a Table">{icon!(LuTable)} </Button>
                                             </PopoverTrigger>
                                             <PopoverContent class="w-80">
 
@@ -286,13 +305,25 @@ pub fn AddEditQuestion() -> impl IntoView {
                                                         <FieldGroup class="[&_input]:w-20 gap-2">
                                                             <Field orientation="horizontal">
                                                                 <Tooltip side="right" align="center" value="Row">
-                                                                    <Input input_type="number" value="2" autofocus=true/>
+                                                                    <Input node_ref=table_row_ref input_type="number" value="2" autofocus=true/>
                                                                 </Tooltip>
                                                                 <div>{icon!(LuX)}</div>
                                                                 <Tooltip side="left" align="center" value="Column">
-                                                                    <Input input_type="number" value="3"/>
+                                                                    <Input node_ref=table_column_ref input_type="number" value="3"/>
                                                                 </Tooltip>
-                                                                <Button on:click=move|e|e.prevent_default()>"Add"</Button>
+                                                                <Button on:click=move|e|{
+                                                                    e.prevent_default();
+                                                                    let row = table_row_ref.get()
+                                                                    .map(|el| el.value())
+                                                                    .and_then(|val| val.parse::<u32>().ok())
+                                                                    .unwrap_or(0);
+
+                                                                    let column = table_column_ref.get()
+                                                                    .map(|el| el.value())
+                                                                    .and_then(|el| el.parse::<u32>().ok())
+                                                                    .unwrap_or(0);
+                                                                    insert_markdown(question_text_ref, Syntex::Table(row, column));
+                                                                }>"Add"</Button>
                                                             </Field>
 
                                                         </FieldGroup>
@@ -301,17 +332,24 @@ pub fn AddEditQuestion() -> impl IntoView {
                                             </PopoverContent>
                                         </Popover>
                                         <Tooltip value="Add formula">
-                                            <Button on:click=move|ev| ev.prevent_default() variant="ghost" aria_label="Underline">{icon!(LuSigma)} </Button>
+                                        <Button on:click=move|ev| {ev.prevent_default(); insert_markdown(question_text_ref, Syntex::Formula);} variant="ghost" aria_label="Underline">{icon!(LuSigma)} </Button>
                                         </Tooltip>
-
+                                        </Show>
                                     </div>
                                     <Separator class="my-2" />
+                                    <Show when = move || !preview.get() fallback = move||view!{
+                                        <div class="flex min-h-[120px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50">
+                                            <MarkdownViewer content=question_text />
+                                        </div>
+                                    }>
                                     <textarea
                                         node_ref=question_text_ref
                                         class="flex min-h-[120px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                                         placeholder="Enter your question here..."
                                         rows="3"
-                                    ></textarea>
+
+                                        />
+                                    </Show>
                                 </div>
                             </Field>
                             <Field>

@@ -79,3 +79,13 @@
         transform: rotate(0) scale(1);
     }
 }
+
+.invert-math .math-block svg,
+.invert-math .inline-math svg {
+    filter: invert(1) brightness(2);
+}
+
+.inline-math svg {
+    display: inline-block;
+    vertical-align: middle;
+}

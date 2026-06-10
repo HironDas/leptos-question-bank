@@ -11,6 +11,8 @@ pub enum Syntex {
     Heading1,
     Heading2,
     Heading3,
+    Formula,
+    Table(u32, u32),
 }
 
 impl Syntex {
@@ -25,6 +27,8 @@ impl Syntex {
             Self::Heading1 => "# ",
             Self::Heading2 => "## ",
             Self::Heading3 => "### ",
+            Self::Formula => "$$",
+            _ => "",
         }
     }
 }
@@ -46,6 +50,7 @@ pub fn insert_markdown(textarea_ref: NodeRef<html::Textarea>, syntex: Syntex) {
                 | Syntex::Bullet
                 | Syntex::Order => format!("{}", syntex.as_str()),
                 Syntex::Underscore => format!("{}{}", "<ins>", "</ins>"),
+                Syntex::Table(rows, columns) => format!("{}", tables_str(rows, columns)),
                 _ => format!("{}{}", syntex.as_str(), syntex.as_str()),
             }
         } else {
@@ -55,6 +60,14 @@ pub fn insert_markdown(textarea_ref: NodeRef<html::Textarea>, syntex: Syntex) {
                 | Syntex::Heading3
                 | Syntex::Bullet
                 | Syntex::Order => format!("{}{}", syntex.as_str(), selected_text),
+                Syntex::Table(rows, columns) => {
+                    format!(
+                        "{}\n\
+                        {}",
+                        selected_text,
+                        tables_str(rows, columns)
+                    )
+                }
                 Syntex::Underscore => format!("{}{}{}", "<ins>", selected_text, "</ins>"),
                 _ => format!("{}{}{}", syntex.as_str(), selected_text, syntex.as_str()),
             }
@@ -74,4 +87,22 @@ pub fn insert_markdown(textarea_ref: NodeRef<html::Textarea>, syntex: Syntex) {
         };
         let _ = textarea.set_selection_range(new_cursor_pos, new_cursor_pos);
     }
+}
+
+pub fn tables_str(rows: u32, columns: u32) -> String {
+    let mut table = String::from("");
+    for row in 0..(rows + 2) {
+        table.push_str("|");
+        for _column in 0..columns {
+            let row_str = match row {
+                0 => " Header |",
+                1 => "--------|",
+                _ => "    cell    |",
+            };
+            table.push_str(row_str);
+        }
+        table.push_str("\n");
+    }
+
+    table
 }

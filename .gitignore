@@ -23,3 +23,5 @@ site/
 *.bat
 *.ps1
 %SystemDrive%/
+
+.DS_Store
