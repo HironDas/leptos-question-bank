@@ -4,17 +4,20 @@ use pulldown_cmark::Event;
 use pulldown_cmark::{Options, Parser};
 use ratex_layout::{layout, LayoutOptions};
 use ratex_svg::SvgOptions;
-
+use regex::{Captures, Regex};
 pub fn render_markdown(markdown: &str) -> String {
     let mut options = Options::empty();
     options.insert(Options::ENABLE_TABLES);
     options.insert(Options::ENABLE_MATH);
+    options.insert(Options::ENABLE_TABLES);
 
     let parser = Parser::new_ext(markdown, options);
 
     let mut html_output = String::new();
 
     let mut modified_events = Vec::new();
+
+    let tally_regex = Regex::new(r":tally([1-5]):").unwrap();
 
     parser.for_each(|event| match event {
         Event::DisplayMath(latex_text) => {
@@ -37,6 +40,30 @@ pub fn render_markdown(markdown: &str) -> String {
                 modified_events.push(Event::Html(wrapped_html.into()));
             } else {
                 modified_events.push(Event::Text(latex_text));
+            }
+        }
+        Event::Text(text) => {
+            println!("{text}");
+            if tally_regex.is_match(&text){
+                let result = tally_regex.replace_all(&text, |caps: &Captures|{
+                    let val:u32 = caps[1].parse().unwrap_or(5);
+                    let icon_data = match val{
+                        1 => icondata::LuTally1,
+                        2 => icondata::LuTally2,
+                        3 => icondata::LuTally3,
+                        4 => icondata::LuTally4,
+                        _ => icondata::LuTally5
+                    };
+
+                    format!(
+                            "<svg viewBox=\"0 0 24 24\" width=\"1.2em\" height=\"1.2em\" stroke=\"currentColor\" fill=\"none\" stroke-width=\"2\" style=\"display:inline-block; vertical-align:middle;\">{}</svg>",
+                             icon_data.data
+                        )
+                }).into_owned();
+                modified_events.push(Event::Html(result.into()));
+            } else {
+                println!("I am here in else");
+                modified_events.push(Event::Text(text));
             }
         }
         other_event => modified_events.push(other_event),

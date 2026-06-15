@@ -13,6 +13,7 @@ pub enum Syntex {
     Heading3,
     Formula,
     Table(u32, u32),
+    Tally(u32),
 }
 
 impl Syntex {
@@ -27,7 +28,15 @@ impl Syntex {
             Self::Heading1 => "# ",
             Self::Heading2 => "## ",
             Self::Heading3 => "### ",
-            Self::Formula => "$$",
+            Self::Formula => "\n$$\n",
+            Self::Tally(val) => match val {
+                1 => ":tally1:",
+                2 => ":tally2:",
+                3 => ":tally3:",
+                4 => ":tally4:",
+                5 => ":tally5:",
+                _ => ":tally5:", // Fallback default
+            },
             _ => "",
         }
     }
@@ -48,7 +57,8 @@ pub fn insert_markdown(textarea_ref: NodeRef<html::Textarea>, syntex: Syntex) {
                 | Syntex::Heading2
                 | Syntex::Heading3
                 | Syntex::Bullet
-                | Syntex::Order => format!("{}", syntex.as_str()),
+                | Syntex::Order
+                | Syntex::Tally(_) => format!("{}", syntex.as_str()),
                 Syntex::Underscore => format!("{}{}", "<ins>", "</ins>"),
                 Syntex::Table(rows, columns) => format!("{}", tables_str(rows, columns)),
                 _ => format!("{}{}", syntex.as_str(), syntex.as_str()),
@@ -59,7 +69,8 @@ pub fn insert_markdown(textarea_ref: NodeRef<html::Textarea>, syntex: Syntex) {
                 | Syntex::Heading2
                 | Syntex::Heading3
                 | Syntex::Bullet
-                | Syntex::Order => format!("{}{}", syntex.as_str(), selected_text),
+                | Syntex::Order
+                | Syntex::Tally(_) => format!("{}{}", syntex.as_str(), selected_text),
                 Syntex::Table(rows, columns) => {
                     format!(
                         "{}\n\

@@ -1,19 +1,34 @@
-use icondata::{
-    LuBold, LuHeading1, LuHeading2, LuHeading3, LuItalic, LuList, LuListOrdered, LuMinus, LuSigma,
-    LuTable, LuUnderline, LuX,
-};
-use leptos::{html, logging::log, prelude::*};
-use leptos_router::hooks::use_query_map;
+use crate::components::ui::rich_text_editor::RichTextEditor;
+
+use leptos::{html, prelude::*};
+use leptos_router::hooks::{use_navigate, use_query};
+use leptos_router::params::Params;
 use singlestage::*;
 use web_sys::MouseEvent;
 
 use crate::{
     domain::question::{AddQuestionInput, AddQuestionOptionInput},
     server_function::question::AddQuestion,
-    util::{insert_markdown_at_cursor::Syntex, preview_markdown::MarkdownViewer},
 };
 
-use crate::util::insert_markdown_at_cursor::insert_markdown;
+// 1. Define a struct that maps your browser query parameters
+#[derive(Params, PartialEq, Clone, Debug)]
+struct QuestionQueryParams {
+    id: Option<u32>,
+    class: Option<u32>,
+    subject: Option<u32>,
+    chapter: Option<u32>,
+}
+
+#[derive(Clone, PartialEq, Debug)]
+enum Mode {
+    Edit(u32),
+    Create {
+        class_id: u32,
+        subject_id: u32,
+        chapter_id: u32,
+    },
+}
 
 #[component]
 pub fn AddEditQuestion() -> impl IntoView {
@@ -24,31 +39,36 @@ pub fn AddEditQuestion() -> impl IntoView {
         Hard,
     }
 
-    let query_map = use_query_map();
+    let query_params = use_query::<QuestionQueryParams>();
+    let navigate = use_navigate();
 
-    let chapter_id = move || query_map.read().get("chapter"); // chapter_id_u32.get_untracked();
-    let chapter_id = chapter_id()
-        .and_then(|val| val.parse::<u32>().ok())
-        .unwrap_or(0);
+    let page_mode = Memo::new(move |_| {
+        if let Ok(params) = query_params.get() {
+            if let Some(id) = params.id {
+                return Some(Mode::Edit(id));
+            } else if let (Some(class_id), Some(subject_id), Some(chapter_id)) =
+                (params.class, params.subject, params.chapter)
+            {
+                return Some(Mode::Create {
+                    chapter_id,
+                    subject_id,
+                    class_id,
+                });
+            }
+        }
+        None
+    });
 
-    let class_id = move || query_map.read().get("class"); //class_id_u32.get_untracked();
-    let class_id = class_id()
-        .and_then(|val| val.parse::<u32>().ok())
-        .unwrap_or(0);
-
-    let subject_id = move || query_map.read().get("subject"); //subject_id_u32.get_untracked();
-    let subject_id = subject_id()
-        .and_then(|val| val.parse::<u32>().ok())
-        .unwrap_or(0);
-
-    // Effect::new(move || if class_id.ok_or("error") {});
+    Effect::new(move || {
+        if page_mode.get().is_none() {
+            navigate("/view", Default::default());
+        }
+    });
 
     // --- Form refs ---
     let question_text_ref = NodeRef::<html::Textarea>::new();
     let answer_text_ref = NodeRef::<html::Textarea>::new();
     // let table_pop_ref = NodeRef::<html::Button>::new();
-    let table_row_ref = NodeRef::<html::Input>::new();
-    let table_column_ref = NodeRef::<html::Input>::new();
 
     let option_refs = StoredValue::new(
         (0..8)
@@ -138,18 +158,25 @@ pub fn AddEditQuestion() -> impl IntoView {
             }
         }
 
-        let input = AddQuestionInput {
-            question_text: text,
-            question_type: qtype,
-            chapter_id: chapter_id,
-            class_id: class_id,
-            subject_id: subject_id,
-            answer_text: answer,
-            difficulty: difficulty as u32,
-            options,
-        };
+        if let Some(Mode::Create {
+            class_id,
+            subject_id,
+            chapter_id,
+        }) = page_mode.get()
+        {
+            let input = AddQuestionInput {
+                question_text: text,
+                question_type: qtype,
+                chapter_id: chapter_id,
+                class_id: class_id,
+                subject_id: subject_id,
+                answer_text: answer,
+                difficulty: difficulty as u32,
+                options,
+            };
 
-        add_question_action.dispatch(AddQuestion { input });
+            add_question_action.dispatch(AddQuestion { input });
+        }
     };
 
     let reset_question = move |ev: MouseEvent| {
@@ -167,15 +194,6 @@ pub fn AddEditQuestion() -> impl IntoView {
         question_difficulty.set(Difficulty::Medium);
         // question_dialog_open.set(true);
     };
-
-    let preview = RwSignal::new(false);
-    let (question_text, set_question_text) = signal(String::from(""));
-
-    Effect::new(move || {
-        if let Some(textarea) = question_text_ref.get() {
-            textarea.set_value(&question_text.get());
-        }
-    });
 
     view! {
         <div class="w-full">
@@ -255,102 +273,7 @@ pub fn AddEditQuestion() -> impl IntoView {
                             </Field>
                             <Field>
                                 // Question text
-                                <div class="grid gap-2">
-                                    <Label label_for="question_text" class="mb-2">"Question"</Label>
-                                    <div class="flex h-4 items-center space-x-2 text-sm">
-                                    <Button on:click=move|ev| {
-                                        ev.prevent_default();
-                                        preview.update(move|val| *val = !*val);
-                                        set_question_text.set(question_text_ref
-                                            .get()
-                                            .map(|el| el.value())
-                                            .unwrap_or_default());
-                                    } variant="ghost">{move || if !preview.get(){"Preview"} else {"Continue Editing"}}</Button>
-                                    <Show when=move||!preview.get() fallback= || view!{""}>
-                                        <Separator vertical=true />
-                                        <Tooltip value="Heading 1">
-                                        <Button on:click=move|ev|{ ev.prevent_default(); insert_markdown(question_text_ref, Syntex::Heading1)} variant="ghost" aria_label="Heading 1">{icon!(LuHeading1)}</Button>
-                                        </Tooltip>
-                                        <Tooltip value="Heading 2">
-                                        <Button on:click=move|ev|{ ev.prevent_default(); insert_markdown(question_text_ref, Syntex::Heading2)} variant="ghost" aria_label="Heading 2">{icon!(LuHeading2)}</Button>
-                                        </Tooltip>
-                                        <Tooltip value="Heading 3">
-                                        <Button on:click=move|ev|{ ev.prevent_default(); insert_markdown(question_text_ref, Syntex::Heading3)} variant="ghost" aria_label="Heading 3">{icon!(LuHeading3)}</Button>
-                                        </Tooltip>
-                                        <Separator vertical=true />
-                                        <Tooltip value="Add bold text">
-                                        <Button on:click=move|ev|{ ev.prevent_default(); insert_markdown(question_text_ref, Syntex::Bold)} variant="ghost" aria_label="Toggle Bold">{icon!(LuBold)}</Button>
-                                        </Tooltip>
-                                        <Tooltip value="Add italic text">
-                                            <Button on:click=move|ev|{ ev.prevent_default(); insert_markdown(question_text_ref, Syntex::Italic)} variant="ghost" aria_label="Toggle italic">{icon!(LuItalic)} </Button>
-                                        </Tooltip>
-                                        <Tooltip value="Add text underline">
-                                            <Button on:click=move|ev|{ ev.prevent_default(); insert_markdown(question_text_ref, Syntex::Underscore)} variant="ghost" aria_label="Underline">{icon!(LuUnderline)} </Button>
-                                        </Tooltip>
-                                        <Tooltip value="Add Dash">
-                                            <Button on:click=move|ev|{ ev.prevent_default(); insert_markdown(question_text_ref, Syntex::Dash)} variant="ghost" aria_label="Underline">{icon!(LuMinus)} </Button>
-                                        </Tooltip>
-                                        <Separator vertical=true />
-                                        <Button on:click=move|ev|{ ev.prevent_default(); insert_markdown(question_text_ref, Syntex::Bullet)} variant="ghost" aria_label="Bullet-point">{icon!(LuList)} </Button>
-                                        <Button on:click=move|ev|{ ev.prevent_default(); insert_markdown(question_text_ref, Syntex::Order)} variant="ghost" aria_label="Ordered List">{icon!(LuListOrdered)} </Button>
-                                        <Separator vertical=true />
-
-                                        <Popover>
-                                            <PopoverTrigger>
-                                                <Button  button_type="button" variant="ghost" aria_label="Add a Table">{icon!(LuTable)} </Button>
-                                            </PopoverTrigger>
-                                            <PopoverContent class="w-80">
-
-                                                    <FieldSet>
-                                                        <FieldGroup class="[&_input]:w-20 gap-2">
-                                                            <Field orientation="horizontal">
-                                                                <Tooltip side="right" align="center" value="Row">
-                                                                    <Input node_ref=table_row_ref input_type="number" value="2" autofocus=true/>
-                                                                </Tooltip>
-                                                                <div>{icon!(LuX)}</div>
-                                                                <Tooltip side="left" align="center" value="Column">
-                                                                    <Input node_ref=table_column_ref input_type="number" value="3"/>
-                                                                </Tooltip>
-                                                                <Button on:click=move|e|{
-                                                                    e.prevent_default();
-                                                                    let row = table_row_ref.get()
-                                                                    .map(|el| el.value())
-                                                                    .and_then(|val| val.parse::<u32>().ok())
-                                                                    .unwrap_or(0);
-
-                                                                    let column = table_column_ref.get()
-                                                                    .map(|el| el.value())
-                                                                    .and_then(|el| el.parse::<u32>().ok())
-                                                                    .unwrap_or(0);
-                                                                    insert_markdown(question_text_ref, Syntex::Table(row, column));
-                                                                }>"Add"</Button>
-                                                            </Field>
-
-                                                        </FieldGroup>
-                                                    </FieldSet>
-
-                                            </PopoverContent>
-                                        </Popover>
-                                        <Tooltip value="Add formula">
-                                        <Button on:click=move|ev| {ev.prevent_default(); insert_markdown(question_text_ref, Syntex::Formula);} variant="ghost" aria_label="Underline">{icon!(LuSigma)} </Button>
-                                        </Tooltip>
-                                        </Show>
-                                    </div>
-                                    <Separator class="my-2" />
-                                    <Show when = move || !preview.get() fallback = move||view!{
-                                        <div class="flex min-h-[120px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50">
-                                            <MarkdownViewer content=question_text />
-                                        </div>
-                                    }>
-                                    <textarea
-                                        node_ref=question_text_ref
-                                        class="flex min-h-[120px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                                        placeholder="Enter your question here..."
-                                        rows="3"
-
-                                        />
-                                    </Show>
-                                </div>
+                                <RichTextEditor title=String::from("Question") textarea_ref = question_text_ref />
                             </Field>
                             <Field>
                             // Objective: Options section
@@ -425,13 +348,7 @@ pub fn AddEditQuestion() -> impl IntoView {
                                 // Subjective: Answer section
                                 <Show when=move || question_type.get() == "subjective">
                                     <div class="grid gap-2">
-                                        <Label label_for="answer_text">"Answer"</Label>
-                                        <textarea
-                                            node_ref=answer_text_ref
-                                            class="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                                            placeholder="Enter the answer..."
-                                            rows="3"
-                                        ></textarea>
+                                        <RichTextEditor title=String::from("Answer") textarea_ref = answer_text_ref />
                                     </div>
                                 </Show>
                             </Field>

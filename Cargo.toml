@@ -41,6 +41,7 @@ pulldown-cmark = "0.13.4"
 ratex-svg = "0.1.11"
 ratex-parser = "0.1.11"
 ratex-layout = "0.1.11"
+regex = "1.12.4"
 
 [dependencies.sqlx]
 version = "0.8.6"
