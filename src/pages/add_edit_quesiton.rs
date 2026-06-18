@@ -9,7 +9,7 @@ use web_sys::MouseEvent;
 
 use crate::{
     domain::question::{
-        AddQuestionInput, AddQuestionOptionInput, Question, QuestionType, UpdateQuestionInput,
+        AddQuestionInput, AddQuestionOptionInput, QuestionType, UpdateQuestionInput,
     },
     server_function::question::AddQuestion,
 };
@@ -119,7 +119,7 @@ pub fn AddEditQuestion() -> impl IntoView {
 
     // --- Server actions ---
     let add_question_action = ServerAction::<AddQuestion>::new();
-    let add_question_value = add_question_action.value();
+    let _add_question_value = add_question_action.value();
 
     let edit_question_action = ServerAction::<EditQuestion>::new();
 

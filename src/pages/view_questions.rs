@@ -1,4 +1,3 @@
-use std::default;
 
 use crate::components::ui::empty_msg::EmptyMsg;
 use crate::domain::question::Question;
