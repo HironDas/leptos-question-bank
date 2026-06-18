@@ -62,7 +62,6 @@ pub fn render_markdown(markdown: &str) -> String {
                 }).into_owned();
                 modified_events.push(Event::Html(result.into()));
             } else {
-                println!("I am here in else");
                 modified_events.push(Event::Text(text));
             }
         }

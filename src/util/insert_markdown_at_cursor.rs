@@ -46,10 +46,25 @@ pub fn insert_markdown(textarea_ref: NodeRef<html::Textarea>, syntex: Syntex) {
     if let Some(textarea) = textarea_ref.get_untracked() {
         let value = textarea.value();
 
-        let start = textarea.selection_start().unwrap_or(None).unwrap_or(0) as usize;
-        let end = textarea.selection_end().unwrap_or(None).unwrap_or(0) as usize;
+        let char_start = textarea.selection_start().unwrap_or(None).unwrap_or(0) as usize;
+        let char_end = textarea.selection_end().unwrap_or(None).unwrap_or(0) as usize;
 
-        let selected_text = &value[start..end];
+        // 2. Safely translate character positions to safe Rust byte offsets
+        let mut byte_start = value.len();
+        let mut byte_end = value.len();
+
+        for (char_idx, (byte_idx, _)) in value.char_indices().enumerate() {
+            if char_idx == char_start {
+                byte_start = byte_idx;
+            }
+            if char_idx == char_end {
+                byte_end = byte_idx;
+                break; // We found both boundary edges, safe to terminate loop early
+            }
+        }
+
+        // 3. Slice using calculated byte-safe boundaries
+        let selected_text = &value[byte_start..byte_end];
 
         let replacement = if selected_text.is_empty() {
             match syntex {
@@ -84,17 +99,26 @@ pub fn insert_markdown(textarea_ref: NodeRef<html::Textarea>, syntex: Syntex) {
             }
         };
 
-        let new_value = format!("{}{}{}", &value[0..start], replacement, &value[end..]);
+        let new_value = format!(
+            "{}{}{}",
+            &value[0..byte_start],
+            replacement,
+            &value[byte_end..]
+        );
         textarea.set_value(&new_value);
 
         let _ = textarea.focus();
+        // 5. Calculate new cursor coordinates using character lengths (since JS needs characters)
+        let replacement_char_len = replacement.chars().count();
+        let syntex_char_len = syntex.as_str().chars().count();
+
         let new_cursor_pos = if selected_text.is_empty() {
             match syntex {
-                Syntex::Dash => (start + replacement.len()) as u32,
-                _ => (start + syntex.as_str().to_string().len()) as u32,
+                Syntex::Dash => (char_start + replacement_char_len) as u32,
+                _ => (char_start + syntex_char_len) as u32,
             }
         } else {
-            (start + replacement.len()) as u32
+            (char_start + replacement_char_len) as u32
         };
         let _ = textarea.set_selection_range(new_cursor_pos, new_cursor_pos);
     }

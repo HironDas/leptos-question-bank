@@ -17,9 +17,11 @@ pub fn RichTextEditor(title: String, textarea_ref: NodeRef<html::Textarea>) -> i
 
     let formula_panel = RwSignal::new(false);
 
+    let label_title = title.clone();
+
     view! {
         <div class="grid gap-2">
-            <Label class="mb-2">{title}</Label>
+            <Label class="mb-2">{label_title}</Label>
             <div class="flex h-4 items-center space-x-2 text-sm">
             <Button on:click=move|ev| {
                 ev.prevent_default();
@@ -148,6 +150,7 @@ pub fn RichTextEditor(title: String, textarea_ref: NodeRef<html::Textarea>) -> i
             }>
             <div class="flex gap-2">
             <textarea
+                name = title.clone().to_lowercase()
                 node_ref=textarea_ref
                 class="flex min-h-[120px] rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                 class=("w-2/3",move||formula_panel.get())

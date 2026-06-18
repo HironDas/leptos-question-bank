@@ -1,4 +1,5 @@
 use crate::components::ui::rich_text_editor::RichTextEditor;
+use crate::server_function::question::{get_question_by_id, EditQuestion};
 
 use leptos::{html, prelude::*};
 use leptos_router::hooks::{use_navigate, use_query};
@@ -7,7 +8,9 @@ use singlestage::*;
 use web_sys::MouseEvent;
 
 use crate::{
-    domain::question::{AddQuestionInput, AddQuestionOptionInput},
+    domain::question::{
+        AddQuestionInput, AddQuestionOptionInput, Question, QuestionType, UpdateQuestionInput,
+    },
     server_function::question::AddQuestion,
 };
 
@@ -59,9 +62,41 @@ pub fn AddEditQuestion() -> impl IntoView {
         None
     });
 
+    let edit_question_data = Resource::new(
+        move || page_mode.get(),
+        |mode| async move {
+            if let Some(Mode::Edit(id)) = mode {
+                match get_question_by_id(id).await {
+                    Ok(question) => Some(question),
+                    Err(_) => None,
+                }
+            } else {
+                None
+            }
+        },
+    );
+
+    println!("EDIT Question Data===>{:?}", edit_question_data.get());
+
+    // let edit_question_data = OnceResource::new(async move {
+    //     match page_mode.get() {
+    //         Some(Mode::Edit(id)) => match get_question_by_id(id).await {
+    //             Ok(question) => Some(question),
+    //             Err(_) => None,
+    //         },
+    //         // Returns an Option inside the same future execution line
+    //         _ => None,
+    //     }
+    // });
+
     Effect::new(move || {
         if page_mode.get().is_none() {
-            navigate("/view", Default::default());
+            let options = leptos_router::NavigateOptions {
+                resolve: true,
+                replace: true,
+                ..Default::default()
+            };
+            navigate("/view", options);
         }
     });
 
@@ -85,6 +120,8 @@ pub fn AddEditQuestion() -> impl IntoView {
     // --- Server actions ---
     let add_question_action = ServerAction::<AddQuestion>::new();
     let add_question_value = add_question_action.value();
+
+    let edit_question_action = ServerAction::<EditQuestion>::new();
 
     // --- Dialog state ---
     // let question_dialog_open = RwSignal::new(false);
@@ -158,24 +195,40 @@ pub fn AddEditQuestion() -> impl IntoView {
             }
         }
 
-        if let Some(Mode::Create {
-            class_id,
-            subject_id,
-            chapter_id,
-        }) = page_mode.get()
-        {
-            let input = AddQuestionInput {
+        if let Some(question) = edit_question_data.get().flatten() {
+            let input = UpdateQuestionInput {
+                id: question.id,
                 question_text: text,
                 question_type: qtype,
-                chapter_id: chapter_id,
-                class_id: class_id,
-                subject_id: subject_id,
+                chapter_id: question.chapter_id,
+                class_id: question.class_id,
+                subject_id: question.subject_id,
                 answer_text: answer,
                 difficulty: difficulty as u32,
                 options,
             };
 
-            add_question_action.dispatch(AddQuestion { input });
+            edit_question_action.dispatch(EditQuestion { input });
+        } else {
+            if let Some(Mode::Create {
+                class_id,
+                subject_id,
+                chapter_id,
+            }) = page_mode.get()
+            {
+                let input = AddQuestionInput {
+                    question_text: text,
+                    question_type: qtype,
+                    chapter_id: chapter_id,
+                    class_id: class_id,
+                    subject_id: subject_id,
+                    answer_text: answer,
+                    difficulty: difficulty as u32,
+                    options,
+                };
+
+                add_question_action.dispatch(AddQuestion { input });
+            }
         }
     };
 
@@ -195,15 +248,68 @@ pub fn AddEditQuestion() -> impl IntoView {
         // question_dialog_open.set(true);
     };
 
+    Effect::new(move || {
+        if let Some(Some(question)) = edit_question_data.get() {
+            match question.question_type {
+                QuestionType::Objective => question_type.set("objective".to_string()),
+                QuestionType::Subjective => question_type.set("subjective".to_string()),
+            }
+
+            match question.difficulty {
+                0 => question_difficulty.set(Difficulty::Easy),
+                1 => question_difficulty.set(Difficulty::Medium),
+                2 => question_difficulty.set(Difficulty::Hard),
+                _ => question_difficulty.set(Difficulty::Medium),
+            }
+
+            let option_length = question.options.len();
+            option_count.set(option_length.try_into().unwrap());
+
+            request_animation_frame(move || {
+                question_text_ref
+                    .get()
+                    .map(|el| el.set_value(&question.question_text));
+
+                if let Some(ans) = question.answer_text {
+                    answer_text_ref.get().map(|el| {
+                        el.set_value(&ans);
+                    });
+                }
+            });
+
+            question
+                .options
+                .iter()
+                .enumerate()
+                .for_each(|(idx, option)| {
+                    if let Some(el) = option_refs.get_value()[idx].clone().get() {
+                        el.set_value(&option.option_text)
+                    }
+
+                    if let Some(el) = option_check_refs.get_value()[idx].clone().get() {
+                        el.set_checked(option.is_correct)
+                    }
+                });
+        }
+    });
+
     view! {
         <div class="w-full">
+        <Suspense fallback=|| view! { <div class="p-4 text-center">"Loading Question Data..."</div> }>
             <form on:submit=submit_question>
                 <FieldGroup>
                     <FieldSet>
+                        <Show when=move||edit_question_data.get().flatten().is_none() fallback=move||view!{
+                            <FieldLegend>"Edit Question"</FieldLegend>
+                            <FieldDescription>
+                                "Update the question"
+                            </FieldDescription>
+                        }>
                         <FieldLegend>"Add New Question"</FieldLegend>
                         <FieldDescription>
-                             "Create a new question for the selected chapter."
+                            "Create a new question for the selected chapter."
                         </FieldDescription>
+                        </Show>
                         <FieldGroup>
                             <Field orientation="horizontal">
                                 <div class="flex gap-2 items-center">
@@ -360,14 +466,17 @@ pub fn AddEditQuestion() -> impl IntoView {
                                 >
                                     "Reset"
                                 </Button>
+
                                 <Button
                                     size="small"
                                     button_type="submit"
-                                    attr:disabled=move || add_question_action.pending().get()
+                                    attr:disabled=move || {add_question_action.pending().get() || edit_question_action.pending().get()}
                                 >
                                     <Show
-                                        when=move || add_question_action.pending().get()
-                                        fallback=|| view! { "Save Question" }
+                                        when=move || {add_question_action.pending().get() || edit_question_action.pending().get()}
+                                        fallback=move|| {
+                                             if edit_question_data.get().flatten().is_some(){"Update Question"}else {"Save Question"}
+                                        }
                                     >
                                         "Saving..."
                                         <Spinner />
@@ -378,6 +487,7 @@ pub fn AddEditQuestion() -> impl IntoView {
                     </FieldSet>
                 </FieldGroup>
             </form>
+            </Suspense>
         </div>
     }
 }

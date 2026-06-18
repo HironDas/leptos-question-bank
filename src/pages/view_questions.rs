@@ -1,3 +1,5 @@
+use std::default;
+
 use crate::components::ui::empty_msg::EmptyMsg;
 use crate::domain::question::Question;
 use crate::server_function::academic_helper::chapter::subject_chapter;
@@ -315,6 +317,7 @@ fn QuestionCard(question: Question, index: usize) -> impl IntoView {
     // let order = question.get_value().order;
     let question_text = question.get_value().question_text.clone();
     let qtype_str = question.get_value().question_type.to_string();
+    let navigate = use_navigate();
 
     view! {
         <Card class="cursor-pointer hover:shadow-md transition-shadow">
@@ -323,15 +326,18 @@ fn QuestionCard(question: Question, index: usize) -> impl IntoView {
                     <span class="text-xs font-mono text-muted-foreground">
                         "#" {index + 1}
                     </span>
-                    <Badge class=variant>
-                        {qtype_str}
-                    </Badge>
+                    <div class="flex items-center gap-1">
+                        <Button on:click=move|ev|{
+                            ev.prevent_default();
+                            navigate(format!("/question?id={}", question.get_value().id).as_str(),NavigateOptions::default())
+                        } variant="ghost">{icon!(icondata::LuSquarePen)}</Button>
+                        <Badge class=variant>
+                            {qtype_str}
+                        </Badge>
+                    </div>
                 </div>
 
-                <p class="text-sm font-medium line-clamp-3" class:font-bengali=move||!question_text.is_ascii()>
-                    {question_text.clone()}
-                </p>
-
+                <p class="text-sm font-medium line-clamp-3" class:font-bengali={ let value = question_text.clone(); move||!value.is_ascii()} inner_html=question_text/>
                 <Show when=move || expanded.get()>
                     <div class="mt-3 pt-3 border-t text-sm">
                         {match question.get_value().question_type {
@@ -363,13 +369,15 @@ fn QuestionCard(question: Question, index: usize) -> impl IntoView {
                                                                 </span>
                                                             }.into_any()
                                                         }}
-                                                        <span class:font-bengali=move || !text.is_ascii() class=if correct {
+                                                        <span class:font-bengali= {
+                                                            let value= text.clone();
+                                                            move|| !value.clone().is_ascii()} class=if correct {
                                                             "text-green-600 font-medium"
                                                         } else {
                                                             "font-medium"
-                                                        }>
-                                                            {text.clone()}
-                                                        </span>
+                                                        } inner_html=text/>
+
+
                                                     </div>
                                                 }
                                             }
@@ -384,7 +392,7 @@ fn QuestionCard(question: Question, index: usize) -> impl IntoView {
                                         <p class="text-xs font-semibold text-muted-foreground">
                                             "Answer:"
                                         </p>
-                                        <p class="text-green-600">{ans}</p>
+                                        <p class="text-green-600" inner_html=ans/>
                                     </div>
                                 }.into_any()
                             }
