@@ -1,4 +1,13 @@
 
+## 0.4.9 (2026-06-18)
+
+### Features
+
+- add-update-question is added
+- Mardown toolbar works fine with formula and all feature including table
+- Add question feature
+- Update Question feature is Added
+
 ## 0.4.8 (2026-05-30)
 
 ### Features
