@@ -1,0 +1,83 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n        UPDATE questions SET question_text = $1, question_type = $2, chapter_id = $3, class_id = $4, subject_id = $5, difficulty = $6, answer_text = $7, updated_at = NOW()\n        WHERE id = $8\n        RETURNING id, question_text, question_type, chapter_id, class_id, subject_id, difficulty, answer_text, created_at, updated_at\n        ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 1,
+        "name": "question_text",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 2,
+        "name": "question_type",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 3,
+        "name": "chapter_id",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 4,
+        "name": "class_id",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 5,
+        "name": "subject_id",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 6,
+        "name": "difficulty",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 7,
+        "name": "answer_text",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 8,
+        "name": "created_at",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 9,
+        "name": "updated_at",
+        "type_info": "Timestamptz"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Varchar",
+        "Int4",
+        "Int4",
+        "Int4",
+        "Int4",
+        "Text",
+        "Int4"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      true,
+      false,
+      false
+    ]
+  },
+  "hash": "1a615200f5048240c112878cc504ab378f620415fd478f49584469c0d1345020"
+}
