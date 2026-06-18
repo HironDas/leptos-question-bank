@@ -12,7 +12,7 @@ COPY  --from=planner /app/recipe.json recipe.json
 
 # --- SPEED IMPROVEMENTS START HERE ---
 # 1. Use 3 out of 4 cores (leaves 1 for Gitea/System)
-# ENV CARGO_BUILD_JOBS=3 
+# ENV CARGO_BUILD_JOBS=3
 # 2. Use the faster LLD linker you installed earlier
 # ENV RUSTFLAGS="-C link-arg=-fuse-ld=lld"
 # -------------------------------------
@@ -34,9 +34,9 @@ ENV SQLX_OFFLINE=true
 ENV LEPTOS_WASM_BINDGEN_VERSION=0.2.114
 RUN rustup target add wasm32-unknown-unknown
 RUN cargo binstall cargo-leptos -y
-RUN cargo binstall wasm-bindgen-cli --version 0.2.114 -y
+RUN cargo binstall wasm-bindgen-cli --version 0.2.125 -y
 
-RUN cargo leptos build --release --split 
+RUN cargo leptos build --release --split
 # Use environment variables to force 1 job and 1 codegen unit
 # RUN CARGO_BUILD_JOBS=1 RUSTFLAGS="-C codegen-units=1" cargo leptos build --release --split
 
