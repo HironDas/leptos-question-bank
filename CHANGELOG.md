@@ -1,4 +1,11 @@
 
+## 0.4.10 (2026-06-18)
+
+### Fixes
+
+- Add new sqlx prevapre for deployment
+- remove all unused imports for code
+
 ## 0.4.9 (2026-06-18)
 
 ### Features
