@@ -2,17 +2,17 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub enum QuestionType {
-    #[serde(rename = "objective")]
-    Objective,
-    #[serde(rename = "subjective")]
-    Subjective,
+    #[serde(rename = "mcq")]
+    MCQ,
+    #[serde(rename = "cq")]
+    CQ,
 }
 
 impl std::fmt::Display for QuestionType {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            QuestionType::Objective => write!(f, "Objective"),
-            QuestionType::Subjective => write!(f, "Subjective"),
+            QuestionType::MCQ => write!(f, "MCQ"),
+            QuestionType::CQ => write!(f, "CQ"),
         }
     }
 }
@@ -54,7 +54,7 @@ pub struct AddQuestionInput {
     #[validate(length(min = 1, message = "Question text cannot be empty"))]
     pub question_text: String,
     #[validate(length(min = 1, message = "Question type is required"))]
-    pub question_type: String, // "objective" or "subjective"
+    pub question_type: String, // "mcq" or "cq"
     #[validate(range(min = 1, message = "Chapter is required"))]
     pub chapter_id: u32,
     #[validate(range(min = 1, message = "Class is required"))]
@@ -76,7 +76,7 @@ pub struct UpdateQuestionInput {
     #[validate(length(min = 1, message = "Question text cannot be empty"))]
     pub question_text: String,
     #[validate(length(min = 1, message = "Question type is required"))]
-    pub question_type: String, // "objective" or "subjective"
+    pub question_type: String, // "mcq" or "cq"
     #[validate(range(min = 1, message = "Chapter is required"))]
     pub chapter_id: u32,
     #[validate(range(min = 1, message = "Class is required"))]

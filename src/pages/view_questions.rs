@@ -1,4 +1,3 @@
-
 use crate::components::ui::empty_msg::EmptyMsg;
 use crate::domain::question::Question;
 use crate::server_function::academic_helper::chapter::subject_chapter;
@@ -306,10 +305,10 @@ fn QuestionCard(question: Question, index: usize) -> impl IntoView {
     let expanded = RwSignal::new(false);
     let question = StoredValue::new(question);
     let variant = match question.get_value().question_type {
-        crate::domain::question::QuestionType::Objective => {
+        crate::domain::question::QuestionType::MCQ => {
             "bg-blue-50 text-blue-700" // dark:bg-blue-950 dark:text-blue-300"
         }
-        crate::domain::question::QuestionType::Subjective => {
+        crate::domain::question::QuestionType::CQ => {
             "bg-green-50 text-green-700" // dark:bg-green-950 dark:text-green-300"
         }
     };
@@ -340,7 +339,7 @@ fn QuestionCard(question: Question, index: usize) -> impl IntoView {
                 <Show when=move || expanded.get()>
                     <div class="mt-3 pt-3 border-t text-sm">
                         {match question.get_value().question_type {
-                            crate::domain::question::QuestionType::Objective => {
+                            crate::domain::question::QuestionType::MCQ => {
                                 let opts = question.get_value().options.clone();
                                 view! {
                                     <div class="grid gap-1">
@@ -384,7 +383,7 @@ fn QuestionCard(question: Question, index: usize) -> impl IntoView {
                                     </div>
                                 }.into_any()
                             }
-                            crate::domain::question::QuestionType::Subjective => {
+                            crate::domain::question::QuestionType::CQ => {
                                 let ans = question.get_value().answer_text.clone().unwrap_or_default();
                                 view! {
                                     <div>

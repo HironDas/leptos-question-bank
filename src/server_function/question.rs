@@ -8,10 +8,22 @@ pub async fn get_questions(chapter_id: u32) -> Result<Vec<Question>, ServerFnErr
     let mut questions = Vec::new();
     #[cfg(feature = "ssr")]
     {
+        use axum_extra::extract::CookieJar;
         use sqlx::PgPool;
         use std::sync::Arc;
 
+        use crate::util::auth::auth;
+
+        let jar = expect_context::<CookieJar>();
         let pool = expect_context::<Arc<PgPool>>();
+
+        if let Err(_) = auth(pool.clone(), jar).await {
+            use leptos::logging::log;
+            use leptos_axum::redirect;
+
+            log!("Unauthorized");
+            redirect("/unauthorized");
+        }
 
         let rows = sqlx::query!(
             r#"
@@ -30,12 +42,12 @@ pub async fn get_questions(chapter_id: u32) -> Result<Vec<Question>, ServerFnErr
             use crate::util::preview_markdown::render_markdown;
 
             let question_type = match q.question_type.as_str() {
-                "objective" => QuestionType::Objective,
-                "subjective" => QuestionType::Subjective,
-                _ => QuestionType::Subjective,
+                "mcq" => QuestionType::MCQ,
+                "cq" => QuestionType::CQ,
+                _ => QuestionType::CQ,
             };
 
-            let options = if q.question_type == "objective" {
+            let options = if q.question_type == "mcq" {
                 use crate::util::preview_markdown::render_markdown;
 
                 let option_rows = sqlx::query!(
@@ -92,10 +104,22 @@ pub async fn get_question_by_id(id: u32) -> Result<Question, ServerFnError> {
     // let mut questions = Vec::new();
     #[cfg(feature = "ssr")]
     {
+        use axum_extra::extract::CookieJar;
         use sqlx::PgPool;
         use std::sync::Arc;
 
+        use crate::util::auth::auth;
+
+        let jar = expect_context::<CookieJar>();
         let pool = expect_context::<Arc<PgPool>>();
+
+        if let Err(_) = auth(pool.clone(), jar).await {
+            use leptos::logging::log;
+            use leptos_axum::redirect;
+
+            log!("Unauthorized");
+            redirect("/unauthorized");
+        }
 
         let row = sqlx::query!(
             r#"
@@ -111,12 +135,12 @@ pub async fn get_question_by_id(id: u32) -> Result<Question, ServerFnError> {
 
         // for q in rows {
         let question_type = match row.question_type.as_str() {
-            "objective" => QuestionType::Objective,
-            "subjective" => QuestionType::Subjective,
-            _ => QuestionType::Subjective,
+            "mcq" => QuestionType::MCQ,
+            "cq" => QuestionType::CQ,
+            _ => QuestionType::CQ,
         };
 
-        let options = if row.question_type == "objective" {
+        let options = if row.question_type == "mcq" {
             let option_rows = sqlx::query!(
                 r#"
                     SELECT id, option_text, is_correct, "order"
@@ -169,9 +193,21 @@ pub async fn add_question(input: AddQuestionInput) -> Result<Question, ServerFnE
 
     #[cfg(feature = "ssr")]
     {
+        use axum_extra::extract::CookieJar;
         use sqlx::PgPool;
         use std::sync::Arc;
+
+        use crate::util::auth::auth;
+        let jar = expect_context::<CookieJar>();
         let pool = expect_context::<Arc<PgPool>>();
+
+        if let Err(_) = auth(pool.clone(), jar).await {
+            use leptos::logging::log;
+            use leptos_axum::redirect;
+
+            log!("Unauthorized");
+            redirect("/unauthorized");
+        }
         insert_question(pool, input).await.map_err(|e| e.into())
     }
 }
@@ -186,9 +222,21 @@ pub async fn edit_question(input: UpdateQuestionInput) -> Result<Question, Serve
 
     #[cfg(feature = "ssr")]
     {
+        use axum_extra::extract::CookieJar;
         use sqlx::PgPool;
         use std::sync::Arc;
+
+        use crate::util::auth::auth;
+        let jar = expect_context::<CookieJar>();
         let pool = expect_context::<Arc<PgPool>>();
+
+        if let Err(_) = auth(pool.clone(), jar).await {
+            use leptos::logging::log;
+            use leptos_axum::redirect;
+
+            log!("Unauthorized");
+            redirect("/unauthorized");
+        }
         update_question(pool, input).await.map_err(|e| e.into())
     }
 }
@@ -222,9 +270,9 @@ pub async fn insert_question(
 
     let question_id = question_row.id;
 
-    // Insert options for objective questions
+    // Insert options for mcq questions
     let mut options = Vec::new();
-    if question_type_str == "objective" {
+    if question_type_str == "mcq" {
         for option_input in &input.options {
             let option_row = sqlx::query!(
                 r#"
@@ -261,9 +309,9 @@ pub async fn insert_question(
     .await;
 
     let question_type = match question_row.question_type.as_str() {
-        "objective" => QuestionType::Objective,
-        "subjective" => QuestionType::Subjective,
-        _ => QuestionType::Subjective,
+        "mcq" => QuestionType::MCQ,
+        "cq" => QuestionType::CQ,
+        _ => QuestionType::CQ,
     };
 
     Ok(Question {
@@ -320,9 +368,9 @@ pub async fn update_question(
     .await
     .context("Failed to delete Options")?;
 
-    // Insert options for objective questions
+    // Insert options for mcq questions
     let mut options = Vec::new();
-    if question_type_str == "objective" {
+    if question_type_str == "mcq" {
         for option_input in &input.options {
             let option_row = sqlx::query!(
                 r#"
@@ -349,9 +397,9 @@ pub async fn update_question(
     }
 
     let question_type = match question_row.question_type.as_str() {
-        "objective" => QuestionType::Objective,
-        "subjective" => QuestionType::Subjective,
-        _ => QuestionType::Subjective,
+        "mcq" => QuestionType::MCQ,
+        "cq" => QuestionType::CQ,
+        _ => QuestionType::CQ,
     };
 
     Ok(Question {

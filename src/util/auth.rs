@@ -13,7 +13,7 @@ pub async fn auth(pool: Arc<PgPool>, jar: CookieJar) -> Result<(), QuestionBankE
     use leptos::logging;
     use uuid::Uuid;
     let session = jar.get("session").map(|cookie| cookie.value());
-    logging::log!("Session in middleware: {:#?}", session);
+    logging::log!("Session in Auth rs: {:#?}", session);
 
     if let Some(token) = session {
         let token = Uuid::parse_str(token)
@@ -39,7 +39,7 @@ pub async fn auth(pool: Arc<PgPool>, jar: CookieJar) -> Result<(), QuestionBankE
         })
         .context("Something went wrong to fetch session")?
         .exists;
-        logging::log!("I AM IN MIDDLEWARE");
+        logging::log!("I AM IN Auth rs");
         if let Some(true) = is_authencated {
             Ok(())
         } else {

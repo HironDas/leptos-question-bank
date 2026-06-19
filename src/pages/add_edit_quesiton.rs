@@ -125,19 +125,19 @@ pub fn AddEditQuestion() -> impl IntoView {
 
     // --- Dialog state ---
     // let question_dialog_open = RwSignal::new(false);
-    let question_type = RwSignal::new("objective".to_string());
+    let question_type = RwSignal::new("mcq".to_string());
     let question_difficulty = RwSignal::new(Difficulty::Medium);
 
     // --- Derived: button variants for question type toggle ---
     let obj_btn_variant = Memo::new(move |_| {
-        if question_type.get() == "objective" {
+        if question_type.get() == "mcq" {
             "default".to_string()
         } else {
             "outline".to_string()
         }
     });
     let subj_btn_variant = Memo::new(move |_| {
-        if question_type.get() == "subjective" {
+        if question_type.get() == "cq" {
             "default".to_string()
         } else {
             "outline".to_string()
@@ -174,7 +174,7 @@ pub fn AddEditQuestion() -> impl IntoView {
             .filter(|s| !s.is_empty());
 
         let mut options = Vec::new();
-        if qtype == "objective" {
+        if qtype == "mcq" {
             let count = option_count.get_untracked() as usize;
             for i in 0..count {
                 let opt_text = option_refs.get_value()[i]
@@ -243,7 +243,7 @@ pub fn AddEditQuestion() -> impl IntoView {
                 .map(|el| el.set_checked(false));
         }
         option_count.set(4);
-        question_type.set("objective".to_string());
+        question_type.set("mcq".to_string());
         question_difficulty.set(Difficulty::Medium);
         // question_dialog_open.set(true);
     };
@@ -251,8 +251,8 @@ pub fn AddEditQuestion() -> impl IntoView {
     Effect::new(move || {
         if let Some(Some(question)) = edit_question_data.get() {
             match question.question_type {
-                QuestionType::Objective => question_type.set("objective".to_string()),
-                QuestionType::Subjective => question_type.set("subjective".to_string()),
+                QuestionType::MCQ => question_type.set("mcq".to_string()),
+                QuestionType::CQ => question_type.set("cq".to_string()),
             }
 
             match question.difficulty {
@@ -321,20 +321,20 @@ pub fn AddEditQuestion() -> impl IntoView {
                                             variant=obj_btn_variant
                                             on:click=move |ev| {
                                                 ev.prevent_default();
-                                                question_type.set("objective".to_string());
+                                                question_type.set("mcq".to_string());
                                             }
                                         >
-                                            "Objective"
+                                            "MCQ"
                                         </Button>
                                         <Button
                                             size="sm"
                                             variant=subj_btn_variant
                                             on:click=move |ev| {
                                                 ev.prevent_default();
-                                                question_type.set("subjective".to_string());
+                                                question_type.set("cq".to_string());
                                             }
                                         >
-                                            "Subjective"
+                                            "CQ"
                                         </Button>
                                     </ButtonGroup>
                                     </Tooltip>
@@ -382,8 +382,8 @@ pub fn AddEditQuestion() -> impl IntoView {
                                 <RichTextEditor title=String::from("Question") textarea_ref = question_text_ref />
                             </Field>
                             <Field>
-                            // Objective: Options section
-                            <Show when=move || question_type.get() == "objective">
+                            // MCQ: Options section
+                            <Show when=move || question_type.get() == "mcq">
                                 <div class="grid gap-2">
                                     <Label>"Options"</Label>
                                     <p class="text-xs text-muted-foreground">
@@ -451,8 +451,8 @@ pub fn AddEditQuestion() -> impl IntoView {
                             </Show>
                             </Field>
                             <Field>
-                                // Subjective: Answer section
-                                <Show when=move || question_type.get() == "subjective">
+                                // CQ: Answer section
+                                <Show when=move || question_type.get() == "cq">
                                     <div class="grid gap-2">
                                         <RichTextEditor title=String::from("Answer") textarea_ref = answer_text_ref />
                                     </div>
