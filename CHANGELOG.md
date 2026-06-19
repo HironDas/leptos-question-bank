@@ -1,4 +1,10 @@
 
+## 0.5.1 (2026-06-19)
+
+### Fixes
+
+- Update question type from subjective/objective to cq/mcq & also add auth in veiw and question pages
+
 ## 0.4.10 (2026-06-18)
 
 ### Fixes
