@@ -1,9 +1,8 @@
-use icondata::{LuPlus, VsListTree};
+use icondata::{LuColumns3, LuListTree, LuPlus};
 use leptos::{html, logging::log, prelude::*};
 use leptos_router::{lazy_route, LazyRoute};
 // use leptos_drag_reorder::provide_drag_reorder;
-use singlestage::*;
-
+use crate::pages::class_setting::column_view::ColumnView;
 use crate::{
     components::ui::empty_msg::EmptyMsg,
     server_function::{
@@ -11,6 +10,7 @@ use crate::{
         academic_setting::{academic_setting, Class},
     },
 };
+use singlestage::*;
 
 // use crate::server_function::academic_setting::Class;
 
@@ -42,6 +42,25 @@ impl LazyRoute for ClassSettingRoute {
         let class_dialog_open = RwSignal::new(false);
         let add_class_action = ServerAction::<AddClass>::new();
 
+        let view = RwSignal::new("tree");
+
+        // --- Derived: Button barinat for view button ---
+        let tree_btn_variant = Memo::new(move |_| {
+            if view.get() == "tree" {
+                "default".to_string()
+            } else {
+                "outline".to_string()
+            }
+        });
+
+        let column_btn_variant = Memo::new(move |_| {
+            if view.get() == "column" {
+                "default".to_string()
+            } else {
+                "outline".to_string()
+            }
+        });
+
         let class_name_ref = NodeRef::<html::Input>::new();
         let class_name_bn_ref = NodeRef::<html::Input>::new();
 
@@ -50,6 +69,15 @@ impl LazyRoute for ClassSettingRoute {
         let classes = RwSignal::new(Vec::<Class>::new());
 
         let update_class_action = ServerAction::<UpdateClass>::new();
+
+        // Derived memo for Card class to avoid passing a closure directly
+        let card_class = Memo::new(move |_| {
+            if view.get() == "tree" {
+                "w-full md:w-2/3 lg:w-1/2 mx-auto".to_string()
+            } else {
+                "w-full".to_string()
+            }
+        });
 
         Effect::new(move || {
             if value.get().map(|v| v.is_ok()).unwrap_or(false) {
@@ -119,14 +147,20 @@ impl LazyRoute for ClassSettingRoute {
                                 }
                             }
                         >
-                            <Card class="w-full md:w-2/3 lg:w-1/2 mx-auto">
+                            <Card class=card_class>
                                 <div class="px-4 flex justify-between">
-                                    <Button size="small" variant="outline">
-                                        {icon!(VsListTree)}
+                                <div class="flex gap-2">
+                                    <Button size="small" variant=tree_btn_variant on:click=move|_|view.set("tree")>
+                                        {icon!(LuListTree)}
                                     </Button>
+                                    <Button size="small" variant=column_btn_variant on:click=move|_| view.set("column")>
+                                        {icon!(LuColumns3)}
+                                    </Button>
+                                </div>
                                     <Button
                                         size="small"
-                                        on:click=move |_| {
+                                        on:click=move |ev| {
+                                            ev.prevent_default();
                                             class_name_ref
                                                 .get()
                                                 .map(|input| {
@@ -144,6 +178,7 @@ impl LazyRoute for ClassSettingRoute {
                                         "Class"
                                     </Button>
                                 </div>
+                                <Show when=move||view.get()=="tree" fallback=move|| view!{<ColumnView classes=classes/>}>
                                 <Accordion class="w-full">
                                     <For
                                         each=move || classes.get()
@@ -170,6 +205,7 @@ impl LazyRoute for ClassSettingRoute {
                                         }
                                     />
                                 </Accordion>
+                                </Show>
                             </Card>
                         </Show>
 
@@ -296,6 +332,7 @@ pub fn PageSkeleton() -> impl IntoView {
 
 pub mod chapter_item;
 pub mod class_item;
+pub mod column_view;
 pub mod subject_item;
 
 use class_item::ClassAccordionItem;
