@@ -215,95 +215,7 @@ pub fn SubjectAccordionItem(
                             </ActionForm>
                         </Dialog>
 
-                        <Dialog open=subject_dialog_open>
-                            <DialogTrigger slot>
-                                <Tooltip value="Update Subject">
-                                    <Button
-                                        variant="ghost"
-                                        size="small"
-                                        on:click=move |ev| {
-                                            ev.prevent_default();
-                                            input_ref
-                                                .get()
-                                                .map(|input| {
-                                                    input.set_value(&subject.get().title);
-                                                });
-                                            subject_dialog_open.set(true);
-                                        }
-                                    >
-                                        {icon!(AiEditOutlined)}
-                                    </Button>
-                                </Tooltip>
-                            </DialogTrigger>
-                            <DialogClose />
-                            <DialogHeader>
-                                <DialogTitle>"Update Subject"</DialogTitle>
-                                <DialogDescription>"Update the subject title."</DialogDescription>
-                            </DialogHeader>
-                            <ActionForm action=update_subject_action>
-                                <DialogContent>
-                                    <div class="form">
-                                        <div class="grid gap-4">
-
-                                            <Input
-                                                name="subject_id"
-                                                input_type="hidden"
-                                                prop:value=move || subject.get().id.to_string()
-                                            />
-
-                                            <div class="grid gap-2">
-                                                <Label label_for="subject_title">"Title"</Label>
-                                                <InputGroup>
-                                                    <Input
-                                                        name="title"
-                                                        input_type="text"
-                                                        placeholder="Enter subject title"
-                                                        node_ref=input_ref
-                                                    />
-                                                    // prop:node_ref=input_refan
-                                                    // input_node_ref=input_ref
-                                                    <InputGroupAddon align="inline-end">
-                                                        <Tooltip value="Subject title should be less than 120 characters">
-                                                            <Button variant="ghost" aria_label="Info" size="icon-xs">
-                                                                {icon!(icondata::LuInfo)}
-                                                            </Button>
-                                                        </Tooltip>
-                                                    </InputGroupAddon>
-                                                </InputGroup>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </DialogContent>
-
-                                <footer class="justify-end flex-row gap-2 flex form mt-4">
-                                    <Button
-                                        size="small"
-                                        on:click=move |ev| {
-                                            ev.prevent_default();
-                                            subject_dialog_open.set(false);
-                                        }
-                                        variant="outline"
-                                    >
-                                        "Cancel"
-                                    </Button>
-                                    <Button
-                                        size="small"
-                                        button_type="submit"
-                                        attr:disabled=move || update_subject_action.pending().get()
-                                    >
-
-                                        <Show
-                                            when=move || update_subject_action.pending().get()
-                                            fallback=|| view! { "Update Subject" }
-                                        >
-                                            "Processing..."
-                                            <Spinner />
-                                        </Show>
-                                    </Button>
-                                </footer>
-
-                            </ActionForm>
-                        </Dialog>
+                        <UpdateSubjectDialog input_ref subject_dialog_open subject update_subject_action/>
                     </div>
                 </div>
             </AccordionTrigger>
@@ -346,5 +258,106 @@ pub fn SubjectAccordionItem(
                 </Suspense>
             </AccordionContent>
         </AccordionItem>
+    }
+}
+
+#[component]
+pub fn UpdateSubjectDialog(
+    subject_dialog_open: RwSignal<bool>,
+    input_ref: NodeRef<html::Input>,
+    subject: Memo<Subject>,
+    update_subject_action: ServerAction<UpdateSubject>,
+) -> impl IntoView {
+    view! {
+        <Dialog open=subject_dialog_open>
+            <DialogTrigger slot>
+                <Tooltip value="Update Subject">
+                    <Button
+                        variant="ghost"
+                        size="small"
+                        on:click=move |ev| {
+                            ev.prevent_default();
+                            ev.stop_propagation();
+                            input_ref
+                                .get()
+                                .map(|input| {
+                                    input.set_value(&subject.get().title);
+                                });
+                            subject_dialog_open.set(true);
+                        }
+                    >
+                        {icon!(AiEditOutlined)}
+                    </Button>
+                </Tooltip>
+            </DialogTrigger>
+            <DialogClose />
+            <DialogHeader>
+                <DialogTitle>"Update Subject"</DialogTitle>
+                <DialogDescription>"Update the subject title."</DialogDescription>
+            </DialogHeader>
+            <ActionForm action=update_subject_action>
+                <DialogContent>
+                    <div class="form">
+                        <div class="grid gap-4">
+
+                            <Input
+                                name="subject_id"
+                                input_type="hidden"
+                                prop:value=move || subject.get().id.to_string()
+                            />
+
+                            <div class="grid gap-2">
+                                <Label label_for="subject_title">"Title"</Label>
+                                <InputGroup>
+                                    <Input
+                                        name="title"
+                                        input_type="text"
+                                        placeholder="Enter subject title"
+                                        node_ref=input_ref
+                                    />
+                                    // prop:node_ref=input_refan
+                                    // input_node_ref=input_ref
+                                    <InputGroupAddon align="inline-end">
+                                        <Tooltip value="Subject title should be less than 120 characters">
+                                            <Button variant="ghost" aria_label="Info" size="icon-xs">
+                                                {icon!(icondata::LuInfo)}
+                                            </Button>
+                                        </Tooltip>
+                                    </InputGroupAddon>
+                                </InputGroup>
+                            </div>
+                        </div>
+                    </div>
+                </DialogContent>
+
+                <footer class="justify-end flex-row gap-2 flex form mt-4">
+                    <Button
+                        size="small"
+                        on:click=move |ev| {
+                            ev.prevent_default();
+                            subject_dialog_open.set(false);
+                        }
+                        variant="outline"
+                    >
+                        "Cancel"
+                    </Button>
+                    <Button
+                        size="small"
+                        button_type="submit"
+                        attr:disabled=move || update_subject_action.pending().get()
+                    >
+
+                        <Show
+                            when=move || update_subject_action.pending().get()
+                            fallback=|| view! { "Update Subject" }
+                        >
+                            "Processing..."
+                            <Spinner />
+                        </Show>
+                    </Button>
+                </footer>
+
+            </ActionForm>
+        </Dialog>
     }
 }

@@ -135,6 +135,7 @@ pub fn ClassAccordionItem(
                                         size="small"
                                         on:click=move |ev| {
                                             ev.prevent_default();
+                                            ev.stop_propagation();
                                             input_ref
                                                 .get()
                                                 .map(|input| {
@@ -219,111 +220,7 @@ pub fn ClassAccordionItem(
                             </ActionForm>
                         </Dialog>
 
-                        <Dialog open=class_dialog_update_open>
-                            <DialogTrigger slot>
-                                <Tooltip value="Edit Class">
-                                    <Button
-                                        variant="ghost"
-                                        size="small"
-                                        on:click=move |ev| {
-                                            ev.prevent_default();
-                                            class_dialog_update_open.set(true);
-                                        }
-                                    >
-                                        {icon!(AiEditOutlined)}
-                                    </Button>
-                                </Tooltip>
-                            </DialogTrigger>
-
-                            <DialogClose />
-
-                            <DialogHeader>
-                                <DialogTitle>"Edit Class"</DialogTitle>
-                                <DialogDescription>
-                                    "Update the class to the academic settings."
-                                </DialogDescription>
-                            </DialogHeader>
-
-                            <ActionForm action=update_class_action>
-                                <DialogContent>
-                                    <div class="form grid gap-4">
-                                        <div class="grid gap-2">
-                                            <Input
-                                                name="class[class_id]"
-                                                input_type="hidden"
-                                                prop:value=move || class.get().id.to_string()
-                                            />
-                                            <Label label_for="class_name">"Class Name (English)"</Label>
-                                            <InputGroup>
-                                                <Input
-                                                    id="class_name"
-                                                    value=class.get().name
-                                                    name="class[name]"
-                                                    input_type="text"
-                                                    placeholder="Enter class name in English"
-                                                />
-                                                <InputGroupAddon align="inline-end">
-                                                    <Tooltip value="Class name should be less than 50 characters">
-                                                        <Button variant="ghost" aria_label="Info" size="icon-xs">
-                                                            {icon!(icondata::LuInfo)}
-                                                        </Button>
-                                                    </Tooltip>
-                                                </InputGroupAddon>
-                                            </InputGroup>
-                                        </div>
-                                        <div class="grid gap-2">
-
-                                            <Label label_for="class_name_bn">
-                                                "Class Name (বাংলা)"
-                                            </Label>
-                                            <InputGroup>
-                                                <Input
-                                                    id="class_name_bn"
-                                                    value=class.get().name_bn
-                                                    name="class[name_bn]"
-                                                    input_type="text"
-                                                    placeholder="Enter class name in Bangla"
-                                                />
-                                                <InputGroupAddon align="inline-end">
-                                                    <Tooltip value="Class name should be less than 120 characters">
-                                                        <Button variant="ghost" aria_label="Info" size="icon-xs">
-                                                            {icon!(icondata::LuInfo)}
-                                                        </Button>
-                                                    </Tooltip>
-                                                </InputGroupAddon>
-                                            </InputGroup>
-                                        </div>
-                                    </div>
-                                </DialogContent>
-
-                                <footer class="justify-end flex-row gap-2 flex form mt-4">
-                                    <Button
-                                        size="small"
-                                        on:click=move |ev| {
-                                            ev.prevent_default();
-                                            class_dialog_update_open.set(false);
-                                        }
-                                        variant="outline"
-                                    >
-                                        "Cancel"
-                                    </Button>
-                                    <Button
-                                        size="small"
-                                        button_type="submit"
-                                        attr:disabled=move || update_class_action.pending().get()
-                                    >
-
-                                        <Show
-                                            when=move || update_class_action.pending().get()
-                                            fallback=|| view! { "Update Class" }
-                                        >
-                                            "Processing..."
-                                            <Spinner />
-                                        </Show>
-                                    </Button>
-                                </footer>
-                            </ActionForm>
-                        </Dialog>
+                       <UpdateClassDialog class_dialog_update_open update_class_action class/>
 
                     </div>
                 </div>
@@ -370,5 +267,122 @@ pub fn ClassAccordionItem(
                 </Suspense>
             </AccordionContent>
         </AccordionItem>
+    }
+}
+
+#[component]
+pub fn UpdateClassDialog(
+    #[prop(into)] class_dialog_update_open: RwSignal<bool>,
+    // class_input_ref: NodeRef<html::Input>,
+    update_class_action: ServerAction<UpdateClass>,
+    class: Memo<Class>,
+) -> impl IntoView {
+    view! {
+        <Dialog open=class_dialog_update_open>
+            <DialogTrigger slot>
+                <Tooltip value="Edit Class">
+                    <Button
+                        variant="ghost"
+                        size="small"
+                        on:click=move |ev| {
+                            ev.prevent_default();
+                            ev.stop_propagation();
+                            class_dialog_update_open.set(true);
+                        }
+                    >
+                        {icon!(AiEditOutlined)}
+                    </Button>
+                </Tooltip>
+            </DialogTrigger>
+
+            <DialogClose />
+
+            <DialogHeader>
+                <DialogTitle>"Edit Class"</DialogTitle>
+                <DialogDescription>
+                    "Update the class to the academic settings."
+                </DialogDescription>
+            </DialogHeader>
+
+            <ActionForm action=update_class_action>
+                <DialogContent>
+                    <div class="form grid gap-4">
+                        <div class="grid gap-2">
+                            <Input
+                                name="class[class_id]"
+                                input_type="hidden"
+                                prop:value=move || class.get().id.to_string()
+                            />
+                            <Label label_for="class_name">"Class Name (English)"</Label>
+                            <InputGroup>
+                                <Input
+                                    id="class_name"
+                                    value=class.get().name
+                                    name="class[name]"
+                                    input_type="text"
+                                    placeholder="Enter class name in English"
+                                />
+                                <InputGroupAddon align="inline-end">
+                                    <Tooltip value="Class name should be less than 50 characters">
+                                        <Button variant="ghost" aria_label="Info" size="icon-xs">
+                                            {icon!(icondata::LuInfo)}
+                                        </Button>
+                                    </Tooltip>
+                                </InputGroupAddon>
+                            </InputGroup>
+                        </div>
+                        <div class="grid gap-2">
+
+                            <Label label_for="class_name_bn">
+                                "Class Name (বাংলা)"
+                            </Label>
+                            <InputGroup>
+                                <Input
+                                    id="class_name_bn"
+                                    value=class.get().name_bn
+                                    name="class[name_bn]"
+                                    input_type="text"
+                                    placeholder="Enter class name in Bangla"
+                                />
+                                <InputGroupAddon align="inline-end">
+                                    <Tooltip value="Class name should be less than 120 characters">
+                                        <Button variant="ghost" aria_label="Info" size="icon-xs">
+                                            {icon!(icondata::LuInfo)}
+                                        </Button>
+                                    </Tooltip>
+                                </InputGroupAddon>
+                            </InputGroup>
+                        </div>
+                    </div>
+                </DialogContent>
+
+                <footer class="justify-end flex-row gap-2 flex form mt-4">
+                    <Button
+                        size="small"
+                        on:click=move |ev| {
+                            ev.prevent_default();
+                            class_dialog_update_open.set(false);
+                        }
+                        variant="outline"
+                    >
+                        "Cancel"
+                    </Button>
+                    <Button
+                        size="small"
+                        button_type="submit"
+                        attr:disabled=move || update_class_action.pending().get()
+                    >
+
+                        <Show
+                            when=move || update_class_action.pending().get()
+                            fallback=|| view! { "Update Class" }
+                        >
+                            "Processing..."
+                            <Spinner />
+                        </Show>
+                    </Button>
+                </footer>
+            </ActionForm>
+        </Dialog>
     }
 }

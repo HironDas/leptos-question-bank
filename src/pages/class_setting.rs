@@ -178,7 +178,7 @@ impl LazyRoute for ClassSettingRoute {
                                         "Class"
                                     </Button>
                                 </div>
-                                <Show when=move||view.get()=="tree" fallback=move|| view!{<ColumnView classes=classes/>}>
+                                <Show when=move||view.get()=="tree" fallback=move|| view!{<ColumnView classes=classes update_class_action/>}>
                                 <Accordion class="w-full">
                                     <For
                                         each=move || classes.get()
