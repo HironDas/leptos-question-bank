@@ -1,4 +1,12 @@
 
+## 0.5.2 (2026-06-23)
+
+### Features
+
+- Column view is added
+- Add update feature on Colume view
+- Add New view in academic setting
+
 ## 0.5.1 (2026-06-19)
 
 ### Fixes
