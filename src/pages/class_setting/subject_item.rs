@@ -119,102 +119,11 @@ pub fn SubjectAccordionItem(
                         )>{move || subject.get().title}</span>
                     </div>
                     <div class="flex">
-                        <Dialog open=chapter_dialog_open>
-                            <DialogTrigger slot>
-                                <Tooltip value="Add Chapter">
-                                    <Button
-                                        variant="ghost"
-                                        size="small"
-                                        on:click=move |ev| {
-                                            ev.prevent_default();
-                                            chapter_input_ref
-                                                .get()
-                                                .map(|input| {
-                                                    input.set_value("");
-                                                });
-                                            log!(
-                                                "Opening chapter dialog for subject id: {}", subject.get().id
-                                            );
-                                            chapter_dialog_open.set(true);
-                                        }
-                                    >
-                                        {icon!(LuPlus)}
-                                    </Button>
-                                </Tooltip>
-                            </DialogTrigger>
-                            <DialogClose />
-                            <DialogHeader>
-                                <DialogTitle>"Add Chapter"</DialogTitle>
-                                <DialogDescription>
-                                    "Add a new chapter to the subject."
-                                </DialogDescription>
-                            </DialogHeader>
-                            <ActionForm action=add_chapter_action>
-                                <DialogContent>
-                                    <div class="form">
-                                        <div class="grid gap-4">
-
-                                            <Input
-                                                name="subject_id"
-                                                input_type="hidden"
-                                                prop:value=move || subject.get().id.to_string()
-                                            />
-
-                                            <div class="grid gap-2">
-                                                <Label label_for="chapter_title">"Title"</Label>
-                                                <InputGroup>
-                                                    <Input
-                                                        id="chapter_title"
-                                                        name="title"
-                                                        input_type="text"
-                                                        placeholder="Enter chapter title"
-                                                        node_ref=chapter_input_ref
-                                                    />
-                                                    // prop:node_ref=input_refan
-                                                    // input_node_ref=input_ref
-                                                    <InputGroupAddon align="inline-end">
-                                                        <Tooltip value="Chapter title should be less than 120 characters">
-                                                            <Button variant="ghost" aria_label="Info" size="icon-xs">
-                                                                {icon!(icondata::LuInfo)}
-                                                            </Button>
-                                                        </Tooltip>
-                                                    </InputGroupAddon>
-                                                </InputGroup>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </DialogContent>
-
-                                <footer class="justify-end flex-row gap-2 flex form mt-4">
-                                    <Button
-                                        size="small"
-                                        on:click=move |ev| {
-                                            ev.prevent_default();
-                                            chapter_dialog_open.set(false);
-                                        }
-                                        variant="outline"
-                                    >
-                                        "Cancel"
-                                    </Button>
-                                    <Button
-                                        size="small"
-                                        button_type="submit"
-                                        attr:disabled=move || add_chapter_action.pending().get()
-                                    >
-
-                                        <Show
-                                            when=move || add_chapter_action.pending().get()
-                                            fallback=|| view! { "Create Chapter" }
-                                        >
-                                            "Processing..."
-                                            <Spinner />
-                                        </Show>
-                                    </Button>
-                                </footer>
-
-                            </ActionForm>
-                        </Dialog>
-
+                        <AddChapterDialog
+                            chapter_dialog_open
+                            chapter_input_ref
+                            subject
+                            add_chapter_action/>
                         <UpdateSubjectDialog input_ref subject_dialog_open subject update_subject_action/>
                     </div>
                 </div>
@@ -359,5 +268,111 @@ pub fn UpdateSubjectDialog(
 
             </ActionForm>
         </Dialog>
+    }
+}
+
+#[component]
+pub fn AddChapterDialog(
+    chapter_dialog_open: RwSignal<bool>,
+    chapter_input_ref: NodeRef<html::Input>,
+    subject: Memo<Subject>,
+    add_chapter_action: ServerAction<AddChapter>,
+) -> impl IntoView {
+    view! {
+    <Dialog open=chapter_dialog_open>
+        <DialogTrigger slot>
+            <Tooltip value="Add Chapter">
+                <Button
+                    variant="ghost"
+                    size="small"
+                    on:click=move |ev| {
+                        ev.prevent_default();
+                        chapter_input_ref
+                            .get()
+                            .map(|input| {
+                                input.set_value("");
+                            });
+                        log!(
+                            "Opening chapter dialog for subject id: {}", subject.get().id
+                        );
+                        chapter_dialog_open.set(true);
+                    }
+                >
+                    {icon!(LuPlus)}
+                </Button>
+            </Tooltip>
+        </DialogTrigger>
+        <DialogClose />
+        <DialogHeader>
+            <DialogTitle>"Add Chapter"</DialogTitle>
+            <DialogDescription>
+                "Add a new chapter to the subject."
+            </DialogDescription>
+        </DialogHeader>
+        <ActionForm action=add_chapter_action>
+            <DialogContent>
+                <div class="form">
+                    <div class="grid gap-4">
+
+                        <Input
+                            name="subject_id"
+                            input_type="hidden"
+                            prop:value=move || subject.get().id.to_string()
+                        />
+
+                        <div class="grid gap-2">
+                            <Label label_for="chapter_title">"Title"</Label>
+                            <InputGroup>
+                                <Input
+                                    id="chapter_title"
+                                    name="title"
+                                    input_type="text"
+                                    placeholder="Enter chapter title"
+                                    node_ref=chapter_input_ref
+                                />
+                                // prop:node_ref=input_refan
+                                // input_node_ref=input_ref
+                                <InputGroupAddon align="inline-end">
+                                    <Tooltip value="Chapter title should be less than 120 characters">
+                                        <Button variant="ghost" aria_label="Info" size="icon-xs">
+                                            {icon!(icondata::LuInfo)}
+                                        </Button>
+                                    </Tooltip>
+                                </InputGroupAddon>
+                            </InputGroup>
+                        </div>
+                    </div>
+                </div>
+            </DialogContent>
+
+            <footer class="justify-end flex-row gap-2 flex form mt-4">
+                <Button
+                    size="small"
+                    on:click=move |ev| {
+                        ev.prevent_default();
+                        chapter_dialog_open.set(false);
+                    }
+                    variant="outline"
+                >
+                    "Cancel"
+                </Button>
+                <Button
+                    size="small"
+                    button_type="submit"
+                    attr:disabled=move || add_chapter_action.pending().get()
+                >
+
+                    <Show
+                        when=move || add_chapter_action.pending().get()
+                        fallback=|| view! { "Create Chapter" }
+                    >
+                        "Processing..."
+                        <Spinner />
+                    </Show>
+                </Button>
+            </footer>
+
+        </ActionForm>
+    </Dialog>
     }
 }

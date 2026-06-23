@@ -126,100 +126,7 @@ pub fn ClassAccordionItem(
                     </div>
 
                     <div class="flex">
-
-                        <Dialog open=subject_dialog_open>
-                            <DialogTrigger slot>
-                                <Tooltip value="Add Subject">
-                                    <Button
-                                        variant="ghost"
-                                        size="small"
-                                        on:click=move |ev| {
-                                            ev.prevent_default();
-                                            ev.stop_propagation();
-                                            input_ref
-                                                .get()
-                                                .map(|input| {
-                                                    input.set_value("");
-                                                });
-                                            subject_dialog_open.set(true);
-                                        }
-                                    >
-                                        {icon!(LuPlus)}
-                                    </Button>
-                                </Tooltip>
-                            </DialogTrigger>
-                            <DialogClose />
-                            <DialogHeader>
-                                <DialogTitle>"Add Subject"</DialogTitle>
-                                <DialogDescription>
-                                    "Add a new subject to the class."
-                                </DialogDescription>
-                            </DialogHeader>
-                            <ActionForm action=add_subject_action>
-                                <DialogContent>
-                                    <div class="form">
-                                        <div class="grid gap-4">
-
-                                            <Input
-                                                name="class_id"
-                                                input_type="hidden"
-                                                value=class.get().id.to_string()
-                                            />
-
-                                            <div class="grid gap-2">
-                                                <Label label_for="subject_title">"Title"</Label>
-                                                <InputGroup>
-                                                    <Input
-                                                        name="title"
-                                                        input_type="text"
-                                                        placeholder="Enter subject title"
-                                                        node_ref=input_ref
-                                                    />
-                                                    // prop:node_ref=input_refan
-                                                    // input_node_ref=input_ref
-                                                    <InputGroupAddon align="inline-end">
-                                                        <Tooltip value="Subject title should be less than 120 characters">
-                                                            <Button variant="ghost" aria_label="Info" size="icon-xs">
-                                                                {icon!(icondata::LuInfo)}
-                                                            </Button>
-                                                        </Tooltip>
-                                                    </InputGroupAddon>
-                                                </InputGroup>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </DialogContent>
-
-                                <footer class="justify-end flex-row gap-2 flex form mt-4">
-                                    <Button
-                                        size="small"
-                                        on:click=move |ev| {
-                                            ev.prevent_default();
-                                            subject_dialog_open.set(false);
-                                        }
-                                        variant="outline"
-                                    >
-                                        "Cancel"
-                                    </Button>
-                                    <Button
-                                        size="small"
-                                        button_type="submit"
-                                        attr:disabled=move || add_subject_action.pending().get()
-                                    >
-
-                                        <Show
-                                            when=move || add_subject_action.pending().get()
-                                            fallback=|| view! { "Create Subject" }
-                                        >
-                                            "Processing..."
-                                            <Spinner />
-                                        </Show>
-                                    </Button>
-                                </footer>
-
-                            </ActionForm>
-                        </Dialog>
-
+                       <AddSubjectDialog input_ref class add_subject_action  subject_dialog_open/>
                        <UpdateClassDialog class_dialog_update_open update_class_action class/>
 
                     </div>
@@ -382,6 +289,109 @@ pub fn UpdateClassDialog(
                         </Show>
                     </Button>
                 </footer>
+            </ActionForm>
+        </Dialog>
+    }
+}
+
+#[component]
+pub fn AddSubjectDialog(
+    subject_dialog_open: RwSignal<bool>,
+    input_ref: NodeRef<html::Input>,
+    add_subject_action: ServerAction<AddSubject>,
+    class: Memo<Class>,
+) -> impl IntoView {
+    view! {
+        <Dialog open=subject_dialog_open>
+            <DialogTrigger slot>
+                <Tooltip value="Add Subject">
+                    <Button
+                        variant="ghost"
+                        size="small"
+                        on:click=move |ev| {
+                            ev.prevent_default();
+                            // ev.stop_propagation();
+                            input_ref
+                                .get()
+                                .map(|input| {
+                                    input.set_value("");
+                                });
+                            subject_dialog_open.set(true);
+                        }
+                    >
+                        {icon!(LuPlus)}
+                    </Button>
+                </Tooltip>
+            </DialogTrigger>
+            <DialogClose />
+            <DialogHeader>
+                <DialogTitle>"Add Subject"</DialogTitle>
+                <DialogDescription>
+                    "Add a new subject to the class."
+                </DialogDescription>
+            </DialogHeader>
+            <ActionForm action=add_subject_action>
+                <DialogContent>
+                    <div class="form">
+                        <div class="grid gap-4">
+
+                            <Input
+                                name="class_id"
+                                input_type="hidden"
+                                value=class.get().id.to_string()
+                            />
+
+                            <div class="grid gap-2">
+                                <Label label_for="subject_title">"Title"</Label>
+                                <InputGroup>
+                                    <Input
+                                        name="title"
+                                        input_type="text"
+                                        placeholder="Enter subject title"
+                                        node_ref=input_ref
+                                    />
+                                    // prop:node_ref=input_refan
+                                    // input_node_ref=input_ref
+                                    <InputGroupAddon align="inline-end">
+                                        <Tooltip value="Subject title should be less than 120 characters">
+                                            <Button variant="ghost" aria_label="Info" size="icon-xs">
+                                                {icon!(icondata::LuInfo)}
+                                            </Button>
+                                        </Tooltip>
+                                    </InputGroupAddon>
+                                </InputGroup>
+                            </div>
+                        </div>
+                    </div>
+                </DialogContent>
+
+                <footer class="justify-end flex-row gap-2 flex form mt-4">
+                    <Button
+                        size="small"
+                        on:click=move |ev| {
+                            ev.prevent_default();
+                            subject_dialog_open.set(false);
+                        }
+                        variant="outline"
+                    >
+                        "Cancel"
+                    </Button>
+                    <Button
+                        size="small"
+                        button_type="submit"
+                        attr:disabled=move || add_subject_action.pending().get()
+                    >
+
+                        <Show
+                            when=move || add_subject_action.pending().get()
+                            fallback=|| view! { "Create Subject" }
+                        >
+                            "Processing..."
+                            <Spinner />
+                        </Show>
+                    </Button>
+                </footer>
+
             </ActionForm>
         </Dialog>
     }

@@ -5,12 +5,16 @@ use leptos::IntoView;
 use singlestage::*;
 
 use crate::pages::class_setting::chapter_item::UpdateChapterDialog;
+use crate::pages::class_setting::class_item::AddSubjectDialog;
 use crate::pages::class_setting::class_item::UpdateClassDialog;
+use crate::pages::class_setting::subject_item::AddChapterDialog;
 use crate::pages::class_setting::subject_item::UpdateSubjectDialog;
 use crate::server_function::academic_helper::chapter::subject_chapter;
+use crate::server_function::academic_helper::chapter::AddChapter;
 use crate::server_function::academic_helper::chapter::UpdateChapter;
 use crate::server_function::academic_helper::class::UpdateClass;
 use crate::server_function::academic_helper::subject;
+use crate::server_function::academic_helper::subject::AddSubject;
 use crate::server_function::academic_helper::subject::UpdateSubject;
 use crate::server_function::academic_setting::Chapter;
 use crate::server_function::academic_setting::Class;
@@ -35,6 +39,36 @@ pub fn ColumnView(
 
     let update_subject_action = ServerAction::<UpdateSubject>::new();
     let update_subject_value = update_subject_action.value();
+
+    let add_subject_action = ServerAction::<AddSubject>::new();
+    let add_subject_value = add_subject_action.value();
+
+    let add_chapter_action = ServerAction::<AddChapter>::new();
+    let add_chapter_value = add_chapter_action.value();
+
+    Effect::new(move || {
+        // 1. Force Leptos to track this signal immediately on every single run
+        let current_action_value = add_subject_value.get();
+        // 2. Safely unpack the tracked value using standard pattern matching
+        if let Some(Ok(subject)) = current_action_value {
+            subjects.update(move |subjects_vec| {
+                subjects_vec.push(subject);
+                subjects_vec.sort_by_key(|s| s.order);
+            });
+        }
+    });
+
+    Effect::new(move || {
+        // 1. Force Leptos to track this signal immediately on every single run
+        let current_action_value = add_chapter_value.get();
+        // 2. Safely unpack the tracked value using standard pattern matching
+        if let Some(Ok(chapter)) = current_action_value {
+            chapters.update(move |chapters_vec| {
+                chapters_vec.push(chapter);
+                chapters_vec.sort_by_key(|s| s.order);
+            });
+        }
+    });
 
     Effect::new(move || {
         // 1. Force Leptos to track this signal immediately on every single run
@@ -150,11 +184,12 @@ pub fn ColumnView(
                                        .unwrap_or_else(|| class.clone())
                                });
                                view! {
-                                   <ClassUpdateModal
+                                   <ClassItem
                                        class=memo_class
                                        update_class_action=update_class_action
                                        selected_class_id
                                        hide_chapter
+                                       add_subject_action
                                    />
                                }
                            }/>
@@ -171,7 +206,7 @@ pub fn ColumnView(
                            });
 
                            view!{
-                               <SubjectUpdateModal subject=memo_subject update_subject_action selected_subject_id hide_chapter/>
+                               <SubjectItem subject=memo_subject update_subject_action selected_subject_id hide_chapter add_chapter_action/>
                            }
                        }/>
 
@@ -244,19 +279,29 @@ fn ChapterUpdateModal(
 }
 
 #[component]
-fn ClassUpdateModal(
+fn ClassItem(
     class: Memo<Class>,
     update_class_action: ServerAction<UpdateClass>,
+    add_subject_action: ServerAction<AddSubject>,
     selected_class_id: RwSignal<Option<u32>>,
     hide_chapter: RwSignal<bool>,
 ) -> impl IntoView {
     let class_dialog_open = RwSignal::new(false);
+    let subject_dialog_open = RwSignal::new(false);
 
     let update_class_value = update_class_action.value();
+    let add_subject_value = add_subject_action.value();
+    let input_ref = NodeRef::<html::Input>::new();
 
     Effect::new(move || {
         if update_class_value.get().map(|v| v.is_ok()).unwrap_or(false) {
             class_dialog_open.set(false);
+        }
+    });
+
+    Effect::new(move || {
+        if add_subject_value.get().map(|v| v.is_ok()).unwrap_or(false) {
+            subject_dialog_open.set(false);
         }
     });
 
@@ -285,6 +330,7 @@ fn ClassUpdateModal(
                        <ItemDescription class="font-bengali">{move||class.get().name_bn}</ItemDescription>
                    </ItemContent>
                    <ItemActions>
+                        <AddSubjectDialog input_ref class add_subject_action  subject_dialog_open/>
                         <UpdateClassDialog class_dialog_update_open=class_dialog_open update_class_action class/>
                        {icon!(icondata::LuChevronRight, class="size-4")}
                    </ItemActions>
@@ -294,16 +340,21 @@ fn ClassUpdateModal(
 }
 
 #[component]
-fn SubjectUpdateModal(
+fn SubjectItem(
     subject: Memo<Subject>,
     update_subject_action: ServerAction<UpdateSubject>,
+    add_chapter_action: ServerAction<AddChapter>,
     selected_subject_id: RwSignal<Option<u32>>,
     hide_chapter: RwSignal<bool>,
 ) -> impl IntoView {
     let subject_dialog_open = RwSignal::new(false);
+    let chapter_dialog_open = RwSignal::new(false);
+
     let input_ref = NodeRef::<html::Input>::new();
+    let chapter_input_ref = NodeRef::<html::Input>::new();
 
     let update_subject_value = update_subject_action.value();
+    let add_chapter_value = add_chapter_action.value();
 
     Effect::new(move || {
         if update_subject_value
@@ -312,6 +363,12 @@ fn SubjectUpdateModal(
             .unwrap_or(false)
         {
             subject_dialog_open.set(false);
+        }
+    });
+
+    Effect::new(move || {
+        if add_chapter_value.get().map(|v| v.is_ok()).unwrap_or(false) {
+            chapter_dialog_open.set(false);
         }
     });
 
@@ -339,6 +396,11 @@ fn SubjectUpdateModal(
                        <ItemTitle class:font-bengali=move|| is_bengali.get()>{move||subject.get().title}</ItemTitle>
                    </ItemContent>
                    <ItemActions>
+                   <AddChapterDialog
+                       chapter_dialog_open
+                       chapter_input_ref
+                       subject
+                       add_chapter_action/>
                       <UpdateSubjectDialog input_ref subject_dialog_open subject update_subject_action/>
                        {icon!(icondata::LuChevronRight, class="size-4")}
                    </ItemActions>
