@@ -1,4 +1,12 @@
 
+## 0.5.5 (2026-07-06)
+
+### Fixes
+
+- Updates the docker-compose file
+- Add supences in both /home and /view page
+- set wasm-opt true again
+
 ## 0.5.4 (2026-07-06)
 
 ### Fixes
