@@ -1,4 +1,10 @@
 
+## 0.5.7 (2026-07-06)
+
+### Fixes
+
+- Add log in lib.rs to trace route
+
 ## 0.5.6 (2026-07-06)
 
 ### Fixes
