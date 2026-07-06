@@ -200,7 +200,9 @@ async fn leptos_handler(
     jar: CookieJar,
     req: Request<Body>,
 ) -> impl IntoResponse {
+    use leptos::logging::log;
     use leptos_axum::render_app_to_stream_with_context;
+    log!("leptos_handler received request: {} {}", req.method(), req.uri());
     let handler = render_app_to_stream_with_context(
         move || {
             provide_context(state.db_pool.clone());
