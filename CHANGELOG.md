@@ -1,4 +1,10 @@
 
+## 0.5.8 (2026-07-06)
+
+### Fixes
+
+- Add log in lib.rs for testing
+
 ## 0.5.7 (2026-07-06)
 
 ### Fixes
