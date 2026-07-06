@@ -175,6 +175,10 @@ pub fn ViewQuestions() -> impl IntoView {
     };
 
     view! {
+        <Suspense fallback=|| ()>
+            {move || {
+                classes_resource.get();
+                view! {
         <div class="p-2 sm:p-0">
 
             // --- Filter selects ---
@@ -297,6 +301,9 @@ pub fn ViewQuestions() -> impl IntoView {
                 </Show>
             </Show>
         </div>
+                }
+            }}
+        </Suspense>
     }
 }
 
