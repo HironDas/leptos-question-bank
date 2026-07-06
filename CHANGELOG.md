@@ -1,4 +1,10 @@
 
+## 0.5.6 (2026-07-06)
+
+### Fixes
+
+- Fix form resource::new to Resource::new_blocking
+
 ## 0.5.5 (2026-07-06)
 
 ### Fixes
