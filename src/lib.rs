@@ -121,6 +121,7 @@ pub async fn run(
     let addr = leptos_options.site_addr;
     // Generate the list of routes in your Leptos App
     let routes = generate_route_list(App);
+    log!("Registered {} SSR routes: {:#?}", routes.len(), routes);
     let db_pool = Arc::new(db_pool);
 
     let app_state = AppState {
