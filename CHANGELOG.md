@@ -1,4 +1,10 @@
 
+## 0.5.3 (2026-07-06)
+
+### Fixes
+
+- Optimize the wasm file for production
+
 ## 0.5.2 (2026-06-23)
 
 ### Features
