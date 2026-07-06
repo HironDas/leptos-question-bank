@@ -1,16 +1,22 @@
-version: "3.8"
 services:
-  leptos-dev:
-    build:
-      context: .
-      dockerfile: DockerfileDev
-    volumes:
-      - .:/app
-      - cargo-cache:/usr/local/cargo/registry
-    working_dir: /app
+  app:
+    build: .
+    container_name: question-bank
+    environment:
+      - APP_DATABASE__HOST=localhost
+      - APP_DATABASE__PORT=5432
+      - APP_DATABASE__DATABASE_NAME=question_bank
+      - APP_DATABASE__USERNAME=postgres
+      - APP_DATABASE__PASSWORD=password
+      # Force sqlx to use SSL while skipping CA verification for your self-signed cert
+      - DATABASE_URL=postgres://postgres:password@localhost:5432/question_bank?sslmode=require
+    restart: always
+    networks:
+      - question-bank-net
     ports:
-      - "8000:3000"
-    command: bash -c "cargo leptos watch --split"
+      - "8888:3000"
 
-volumes:
-  cargo-cache:
+networks:
+  question-bank-net:
+    name: question-bank-net
+    driver: bridge

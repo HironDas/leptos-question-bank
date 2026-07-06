@@ -42,6 +42,7 @@ ratex-svg = "0.1.11"
 ratex-parser = "0.1.11"
 ratex-layout = "0.1.11"
 regex = "1.12.4"
+tower-http = { version = "0.7.0", features = ["fs", "compression-br", "compression-gzip"], optional = true }
 
 [dependencies.sqlx]
 version = "0.8.6"
@@ -68,6 +69,7 @@ ssr = [
     "dep:uuid",
     "dep:axum-server",
     "dep:config",
+    "dep:tower-http"
 ]
 test-fullstack = ["ssr", "hydrate"]
 # true = ["dep:true"]
@@ -100,6 +102,8 @@ wasm-bindgen-test = "0.3"
 [package.metadata.leptos]
 # The name used by wasm-bindgen/cargo-leptos for the JS/WASM bundle. Defaults to the crate name
 output-name = "leptos-question-bank"
+
+wasm-opt = true
 
 # The site root folder is where cargo-leptos generate all output. WARNING: all content of this folder will be erased on a rebuild. Use it in your server setup.
 site-root = "target/site"

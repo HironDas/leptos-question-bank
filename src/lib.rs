@@ -110,6 +110,7 @@ pub async fn run(
     use leptos::logging::log;
     use leptos::prelude::*;
     use leptos_axum::{generate_route_list, LeptosRoutes};
+    use tower_http::compression::CompressionLayer;
 
     let mut conf = get_configuration(Some("Cargo.toml")).unwrap();
     let site_addr = listener.local_addr().expect("Failed to get local address");
@@ -164,7 +165,8 @@ pub async fn run(
         //.fallback(leptos_handler)
         .leptos_routes_with_handler(routes, leptos_handler)
         .fallback(leptos_error_handler)
-        .with_state(app_state);
+        .with_state(app_state)
+        .layer(CompressionLayer::new().gzip(true).br(true));
 
     // run our app with hyper
     // `axum::Server` is a re-export of `hyper::Server`

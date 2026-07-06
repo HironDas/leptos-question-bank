@@ -1,4 +1,4 @@
-FROM lukemathwalker/cargo-chef:latest-rust-1.90.0 AS chef
+FROM lukemathwalker/cargo-chef:latest-rust-1.93 AS chef
 WORKDIR /app
 RUN apt-get update && apt-get install binaryen lld clang curl ca-certificates -y
 
@@ -29,9 +29,10 @@ ENV LEPTOS_TAILWIND_VERSION=v4.1.17
 
 RUN cargo chef cook --release --recipe-path recipe.json
 
+
 COPY . .
 ENV SQLX_OFFLINE=true
-ENV LEPTOS_WASM_BINDGEN_VERSION=0.2.114
+ENV LEPTOS_WASM_BINDGEN_VERSION=0.2.125
 RUN rustup target add wasm32-unknown-unknown
 RUN cargo binstall cargo-leptos -y
 RUN cargo binstall wasm-bindgen-cli --version 0.2.125 -y
