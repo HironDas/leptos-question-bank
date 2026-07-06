@@ -26,7 +26,10 @@ pub fn ViewQuestions() -> impl IntoView {
     let selected_chapter_id = RwSignal::new(String::new());
 
     // --- Load classes on mount ---
-    let classes_resource = Resource::new(
+    // Blocking: academic_setting() also performs the page's auth check and
+    // calls redirect() on failure, which must land before the response
+    // headers are sent — a non-blocking resource doesn't guarantee that.
+    let classes_resource = Resource::new_blocking(
         || (),
         |_| async move {
             match academic_setting().await {

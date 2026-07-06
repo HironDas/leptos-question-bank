@@ -7,7 +7,10 @@ use crate::server_function::home::home;
 /// Renders the home page of your application.
 #[component]
 pub fn HomePage() -> impl IntoView {
-    let auth_check = Resource::new(|| (), |_| home());
+    // Blocking: home() performs the page's auth check and calls redirect()
+    // on failure, which must land before the response headers are sent —
+    // a non-blocking resource doesn't guarantee that.
+    let auth_check = Resource::new_blocking(|| (), |_| home());
     view! {
         <Suspense fallback=|| ()>
             {move || {
