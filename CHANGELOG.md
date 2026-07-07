@@ -1,4 +1,10 @@
 
+## 0.5.9 (2026-07-07)
+
+### Fixes
+
+- Only compress the /pkg assets
+
 ## 0.5.8 (2026-07-06)
 
 ### Fixes
