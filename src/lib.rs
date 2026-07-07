@@ -144,6 +144,18 @@ pub async fn run(
             "/api/{*fn_name}",
             get(leptos_server_handler).post(leptos_server_handler),
         )
+        // Compression is scoped to the /pkg static assets only. Applying it
+        // to the whole router breaks the chunked streaming SSR response
+        // (leptos_handler / Resource::new_blocking) because compression
+        // middleware buffers the body to compress it.
+        .merge(
+            Router::new()
+                .route_service(
+                    &leptos_axum::site_pkg_dir_service_route_path(&app_state.leptos_options),
+                    leptos_axum::site_pkg_dir_service(&app_state.leptos_options),
+                )
+                .layer(CompressionLayer::new().gzip(true).br(true)),
+        )
         //.nest("/", leptos_axum::leptos_routes_with_context())
         // .leptos_routes_with_context(
         //     &leptos_options,
@@ -166,8 +178,7 @@ pub async fn run(
         //.fallback(leptos_handler)
         .leptos_routes_with_handler(routes, leptos_handler)
         .fallback(leptos_error_handler)
-        .with_state(app_state)
-        .layer(CompressionLayer::new().gzip(true).br(true));
+        .with_state(app_state);
 
     // run our app with hyper
     // `axum::Server` is a re-export of `hyper::Server`
