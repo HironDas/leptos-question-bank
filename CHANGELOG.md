@@ -1,4 +1,11 @@
 
+## 0.5.10 (2026-07-07)
+
+### Fixes
+
+- pin and commit Cargo.lock to prevent dependency regressions
+- AI trying to fix issue
+
 ## 0.5.9 (2026-07-07)
 
 ### Fixes
