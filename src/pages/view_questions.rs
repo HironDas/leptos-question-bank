@@ -4,6 +4,7 @@ use crate::server_function::academic_helper::chapter::subject_chapter;
 use crate::server_function::academic_helper::subject::subject;
 use crate::server_function::academic_setting::{academic_setting, Chapter, Class, Subject};
 use crate::server_function::question::get_questions;
+use crate::util::preview_markdown::render_markdown;
 use icondata::{FiCheckCircle, LuPlus, MdiCloseCircle};
 use leptos::{logging::log, prelude::*};
 use leptos_router::hooks::use_navigate;
@@ -314,6 +315,13 @@ pub fn ViewQuestions() -> impl IntoView {
 fn QuestionCard(question: Question, index: usize) -> impl IntoView {
     let expanded = RwSignal::new(false);
     let question = StoredValue::new(question);
+    let theme_context = use_context::<ThemeProviderContext>();
+    let is_dark_mode = Memo::new(move |_| {
+        theme_context
+            .as_ref()
+            .map(|ctx| ctx.mode.get() == Mode::Dark)
+            .unwrap_or(false)
+    });
     let variant = match question.get_value().question_type {
         crate::domain::question::QuestionType::MCQ => {
             "bg-blue-50 text-blue-700" // dark:bg-blue-950 dark:text-blue-300"
@@ -345,51 +353,57 @@ fn QuestionCard(question: Question, index: usize) -> impl IntoView {
                     </div>
                 </div>
 
-                <p class="text-sm font-medium line-clamp-3" class:font-bengali={ let value = question_text.clone(); move||!value.is_ascii()} inner_html=question_text/>
+                <div
+                    class="markdown-preview question-card-markdown text-sm font-medium"
+                    class:invert-math=move || is_dark_mode.get()
+                    class:font-bengali={let value = question_text.clone(); move || !value.is_ascii()}
+                    inner_html=render_markdown(&question_text)
+                />
                 <Show when=move || expanded.get()>
                     <div class="mt-3 pt-3 border-t text-sm">
                         {match question.get_value().question_type {
                             crate::domain::question::QuestionType::MCQ => {
                                 let opts = question.get_value().options.clone();
                                 view! {
-                                    <div class="grid gap-1">
+                                    <div class="space-y-2">
                                         <p class="text-xs font-semibold text-muted-foreground">
                                             "Options:"
                                         </p>
-                                        <For
-                                            each=move || opts.clone()
-                                            key=|o| o.id
-                                            children=move |opt| {
-                                                let correct = opt.is_correct;
-                                                let text = opt.option_text.clone();
-                                                view! {
-                                                    <div class="flex items-center gap-2">
-                                                        {if correct {
-                                                            view! {
-                                                                <span class="text-green-500 w-4 h-4 shrink-0 flex items-center justify-center [&>svg]:w-4 [&>svg]:h-4">
-                                                                    {icon!(FiCheckCircle)}
-                                                                </span>
-                                                            }.into_any()
-                                                        } else {
-                                                            view! {
-                                                                <span class="text-red-400 w-4 h-4 shrink-0 flex items-center justify-center [&>svg]:w-4 [&>svg]:h-4">
-                                                                    {icon!(MdiCloseCircle)}
-                                                                </span>
-                                                            }.into_any()
-                                                        }}
-                                                        <span class:font-bengali= {
-                                                            let value= text.clone();
-                                                            move|| !value.clone().is_ascii()} class=if correct {
-                                                            "text-green-600 font-medium"
-                                                        } else {
-                                                            "font-medium"
-                                                        } inner_html=text/>
-
-
-                                                    </div>
+                                        <div class="grid grid-cols-1 gap-x-6 gap-y-2 sm:grid-cols-2">
+                                            <For
+                                                each=move || opts.clone()
+                                                key=|o| o.id
+                                                children=move |opt| {
+                                                    let correct = opt.is_correct;
+                                                    let text = opt.option_text.clone();
+                                                    view! {
+                                                        <div class="flex min-w-0 items-start gap-2">
+                                                            {if correct {
+                                                                view! {
+                                                                    <span class="text-green-500 w-4 h-4 shrink-0 flex items-center justify-center [&>svg]:w-4 [&>svg]:h-4">
+                                                                        {icon!(FiCheckCircle)}
+                                                                    </span>
+                                                                }.into_any()
+                                                            } else {
+                                                                view! {
+                                                                    <span class="text-red-400 w-4 h-4 shrink-0 flex items-center justify-center [&>svg]:w-4 [&>svg]:h-4">
+                                                                        {icon!(MdiCloseCircle)}
+                                                                    </span>
+                                                                }.into_any()
+                                                            }}
+                                                            <div class=if correct {
+                                                                "markdown-preview question-card-option text-green-600 font-medium"
+                                                            } else {
+                                                                "markdown-preview question-card-option font-medium"
+                                                            } class:invert-math=move || is_dark_mode.get() class:font-bengali= {
+                                                                let value= text.clone();
+                                                                move|| !value.clone().is_ascii()
+                                                            } inner_html=render_markdown(&text)/>
+                                                        </div>
+                                                    }
                                                 }
-                                            }
-                                        />
+                                            />
+                                        </div>
                                     </div>
                                 }.into_any()
                             }
@@ -400,7 +414,7 @@ fn QuestionCard(question: Question, index: usize) -> impl IntoView {
                                         <p class="text-xs font-semibold text-muted-foreground">
                                             "Answer:"
                                         </p>
-                                        <p class="text-green-600" inner_html=ans/>
+                                        <div class="markdown-preview question-card-answer text-green-600" class:invert-math=move || is_dark_mode.get() inner_html=render_markdown(&ans)/>
                                     </div>
                                 }.into_any()
                             }
