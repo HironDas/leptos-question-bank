@@ -48,6 +48,20 @@ impl LazyRoute for ClassSettingRoute {
 
         let view = RwSignal::new("tree");
 
+        // Keep the compact tree easier to scan on phones, while using the
+        // three-column workspace by default on larger screens. This runs on
+        // the client after hydration, so SSR still has a stable tree view.
+        Effect::new(move || {
+            let is_large_screen = window()
+                .inner_width()
+                .ok()
+                .and_then(|width| width.as_f64())
+                .map(|width| width >= 1024.0)
+                .unwrap_or(false);
+
+            view.set(if is_large_screen { "column" } else { "tree" });
+        });
+
         // --- Derived: Button barinat for view button ---
         let tree_btn_variant = Memo::new(move |_| {
             if view.get() == "tree" {
