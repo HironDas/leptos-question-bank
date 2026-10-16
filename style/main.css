@@ -89,3 +89,66 @@
     display: inline-block;
     vertical-align: middle;
 }
+
+/* Markdown preview */
+.markdown-preview {
+    min-height: 11rem;
+    max-width: none;
+    overflow-wrap: anywhere;
+    color: var(--foreground);
+    line-height: 1.75;
+}
+
+.markdown-preview:empty::before {
+    content: "Your formatted question will appear here…";
+    color: var(--muted-foreground);
+    font-style: italic;
+}
+
+.markdown-preview h1,
+.markdown-preview h2,
+.markdown-preview h3 {
+    color: var(--foreground);
+    line-height: 1.25;
+    margin: 1.25rem 0 0.6rem;
+    font-weight: 700;
+}
+
+.markdown-preview h1 { font-size: 1.5rem; }
+.markdown-preview h2 { font-size: 1.25rem; }
+.markdown-preview h3 { font-size: 1.1rem; }
+.markdown-preview > :first-child { margin-top: 0; }
+.markdown-preview > :last-child { margin-bottom: 0; }
+
+.markdown-preview p { margin: 0.65rem 0; }
+.markdown-preview ul,
+.markdown-preview ol { margin: 0.75rem 0; padding-left: 1.5rem; }
+.markdown-preview li { padding-left: 0.25rem; margin: 0.25rem 0; }
+.markdown-preview a { color: var(--primary); text-decoration: underline; text-underline-offset: 3px; }
+.markdown-preview strong { font-weight: 700; }
+.markdown-preview blockquote {
+    border-left: 3px solid var(--primary);
+    color: var(--muted-foreground);
+    margin: 1rem 0;
+    padding: 0.25rem 1rem;
+}
+.markdown-preview code {
+    border: 1px solid var(--border);
+    border-radius: 0.35rem;
+    background: var(--muted);
+    padding: 0.12rem 0.35rem;
+    font-size: 0.875em;
+}
+.markdown-preview pre {
+    overflow-x: auto;
+    border-radius: 0.75rem;
+    background: var(--muted);
+    padding: 0.9rem 1rem;
+}
+.markdown-preview pre code { border: 0; padding: 0; background: transparent; }
+.markdown-preview table { width: 100%; border-collapse: collapse; margin: 1rem 0; font-size: 0.95em; }
+.markdown-preview th,
+.markdown-preview td { border: 1px solid var(--border); padding: 0.55rem 0.7rem; text-align: left; }
+.markdown-preview th { background: var(--muted); font-weight: 650; }
+.markdown-preview hr { border: 0; border-top: 1px solid var(--border); margin: 1.25rem 0; }
+.markdown-preview .math-block { overflow-x: auto; padding: 0.5rem 0; }

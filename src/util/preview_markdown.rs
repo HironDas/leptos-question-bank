@@ -88,7 +88,7 @@ pub fn MarkdownViewer(#[prop(into)] content: Signal<String>) -> impl IntoView {
     };
 
     view! {
-        <div class="prose dark:prose-invert max-w-none" class:invert-math=is_dark_mode inner_html=move||html_content.get()/>
+        <div class="markdown-preview" class:invert-math=is_dark_mode inner_html=move||html_content.get()/>
     }
 }
 
