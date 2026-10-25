@@ -1,4 +1,14 @@
 
+## 0.5.11 (2026-10-25)
+
+### Features
+
+- set tree view for mobile and colum view for desktop as default view in classes setting
+
+### Fixes
+
+- Update preview_markdown.rs for better visibility
+
 ## 0.5.10 (2026-07-07)
 
 ### Fixes
