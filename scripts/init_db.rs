@@ -38,7 +38,7 @@ fn main() -> anyhow::Result<()> {
         .unwrap_or_else(|_| "question_bank".to_string());
     let db_port = sh
         .var("POSTGRES_PORT")
-        .unwrap_or_else(|_| "5432".to_string());
+        .unwrap_or_else(|_| "5434".to_string());
     let skip_docker = skip_docker_flag || sh.var("SKIP_DOCKER").is_ok();
 
     println!("SKIP_DOCKER: {skip_docker}");

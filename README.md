@@ -67,13 +67,17 @@ npm ci
 The helper script starts a PostgreSQL 17 container named `question_bank_postgres`, publishes port `5432`, waits for it to become available, creates the database, and runs the migrations:
 
 ```sh
-bash scripts/init_db.sh
+bash scripts/init_db.sh 
+#or use cargo eval
+# cargo eval scripts/init_db.rs
 ```
 
 If PostgreSQL is already running locally, skip container creation:
 
 ```sh
 SKIP_DOCKER=1 bash scripts/init_db.sh
+# or use cargo eval
+# cargo eval scripts/init_db.rs -- --skip-docker
 ```
 
 The script accepts `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB`, and `POSTGRES_PORT`. Their defaults are `postgres`, `password`, `question_bank`, and `5432`. If you change them, also update the application's `APP_DATABASE__*` settings described below.

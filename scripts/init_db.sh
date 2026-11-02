@@ -15,7 +15,7 @@ fi
 DB_USER=${POSTGRES_USER:=postgres}
 DB_PASSWORD="${POSTGRES_PASSWORD:=password}"
 DB_NAME="${POSTGRES_DB:=question_bank}"
-DB_PORT="${POSTGRES_PORT:=5432}"
+DB_PORT="${POSTGRES_PORT:=5434}"
 
 # Launch postgres using Docker
 echo "SKIP_DOCKER: $SKIP_DOCKER"
