@@ -151,7 +151,7 @@
 .markdown-preview td { border: 1px solid var(--border); padding: 0.55rem 0.7rem; text-align: left; }
 .markdown-preview th { background: var(--muted); font-weight: 650; }
 .markdown-preview hr { border: 0; border-top: 1px solid var(--border); margin: 1.25rem 0; }
-.markdown-preview .math-block { overflow-x: auto; padding: 0.5rem 0; }
+.markdown-preview .math-block { overflow-x: auto; /*padding: 0.5rem 0;*/ }
 
 .question-card-markdown {
     min-height: 0;
