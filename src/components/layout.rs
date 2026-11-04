@@ -76,7 +76,7 @@ pub fn Layout() -> impl IntoView {
                                     <SidebarMenuButton>
                                         <A href="/view">
                                             {icon!(icondata::AiFileSearchOutlined)}
-                                            <span>"View Questions"</span>
+                                            <span>"Manage Questions"</span>
                                         </A>
                                     </SidebarMenuButton>
                                 </SidebarMenuItem>
