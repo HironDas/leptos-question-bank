@@ -1,5 +1,5 @@
 [package]
-name.workspace = true
+name = "question-domain"
 version.workspace = true
 edition.workspace = true
 

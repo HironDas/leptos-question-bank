@@ -2099,6 +2099,9 @@ dependencies = [
  "proptest",
  "pulldown-cmark",
  "pwhash",
+ "quesiton-shared",
+ "question-domain",
+ "question-infra",
  "rand 0.9.4",
  "ratex-layout",
  "ratex-parser",
@@ -2115,7 +2118,6 @@ dependencies = [
  "tokio",
  "tower-http 0.7.0",
  "tracing",
- "true",
  "uuid",
  "validator",
  "wasm-bindgen",
@@ -3146,6 +3148,22 @@ dependencies = [
  "sha-1",
  "sha2 0.9.9",
 ]
+
+[[package]]
+name = "quesiton-shared"
+version = "0.5.11"
+
+[[package]]
+name = "question-domain"
+version = "0.5.11"
+
+[[package]]
+name = "question-infra"
+version = "0.5.11"
+
+[[package]]
+name = "question-worker"
+version = "0.5.11"
 
 [[package]]
 name = "quick-error"
@@ -4932,12 +4950,6 @@ checksum = "db97caf9d906fbde555dd62fa95ddba9eecfd14cb388e4f491a66d74cd5fb79a"
 dependencies = [
  "once_cell",
 ]
-
-[[package]]
-name = "true"
-version = "0.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "548ec159e98411c04bee9b458df4ccd2da2a0a5e50c08cbd7e90b00b154c5a9a"
 
 [[package]]
 name = "try-lock"
