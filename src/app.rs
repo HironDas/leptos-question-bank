@@ -1,3 +1,4 @@
+use crate::components::ui::toast::ToastProvider;
 use crate::components::Layout;
 use crate::pages::{AddEditQuestion, ClassSettingRoute, HomePage, UnAuthorized, ViewQuestions};
 use crate::pages::{Login, NotFound, Signup};
@@ -46,6 +47,7 @@ pub fn App() -> impl IntoView {
 
         // content for this welcome page
         <ThemeProvider>
+            <ToastProvider>
             <Router>
                 <main>
                     <Routes fallback=move || view! { <NotFound /> }>
@@ -63,6 +65,7 @@ pub fn App() -> impl IntoView {
                     </Routes>
                 </main>
             </Router>
+            </ToastProvider>
         </ThemeProvider>
     }
 }
