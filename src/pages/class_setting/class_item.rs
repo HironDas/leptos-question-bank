@@ -218,13 +218,13 @@ pub fn UpdateClassDialog(
                             <Input
                                 name="class[class_id]"
                                 input_type="hidden"
-                                prop:value=move || class.get().id.to_string()
+                                value=class.get_untracked().id.to_string()
                             />
                             <Label label_for="class_name">"Class Name (English)"</Label>
                             <InputGroup>
                                 <Input
                                     id="class_name"
-                                    value=class.get().name
+                                    value=class.get_untracked().name
                                     name="class[name]"
                                     input_type="text"
                                     placeholder="Enter class name in English"
@@ -246,7 +246,7 @@ pub fn UpdateClassDialog(
                             <InputGroup>
                                 <Input
                                     id="class_name_bn"
-                                    value=class.get().name_bn
+                                    value= class.get_untracked().name_bn
                                     name="class[name_bn]"
                                     input_type="text"
                                     placeholder="Enter class name in Bangla"
@@ -338,7 +338,7 @@ pub fn AddSubjectDialog(
                             <Input
                                 name="class_id"
                                 input_type="hidden"
-                                value=class.get().id.to_string()
+                                value=class.get_untracked().id.to_string()
                             />
 
                             <div class="grid gap-2">

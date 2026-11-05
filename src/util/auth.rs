@@ -16,15 +16,15 @@ pub async fn auth(pool: Arc<PgPool>, jar: CookieJar) -> Result<(), QuestionBankE
     logging::log!("Session in Auth rs: {:#?}", session);
 
     if let Some(token) = session {
-        let token = Uuid::parse_str(token) else {
-            return Err(QuestionBankError::Authentication);
-        };
-        //let token = Uuid::parse_str(token)
-        // .map_err(|err| {
-        //     logging::log!("UUID Error: {:?}", err);
-        //     err
-        // })
-        // .context("UUID Parseing Error")?;
+        // let token = Uuid::parse_str(token) else {
+        //     return Err(QuestionBankError::Authentication);
+        // };
+        let token = Uuid::parse_str(token)
+            .map_err(|err| {
+                logging::log!("UUID Error: {:?}", err);
+                err
+            })
+            .context("UUID Parseing Error")?;
 
         let is_authencated = sqlx::query!(
             r#"
