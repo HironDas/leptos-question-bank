@@ -1,4 +1,5 @@
 use crate::components::ui::rich_text_editor::RichTextEditor;
+use crate::components::ui::toast::use_toast;
 use crate::server_function::question::{get_question_by_id, EditQuestion};
 
 use leptos::{html, prelude::*};
@@ -119,9 +120,23 @@ pub fn AddEditQuestion() -> impl IntoView {
 
     // --- Server actions ---
     let add_question_action = ServerAction::<AddQuestion>::new();
-    let _add_question_value = add_question_action.value();
+    let add_question_value = add_question_action.value();
 
     let edit_question_action = ServerAction::<EditQuestion>::new();
+    let edit_question_value = edit_question_action.value();
+
+    // --- Toast feedback on add/update ---
+    let toast = use_toast();
+    Effect::new(move || match add_question_value.get() {
+        Some(Ok(_)) => toast.success("Question added successfully"),
+        Some(Err(e)) => toast.error("Failed to add question", e.to_string()),
+        None => {}
+    });
+    Effect::new(move || match edit_question_value.get() {
+        Some(Ok(_)) => toast.success("Question updated successfully"),
+        Some(Err(e)) => toast.error("Failed to update question", e.to_string()),
+        None => {}
+    });
 
     // --- Dialog state ---
     // let question_dialog_open = RwSignal::new(false);
