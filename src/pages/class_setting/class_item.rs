@@ -382,6 +382,7 @@ pub fn AddSubjectDialog(
                         attr:disabled=move || add_subject_action.pending().get()
                     >
 
+
                         <Show
                             when=move || add_subject_action.pending().get()
                             fallback=|| view! { "Create Subject" }
