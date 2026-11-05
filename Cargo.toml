@@ -64,7 +64,7 @@ anyhow      = "1.0.100"
 time        = "0.3.44"
 singlestage = "0.4.1"
 pulldown-cmark = "0.13.4"
-ratex-svg    = "0.1.11"
+ratex-svg    = { version ="0.1.11", features = ["embed-fonts"]}
 ratex-parser = "0.1.11"
 ratex-layout = "0.1.11"
 regex = "1.12.4"

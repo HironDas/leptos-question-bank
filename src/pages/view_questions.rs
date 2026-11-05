@@ -336,10 +336,10 @@ fn QuestionCard(question: Question, index: usize) -> impl IntoView {
     let navigate = use_navigate();
 
     view! {
-        <Card class="cursor-pointer hover:shadow-md transition-shadow">
-            <div class="p-4" on:click=move |_| expanded.set(!expanded.get())>
-                <div class="flex items-start justify-between mb-2">
-                    <span class="text-xs font-mono text-muted-foreground">
+        <Card class="cursor-pointer hover:shadow-md transition-shadow p-2">
+            <div class="" on:click=move |_| expanded.set(!expanded.get())>
+                <div class="flex items-start justify-between mb-1">
+                    <span class="text-md font-mono text-muted-foreground">
                         "#" {index + 1}
                     </span>
                     <div class="flex items-center gap-1">
