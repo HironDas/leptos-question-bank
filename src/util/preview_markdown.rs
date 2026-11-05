@@ -23,7 +23,7 @@ pub fn render_markdown(markdown: &str) -> String {
         Event::DisplayMath(latex_text) => {
             if let Ok(svg_string) = compile_latex_to_svg(&latex_text) {
                 let wrapped_html = format!(
-                    "<div class='math-block my-4 text-center'>{}</div>",
+                    "<div class='math-block my-0 text-center'>{}</div>",
                     svg_string
                 );
                 modified_events.push(Event::Html(wrapped_html.into()));
@@ -109,7 +109,7 @@ fn compile_latex_to_svg(latex: &str) -> Result<String, String> {
     // Step 3: Configure SVG rules (enable glyph nesting for standalone output)
     let mut options = SvgOptions::default();
     options.embed_glyphs = true; // Prevents external webfont stylesheet dependencies
-    options.font_size = 14.0;
+    options.font_size = 12.0;
     // Step 4: Serialize the calculated spatial layout directly into an SVG string
     // let mut svg_buffer = Vec::new();
     Ok(render_to_svg(&display_list, &options)) // .map_err(|e| format!("SVG Generation error: {:?}", e))?

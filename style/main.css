@@ -155,9 +155,9 @@
 
 .question-card-markdown {
     min-height: 0;
-    max-height: 6rem;
+    /*max-height: 6rem;*/
     overflow: hidden;
-    line-height: 1.55;
+    /*line-height: 1.55;*/
 }
 
 .question-card-markdown p,
