@@ -1,15 +1,16 @@
 // use anyhow::Context;
 // use axum_extra::extract::CookieJar;
-use leptos::{logging::log, prelude::*};
+#[cfg(feature = "ssr")]
+use leptos::logging::log;
+use leptos::prelude::*;
 #[cfg(feature = "ssr")]
 use leptos_axum::ResponseOptions;
+#[cfg(feature = "ssr")]
 use std::sync::Arc;
 // use validator::ValidationError;
 
-use crate::{
-    domain::{login::Login as DomainLogin, user_email::UserEmail, user_password::UserPassword},
-    error::QuestionBankError,
-};
+use crate::error::QuestionBankError;
+use domain::{login::Login as DomainLogin, user_email::UserEmail, user_password::UserPassword};
 
 #[derive(serde::Serialize, serde::Deserialize, Clone, Debug)]
 pub struct LoginCredential {
@@ -21,7 +22,7 @@ impl TryFrom<LoginCredential> for DomainLogin {
     type Error = QuestionBankError;
 
     fn try_from(value: LoginCredential) -> Result<Self, Self::Error> {
-        use crate::domain::user_username::Username as Name;
+        use domain::user_username::Username as Name;
         let password = UserPassword::parse(value.password)?;
         match UserEmail::parse(value.id.clone()) {
             Ok(email) => Ok(DomainLogin {

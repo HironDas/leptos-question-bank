@@ -1,5 +1,7 @@
+#[cfg(feature = "ssr")]
 use std::sync::Arc;
 
+#[cfg(feature = "ssr")]
 use axum_extra::extract::CookieJar;
 #[cfg(feature = "ssr")]
 use sqlx::PgPool;

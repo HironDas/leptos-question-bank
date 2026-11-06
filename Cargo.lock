@@ -3276,6 +3276,12 @@ version = "0.5.11"
 [[package]]
 name = "question-domain"
 version = "0.5.11"
+dependencies = [
+ "pwhash",
+ "serde",
+ "serde-aux",
+ "validator",
+]
 
 [[package]]
 name = "question-infra"

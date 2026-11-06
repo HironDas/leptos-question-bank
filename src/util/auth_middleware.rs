@@ -1,9 +1,11 @@
+#[cfg(feature = "ssr")]
 use std::sync::Arc;
 
 #[cfg(feature = "ssr")]
 use axum::extract::State;
 #[cfg(feature = "ssr")]
 use axum::{body::Body, http::Request, middleware::Next, response::Response};
+#[cfg(feature = "ssr")]
 use axum_extra::extract::CookieJar;
 #[cfg(feature = "ssr")]
 use sqlx::PgPool;

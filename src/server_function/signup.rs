@@ -1,11 +1,10 @@
+#[cfg(feature = "ssr")]
 use std::sync::Arc;
 
-use crate::{
-    domain::{
-        new_user::NewUser, user_email::UserEmail, user_password::UserPassword,
-        user_username::Username,
-    },
-    error::QuestionBankError,
+use crate::error::QuestionBankError;
+use domain::{
+    new_user::NewUser, user_email::UserEmail, user_password::UserPassword,
+    user_username::Username,
 };
 
 use leptos::prelude::*;

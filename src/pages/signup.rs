@@ -1,7 +1,8 @@
-use crate::domain::user_email::UserEmail;
-use crate::domain::user_password::UserPassword;
+use domain::user_email::UserEmail;
+use domain::user_password::UserPassword;
 use crate::server_function::signup::*;
-use crate::{components::ui::spinner::Spinner, domain::user_username::Username};
+use crate::components::ui::spinner::Spinner;
+use domain::user_username::Username;
 
 use leptos::{logging::log, prelude::*};
 use singlestage::*;

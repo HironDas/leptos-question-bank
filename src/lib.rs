@@ -2,7 +2,7 @@
 pub mod app;
 pub mod components;
 pub mod configuration;
-pub mod domain;
+// pub mod domain;
 pub mod pages;
 pub mod server_function;
 pub mod util;
@@ -17,6 +17,7 @@ pub fn hydrate() {
     leptos::mount::hydrate_lazy(App);
 }
 
+#[cfg(feature = "ssr")]
 use std::sync::Arc;
 
 #[cfg(feature = "ssr")]
@@ -33,6 +34,7 @@ use axum_extra::extract::CookieJar;
 #[cfg(feature = "ssr")]
 use axum_server::Server;
 
+#[cfg(feature = "ssr")]
 use leptos::prelude::*;
 
 #[cfg(feature = "ssr")]
@@ -214,7 +216,11 @@ async fn leptos_handler(
 ) -> impl IntoResponse {
     use leptos::logging::log;
     use leptos_axum::render_app_to_stream_with_context;
-    log!("leptos_handler received request: {} {}", req.method(), req.uri());
+    log!(
+        "leptos_handler received request: {} {}",
+        req.method(),
+        req.uri()
+    );
     let handler = render_app_to_stream_with_context(
         move || {
             provide_context(state.db_pool.clone());

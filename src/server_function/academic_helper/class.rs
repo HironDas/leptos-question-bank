@@ -1,14 +1,15 @@
-use leptos::{logging::log, prelude::*};
+#[cfg(feature = "ssr")]
+use leptos::logging::log;
+use leptos::prelude::*;
 #[cfg(feature = "ssr")]
 use sqlx::PgPool;
+#[cfg(feature = "ssr")]
 use std::sync::Arc;
 
 #[cfg(feature = "ssr")]
 use crate::error::QuestionBankError;
-use crate::{
-    domain::class::{AddClassInput, UpdateClassInput},
-    server_function::academic_setting::Class,
-};
+use crate::server_function::academic_setting::Class;
+use domain::class::{AddClassInput, UpdateClassInput};
 
 #[cfg(feature = "ssr")]
 pub async fn class(pool: Arc<PgPool>) -> Result<Vec<Class>, ServerFnError> {

@@ -1,9 +1,9 @@
 use crate::components::ui::empty_msg::EmptyMsg;
-use crate::domain::question::Question;
 use crate::server_function::academic_helper::chapter::subject_chapter;
 use crate::server_function::academic_helper::subject::subject;
 use crate::server_function::academic_setting::{academic_setting, Chapter, Class, Subject};
 use crate::server_function::question::get_questions;
+use domain::question::Question;
 // use crate::util::preview_markdown::render_markdown;
 use icondata::{FiCheckCircle, LuPlus, MdiCloseCircle};
 use leptos::{logging::log, prelude::*};
@@ -20,6 +20,9 @@ pub fn ViewQuestions() -> impl IntoView {
     let questions = RwSignal::new(Vec::<Question>::new());
 
     // let is_bangle = Memo::new(move |_| !subject.get().title.is_ascii());
+
+    let mcq_switch = RwSignal::new(true);
+    let cq_switch = RwSignal::new(true);
 
     // --- Selection signals (stored as Strings for the <Select>) ---
     let selected_class_id = RwSignal::new(String::new());
@@ -174,6 +177,7 @@ pub fn ViewQuestions() -> impl IntoView {
         questions
             .get()
             .into_iter()
+            // .filter(|q| q.type)
             .enumerate()
             .collect::<Vec<(usize, Question)>>()
     };
@@ -257,19 +261,24 @@ pub fn ViewQuestions() -> impl IntoView {
                 }
             >
                 <div class="mb-4 flex items-center justify-between">
-                    <h2 class="text-lg font-semibold">
-                        <Show
-                            when=move || !selected_chapter_name.get().is_empty()
-                            fallback=move || view! { <p>"Questions"</p> }
-                        >
-                            <p>
-                                "Questions in: "
-                                <span class:font-bengali=move || !selected_chapter_name.get().is_ascii()>
-                                    {move || selected_chapter_name.get()}
-                                </span>
-                            </p>
-                        </Show>
-                    </h2>
+                    <div class="flex item-center">
+                        <h2 class="text-lg font-semibold">
+                            <Show
+                                when=move || !selected_chapter_name.get().is_empty()
+                                fallback=move || view! { <p>"Questions"</p> }
+                            >
+                                <p>
+                                    "Questions in: "
+                                    <span class:font-bengali=move || !selected_chapter_name.get().is_ascii()>
+                                        {move || selected_chapter_name.get()}
+                                    </span>
+
+                                </p>
+                            </Show>
+                        </h2>
+                        <Switch class="ml-2" value="mcq" checked=mcq_switch> MCQ</Switch>
+                        <Switch class="ml-2" value="cq" checked=cq_switch> CQ</Switch>
+                    </div>
                     <a  href=move ||{format!("/question?class={}&subject={}&chapter={}", selected_class_id.get(), selected_subject_id.get(), selected_chapter_id.get())} class = "singlestage-btn-primary singlestage-btn-sm">
                         {icon!(LuPlus)}
                         "Add Question"
@@ -323,10 +332,10 @@ fn QuestionCard(question: Question, index: usize) -> impl IntoView {
             .unwrap_or(false)
     });
     let variant = match question.get_value().question_type {
-        crate::domain::question::QuestionType::MCQ => {
+        domain::question::QuestionType::MCQ => {
             "bg-blue-50 text-blue-700" // dark:bg-blue-950 dark:text-blue-300"
         }
-        crate::domain::question::QuestionType::CQ => {
+        domain::question::QuestionType::CQ => {
             "bg-green-50 text-green-700" // dark:bg-green-950 dark:text-green-300"
         }
     };
@@ -362,7 +371,7 @@ fn QuestionCard(question: Question, index: usize) -> impl IntoView {
                 <Show when=move || expanded.get()>
                     <div class="mt-3 pt-3 border-t text-sm">
                         {match question.get_value().question_type {
-                            crate::domain::question::QuestionType::MCQ => {
+                            domain::question::QuestionType::MCQ => {
                                 let opts = question.get_value().options.clone();
                                 view! {
                                     <div class="space-y-2">
@@ -407,7 +416,7 @@ fn QuestionCard(question: Question, index: usize) -> impl IntoView {
                                     </div>
                                 }.into_any()
                             }
-                            crate::domain::question::QuestionType::CQ => {
+                            domain::question::QuestionType::CQ => {
                                 let ans = question.get_value().answer_text.clone().unwrap_or_default();
                                 view! {
                                     <div>

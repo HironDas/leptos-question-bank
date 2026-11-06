@@ -1,9 +1,12 @@
-use crate::{
-    error::QuestionBankError, server_function::academic_setting::Subject as AcademicSubject,
-};
-use leptos::{logging::log, prelude::*};
+#[cfg(feature = "ssr")]
+use crate::error::QuestionBankError;
+use crate::server_function::academic_setting::Subject as AcademicSubject;
+#[cfg(feature = "ssr")]
+use leptos::logging::log;
+use leptos::prelude::*;
 #[cfg(feature = "ssr")]
 use sqlx::PgPool;
+#[cfg(feature = "ssr")]
 use std::sync::Arc;
 
 #[server]

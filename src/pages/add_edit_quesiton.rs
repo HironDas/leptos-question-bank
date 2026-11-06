@@ -8,11 +8,9 @@ use leptos_router::params::Params;
 use singlestage::*;
 use web_sys::MouseEvent;
 
-use crate::{
-    domain::question::{
-        AddQuestionInput, AddQuestionOptionInput, QuestionType, UpdateQuestionInput,
-    },
-    server_function::question::AddQuestion,
+use crate::server_function::question::AddQuestion;
+use domain::question::{
+    AddQuestionInput, AddQuestionOptionInput, QuestionType, UpdateQuestionInput,
 };
 
 // 1. Define a struct that maps your browser query parameters

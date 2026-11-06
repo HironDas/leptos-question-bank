@@ -1,6 +1,6 @@
-use crate::domain::question::{
-    AddQuestionInput, Question, QuestionOption, QuestionType, UpdateQuestionInput,
-};
+use domain::question::{AddQuestionInput, Question, UpdateQuestionInput};
+#[cfg(feature = "ssr")]
+use domain::question::{QuestionOption, QuestionType};
 use leptos::prelude::*;
 
 #[server]

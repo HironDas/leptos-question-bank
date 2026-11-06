@@ -6,6 +6,7 @@ use leptos::logging::log;
 use leptos::prelude::*;
 #[cfg(feature = "ssr")]
 use sqlx::PgPool;
+#[cfg(feature = "ssr")]
 use std::sync::Arc;
 
 #[server]
