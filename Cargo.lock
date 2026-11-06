@@ -2209,6 +2209,7 @@ dependencies = [
  "ratex-svg",
  "regex",
  "reqwest",
+ "rust-embed",
  "secrecy",
  "serde",
  "serde-aux",

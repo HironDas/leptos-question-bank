@@ -4,7 +4,7 @@ use crate::server_function::academic_helper::chapter::subject_chapter;
 use crate::server_function::academic_helper::subject::subject;
 use crate::server_function::academic_setting::{academic_setting, Chapter, Class, Subject};
 use crate::server_function::question::get_questions;
-use crate::util::preview_markdown::render_markdown;
+// use crate::util::preview_markdown::render_markdown;
 use icondata::{FiCheckCircle, LuPlus, MdiCloseCircle};
 use leptos::{logging::log, prelude::*};
 use leptos_router::hooks::use_navigate;
@@ -357,7 +357,7 @@ fn QuestionCard(question: Question, index: usize) -> impl IntoView {
                     class="markdown-preview question-card-markdown text-sm font-medium"
                     class:invert-math=move || is_dark_mode.get()
                     class:font-bengali={let value = question_text.clone(); move || !value.is_ascii()}
-                    inner_html=render_markdown(&question_text)
+                    inner_html=question_text
                 />
                 <Show when=move || expanded.get()>
                     <div class="mt-3 pt-3 border-t text-sm">
@@ -398,7 +398,7 @@ fn QuestionCard(question: Question, index: usize) -> impl IntoView {
                                                             } class:invert-math=move || is_dark_mode.get() class:font-bengali= {
                                                                 let value= text.clone();
                                                                 move|| !value.clone().is_ascii()
-                                                            } inner_html=render_markdown(&text)/>
+                                                            } inner_html=text/>
                                                         </div>
                                                     }
                                                 }
@@ -414,7 +414,7 @@ fn QuestionCard(question: Question, index: usize) -> impl IntoView {
                                         <p class="text-xs font-semibold text-muted-foreground">
                                             "Answer:"
                                         </p>
-                                        <div class="markdown-preview question-card-answer text-green-600" class:invert-math=move || is_dark_mode.get() inner_html=render_markdown(&ans)/>
+                                        <div class="markdown-preview question-card-answer text-green-600" class:invert-math=move || is_dark_mode.get() inner_html=ans/>
                                     </div>
                                 }.into_any()
                             }

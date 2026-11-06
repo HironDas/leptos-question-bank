@@ -110,6 +110,7 @@ fn compile_latex_to_svg(latex: &str) -> Result<String, String> {
     let mut options = SvgOptions::default();
     options.embed_glyphs = true; // Prevents external webfont stylesheet dependencies
     options.font_size = 12.0;
+
     // Step 4: Serialize the calculated spatial layout directly into an SVG string
     // let mut svg_buffer = Vec::new();
     Ok(render_to_svg(&display_list, &options)) // .map_err(|e| format!("SVG Generation error: {:?}", e))?

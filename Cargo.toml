@@ -67,6 +67,7 @@ pulldown-cmark = "0.13.4"
 ratex-svg    = { version ="0.1.11", features = ["embed-fonts"]}
 ratex-parser = "0.1.11"
 ratex-layout = "0.1.11"
+rust-embed = { version = "8.13", features = ["debug-embed"] }
 regex = "1.12.4"
 
 ############################################################
@@ -125,6 +126,7 @@ ratex-svg.workspace = true
 ratex-parser.workspace = true
 ratex-layout.workspace = true
 regex.workspace = true
+rust-embed.workspace = true
 
 [dev-dependencies]
 fake = "4.4.0"
