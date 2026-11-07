@@ -31,7 +31,7 @@ pub async fn get_questions(chapter_id: u32) -> Result<Vec<Question>, ServerFnErr
                    difficulty, answer_text, created_at, updated_at
             FROM questions
             WHERE chapter_id = $1
-            ORDER BY id ASC
+            ORDER BY question_type DESC, id ASC
             "#,
             chapter_id as i32
         )

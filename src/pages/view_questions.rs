@@ -3,7 +3,7 @@ use crate::server_function::academic_helper::chapter::subject_chapter;
 use crate::server_function::academic_helper::subject::subject;
 use crate::server_function::academic_setting::{academic_setting, Chapter, Class, Subject};
 use crate::server_function::question::get_questions;
-use domain::question::Question;
+use domain::question::{Question, QuestionType};
 // use crate::util::preview_markdown::render_markdown;
 use icondata::{FiCheckCircle, LuPlus, MdiCloseCircle};
 use leptos::{logging::log, prelude::*};
@@ -177,7 +177,10 @@ pub fn ViewQuestions() -> impl IntoView {
         questions
             .get()
             .into_iter()
-            // .filter(|q| q.type)
+            .filter(|q| {
+                (mcq_switch.get() && q.question_type == QuestionType::MCQ)
+                    || (cq_switch.get() && q.question_type == QuestionType::CQ)
+            })
             .enumerate()
             .collect::<Vec<(usize, Question)>>()
     };
@@ -331,12 +334,26 @@ fn QuestionCard(question: Question, index: usize) -> impl IntoView {
             .map(|ctx| ctx.mode.get() == Mode::Dark)
             .unwrap_or(false)
     });
-    let variant = match question.get_value().question_type {
+    let badge_variant = match question.get_value().question_type {
         domain::question::QuestionType::MCQ => {
             "bg-blue-50 text-blue-700" // dark:bg-blue-950 dark:text-blue-300"
         }
         domain::question::QuestionType::CQ => {
             "bg-green-50 text-green-700" // dark:bg-green-950 dark:text-green-300"
+        }
+    };
+    let dificulty_variant = match question.get_value().difficulty {
+        0 => {
+            "inline-flex text-green-500 [&_svg]:w-2 [&_svg]:h-2" // dark:bg-blue-950 dark:text-blue-300"
+        }
+        1 => {
+            "inline-flex text-yellow-500 [&_svg]:w-2 [&_svg]:h-2" // dark:bg-green-950 dark:text-green-300"
+        }
+        2 => {
+            "inline-flex text-red-500 [&_svg]:w-2 [&_svg]:h-2" // dark:bg-green-950 dark:text-green-300"
+        }
+        _ => {
+            "inline-flex text-green-500 [&_svg]:w-2 [&_svg]:h-2" // dark:bg-blue-950 dark:text-blue-300"
         }
     };
     // let order = question.get_value().order;
@@ -356,8 +373,9 @@ fn QuestionCard(question: Question, index: usize) -> impl IntoView {
                             ev.prevent_default();
                             navigate(format!("/question?id={}", question.get_value().id).as_str(),NavigateOptions::default())
                         } variant="ghost">{icon!(icondata::LuSquarePen)}</Button>
-                        <Badge class=variant>
+                        <Badge class=badge_variant>
                             {qtype_str}
+                            <span class=dificulty_variant>{icon!(icondata::BiCircleSolid)}</span>
                         </Badge>
                     </div>
                 </div>
