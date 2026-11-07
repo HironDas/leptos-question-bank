@@ -8,3 +8,8 @@ serde.workspace = true
 validator.workspace = true
 pwhash.workspace = true
 serde-aux.workspace = true
+
+[dev-dependencies]
+fake.workspace = true
+proptest.workspace = true
+rand.workspace = true

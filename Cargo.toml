@@ -70,6 +70,14 @@ ratex-layout = "0.1.11"
 rust-embed = { version = "8.13", features = ["debug-embed"] }
 regex = "1.12.4"
 
+# development and testing (inherited through each crate's [dev-dependencies])
+fake = "4.4.0"
+leptos_reactive = "0.6.15"
+proptest = "1.8.0"
+rand = "0.9.2"
+reqwest = "0.12.24"
+wasm-bindgen-test = "0.3"
+
 ############################################################
 # ROOT PACKAGE (the Leptos app itself, member ".")
 ############################################################
@@ -129,13 +137,13 @@ regex.workspace = true
 rust-embed.workspace = true
 
 [dev-dependencies]
-fake = "4.4.0"
-leptos_reactive = "0.6.15"   # Leptos 0.6 crate – you are on 0.8, consider removing
-proptest = "1.8.0"
-rand = "0.9.2"
-reqwest = "0.12.24"
+fake.workspace = true
+leptos_reactive.workspace = true
+proptest.workspace = true
+rand.workspace = true
+reqwest.workspace = true
 tokio = { workspace = true, features = ["macros", "full"] }
-wasm-bindgen-test = "0.3"
+wasm-bindgen-test.workspace = true
 
 [features]
 hydrate = [

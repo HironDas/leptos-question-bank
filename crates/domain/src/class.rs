@@ -35,7 +35,7 @@ pub struct UpdateClassInput {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use leptos::logging;
+    //use leptos::logging;
     use validator::Validate;
 
     #[test]
@@ -50,7 +50,7 @@ mod tests {
             name: "".to_string(),
             name_bn: "ক্লাস ১".to_string(),
         };
-        logging::log!("Testing invalid input: {:?}", invalid_input);
+        //logging::log!("Testing invalid input: {:?}", invalid_input);
         assert!(invalid_input.validate().is_err());
     }
 

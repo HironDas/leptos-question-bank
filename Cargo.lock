@@ -3277,7 +3277,10 @@ version = "0.5.11"
 name = "question-domain"
 version = "0.5.11"
 dependencies = [
+ "fake",
+ "proptest",
  "pwhash",
+ "rand 0.9.4",
  "serde",
  "serde-aux",
  "validator",
