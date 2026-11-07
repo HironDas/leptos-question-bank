@@ -126,7 +126,18 @@ pub fn AddEditQuestion() -> impl IntoView {
     // --- Toast feedback on add/update ---
     let toast = use_toast();
     Effect::new(move || match add_question_value.get() {
-        Some(Ok(_)) => toast.success("Question added successfully"),
+        Some(Ok(_)) => {
+            toast.success("Question added successfully");
+            question_text_ref.get().map(|el| el.set_value(""));
+            answer_text_ref.get().map(|el| el.set_value(""));
+            for i in 0..8usize {
+                option_refs.get_value()[i].get().map(|el| el.set_value(""));
+                option_check_refs.get_value()[i]
+                    .get()
+                    .map(|el| el.set_checked(false));
+            }
+            option_count.set(4);
+        }
         Some(Err(e)) => toast.error("Failed to add question", e.to_string()),
         None => {}
     });
