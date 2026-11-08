@@ -7,6 +7,8 @@ pub mod pages;
 pub mod server_function;
 pub mod util;
 
+#[cfg(feature = "ssr")]
+use infra::common::ServiceContext;
 pub use util::error;
 
 #[cfg(feature = "hydrate")]
@@ -89,7 +91,7 @@ impl Application {
 #[derive(Clone)]
 pub struct AppState {
     pub leptos_options: LeptosOptions,
-    pub db_pool: Arc<PgPool>,
+    pub ctx: ServiceContext,
 }
 
 #[cfg(feature = "ssr")]
@@ -104,7 +106,7 @@ pub async fn run(
     listener: std::net::TcpListener,
     db_pool: PgPool,
 ) -> Result<(Server, IntoMakeService<axum::Router>), std::io::Error> {
-    use std::sync::Arc;
+    // use std::sync::Arc;
 
     use crate::app::App;
     // use crate::util::auth_middleware::auth_middleware;
@@ -125,11 +127,11 @@ pub async fn run(
     // Generate the list of routes in your Leptos App
     let routes = generate_route_list(App);
     log!("Registered {} SSR routes: {:#?}", routes.len(), routes);
-    let db_pool = Arc::new(db_pool);
+    let ctx = ServiceContext::new(db_pool).unwrap();
 
     let app_state = AppState {
         leptos_options,
-        db_pool,
+        ctx,
     };
 
     // let api_protedted_router = Router::new()
@@ -223,7 +225,7 @@ async fn leptos_handler(
     );
     let handler = render_app_to_stream_with_context(
         move || {
-            provide_context(state.db_pool.clone());
+            provide_context(state.ctx.clone());
             provide_context(jar.clone());
         },
         {
@@ -244,7 +246,7 @@ async fn leptos_server_handler(
     use leptos_axum::handle_server_fns_with_context;
     let handler = handle_server_fns_with_context(
         move || {
-            provide_context(state.db_pool.clone());
+            provide_context(state.ctx.clone());
             provide_context(jar.clone());
         },
         req,
