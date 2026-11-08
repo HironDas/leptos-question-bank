@@ -3283,12 +3283,17 @@ dependencies = [
  "rand 0.9.4",
  "serde",
  "serde-aux",
+ "thiserror 2.0.18",
  "validator",
 ]
 
 [[package]]
 name = "question-infra"
 version = "0.5.11"
+dependencies = [
+ "question-domain",
+ "sqlx",
+]
 
 [[package]]
 name = "question-worker"
