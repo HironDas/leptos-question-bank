@@ -3291,6 +3291,7 @@ dependencies = [
 name = "question-infra"
 version = "0.5.11"
 dependencies = [
+ "pwhash",
  "question-domain",
  "sqlx",
 ]
