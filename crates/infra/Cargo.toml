@@ -7,3 +7,4 @@ edition.workspace = true
 sqlx.workspace = true
 domain.workspace = true
 pwhash.workspace = true
+chrono.workspace = true
