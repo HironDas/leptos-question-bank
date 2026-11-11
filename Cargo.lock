@@ -3291,10 +3291,13 @@ dependencies = [
 name = "question-infra"
 version = "0.5.11"
 dependencies = [
+ "anyhow",
  "chrono",
  "pwhash",
  "question-domain",
  "sqlx",
+ "thiserror 2.0.18",
+ "validator",
 ]
 
 [[package]]

@@ -8,3 +8,6 @@ sqlx.workspace = true
 domain.workspace = true
 pwhash.workspace = true
 chrono.workspace = true
+validator.workspace = true
+thiserror.workspace = true
+anyhow.workspace = true

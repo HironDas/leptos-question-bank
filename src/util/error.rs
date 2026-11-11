@@ -1,5 +1,6 @@
 #[cfg(feature = "ssr")]
 use axum::{http::StatusCode, response::IntoResponse};
+use infra::common::ServiceError;
 use std::fmt::Debug;
 use thiserror::Error;
 use validator::ValidationError;
@@ -45,6 +46,24 @@ fn error_chain_fmt(e: &dyn std::error::Error, f: &mut std::fmt::Formatter<'_>) -
         error_chain_fmt(source, f)
     } else {
         Ok(())
+    }
+}
+
+#[cfg(feature = "ssr")]
+impl IntoResponse for ServiceError {
+    fn into_response(self) -> axum::response::Response {
+        let status = match &self {
+            ServiceError::ValidationError(err) => match err.code.as_ref() {
+                "UNPROCESSABLE_ENTITY" => StatusCode::UNPROCESSABLE_ENTITY,
+                "CONFLICT" => StatusCode::CONFLICT,
+                "Unauthorized" => StatusCode::UNAUTHORIZED,
+                _ => StatusCode::BAD_REQUEST,
+            },
+            ServiceError::UnexpectedError(_) => StatusCode::INTERNAL_SERVER_ERROR,
+            ServiceError::Authentication => StatusCode::UNAUTHORIZED,
+            // _ => StatusCode::INTERNAL_SERVER_ERROR,
+        };
+        (status, self.to_string()).into_response()
     }
 }
 

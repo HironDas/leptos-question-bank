@@ -1,20 +1,10 @@
-use domain::{Error, Result};
-use sqlx::PgPool;
+use domain::Error;
 
-#[derive(Clone)]
-pub struct ServiceContext {
-    pub(crate) pool: PgPool,
-}
+mod context;
+mod sevice_error;
 
-impl ServiceContext {
-    pub fn new(pool: PgPool) -> Result<Self> {
-        Ok(Self { pool })
-    }
-
-    pub fn pool(&self) -> &PgPool {
-        &self.pool
-    }
-}
+pub use context::ServiceContext;
+pub use sevice_error::ServiceError;
 
 pub(crate) fn db(error: sqlx::Error) -> Error {
     if matches!(error, sqlx::Error::RowNotFound) {
