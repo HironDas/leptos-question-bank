@@ -44,15 +44,16 @@ pub(crate) async fn delete_expired_session(
 pub(crate) async fn store_session(
     tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
     user_id: i32,
-) -> domain::Result<sqlx::postgres::PgQueryResult> {
+) -> domain::Result<String> {
     let date = chrono::Local::now() + chrono::Duration::days(7);
     let session_id = uuid::Uuid::new_v4();
 
     sqlx::query("UPDATE INTO session(user_id, session_token, expires_at) VALUES ($1, $2, $3)")
         .bind(&user_id)
         .bind(&session_id)
-        .bind(&date)
+        .bind(&date.naive_local())
         .execute(&mut **tx)
         .await
-        .map_err(db)
+        .map_err(db)?;
+    Ok(session_id.to_string())
 }
