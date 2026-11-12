@@ -1,10 +1,11 @@
-use axum::{http::StatusCode, response::IntoResponse};
 use std::fmt::Debug;
 use thiserror::Error;
 use validator::ValidationError;
 
 #[derive(Error)]
 pub enum ServiceError {
+    #[error(transparent)]
+    Domain(#[from] domain::Error),
     #[error(transparent)]
     ValidationError(#[from] ValidationError),
     #[error(transparent)]

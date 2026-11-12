@@ -6,12 +6,12 @@ pub enum Error {
     NotFound,
     #[error("Operation conflicts with current state")]
     Conflict,
-    #[error("Insufficient stock")]
-    InsufficientStock,
+    // #[error("Insufficient stock")]
+    // InsufficientStock,
     #[error("Request rate exceeded")]
     RateLimited,
-    #[error("Payment provider is not configured")]
-    ProviderUnavailable,
+    // #[error("Payment provider is not configured")]
+    // ProviderUnavailable,
     #[error("Storage temporarily unavailable; retry with the same idempotency key")]
     Storage,
 }

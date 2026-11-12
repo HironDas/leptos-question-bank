@@ -9,7 +9,7 @@ use leptos_axum::ResponseOptions;
 use std::sync::Arc;
 // use validator::ValidationError;
 
-use crate::error::QuestionBankError;
+use crate::error::AppError;
 use domain::{login::Login as DomainLogin, user_email::UserEmail, user_password::UserPassword};
 
 #[derive(serde::Serialize, serde::Deserialize, Clone, Debug)]
@@ -43,16 +43,14 @@ impl TryFrom<LoginCredential> for DomainLogin {
 }
 
 #[server]
-pub async fn login(login: LoginCredential) -> Result<(), ServerFnError> {
+pub async fn login(login: LoginCredential) -> Result<(), AppError> {
     let response = expect_context::<ResponseOptions>();
     if login.id == "" {
-        return Err(ServerFnError::new(
-            "Username/Email is empty. Please put a valid input.",
-        ));
+        return Err(
+            ServerFnError::new("Username/Email is empty. Please put a valid input.").into(),
+        );
     } else if login.password == "" {
-        return Err(ServerFnError::new(
-            "Password is empty! Please input the password.",
-        ));
+        return Err(ServerFnError::new("Password is empty! Please input the password.").into());
     }
     let login: DomainLogin = login.try_into().map_err(|err: QuestionBankError| {
         log!("validataion Error: {:?}", err);

@@ -8,10 +8,12 @@ use axum::{body::Body, http::Request, middleware::Next, response::Response};
 #[cfg(feature = "ssr")]
 use axum_extra::extract::CookieJar;
 #[cfg(feature = "ssr")]
+use infra::common::ServiceError;
+#[cfg(feature = "ssr")]
 use sqlx::PgPool;
 
 #[cfg(feature = "ssr")]
-use crate::error::QuestionBankError;
+use crate::error::ApiError;
 
 #[cfg(feature = "ssr")]
 pub async fn auth_middleware(
@@ -19,20 +21,17 @@ pub async fn auth_middleware(
     jar: CookieJar,
     req: Request<Body>,
     next: Next,
-) -> Result<Response, QuestionBankError> {
-    use anyhow::Context;
+) -> Result<Response, ApiError> {
     use leptos::logging;
     use uuid::Uuid;
     let session = jar.get("session").map(|cookie| cookie.value());
     logging::log!("Session in middleware: {:#?}", session);
 
     if let Some(token) = session {
-        let token = Uuid::parse_str(token)
-            .map_err(|err| {
-                logging::log!("UUID Error: {:?}", err);
-                err
-            })
-            .context("UUID Parseing Error")?;
+        let token = Uuid::parse_str(token).map_err(|err| {
+            logging::log!("UUID Error: {:?}", err);
+            ApiError::from(ServiceError::Authentication)
+        })?;
 
         let is_authencated = sqlx::query!(
             r#"
@@ -46,18 +45,18 @@ pub async fn auth_middleware(
             use leptos::logging::log;
 
             log!("Sqlx Error: {:?}", err);
-            err
-            //QuestionBankError::UnexpectedError(err)
-        })
-        .context("Something went wrong to fetch session")?
+            // err
+            ApiError::from(ServiceError::UnexpectedError(anyhow::anyhow!(err)))
+        })?
         .exists;
+
         logging::log!("I AM IN MIDDLEWARE");
         if let Some(true) = is_authencated {
             Ok(next.run(req).await)
         } else {
-            Err(QuestionBankError::Authentication)
+            Err(ServiceError::Authentication.into())
         }
     } else {
-        Err(QuestionBankError::Authentication)
+        Err(ApiError::from(ServiceError::Authentication))
     }
 }

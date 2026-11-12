@@ -1,10 +1,10 @@
 use domain::Error;
 
 mod context;
-mod sevice_error;
+mod service_error;
 
 pub use context::ServiceContext;
-pub use sevice_error::ServiceError;
+pub use service_error::ServiceError;
 
 pub(crate) fn db(error: sqlx::Error) -> Error {
     if matches!(error, sqlx::Error::RowNotFound) {
