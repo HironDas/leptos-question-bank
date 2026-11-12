@@ -4,17 +4,15 @@ use leptos::prelude::*;
 pub async fn home() -> Result<(), ServerFnError> {
     #[cfg(feature = "ssr")]
     {
-        use std::sync::Arc;
-
         use axum_extra::extract::CookieJar;
+        use infra::common::ServiceContext;
         use leptos::logging::log;
-        use sqlx::PgPool;
 
         use crate::util::auth::auth;
         let jar = expect_context::<CookieJar>();
-        let pool = expect_context::<Arc<PgPool>>();
+        let ctx = expect_context::<ServiceContext>();
 
-        if let Err(_) = auth(pool.clone(), jar).await {
+        if let Err(_) = auth(ctx, jar).await {
             use leptos_axum::redirect;
 
             log!("Unauthorized");

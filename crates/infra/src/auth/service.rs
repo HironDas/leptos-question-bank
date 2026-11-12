@@ -17,10 +17,7 @@ impl From<ServiceContext> for AuthService {
 }
 
 impl AuthService {
-    pub async fn auth(&self, session: Option<Uuid>) -> Result<(), ServiceError> {
-        let Some(token) = session else {
-            return Err(ServiceError::Authentication);
-        };
+    pub async fn auth(&self, token: Uuid) -> Result<(), ServiceError> {
         let mut tx = self.context.pool.begin().await.map_err(db)?;
         is_auth(&mut tx, token).await?;
         Ok(())

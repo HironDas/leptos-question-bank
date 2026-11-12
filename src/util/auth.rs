@@ -4,53 +4,28 @@ use std::sync::Arc;
 #[cfg(feature = "ssr")]
 use axum_extra::extract::CookieJar;
 #[cfg(feature = "ssr")]
+use infra::{auth::AuthService, common::ServiceContext};
+#[cfg(feature = "ssr")]
 use sqlx::PgPool;
 
 #[cfg(feature = "ssr")]
-use crate::error::QuestionBankError;
+use crate::error::AppError;
 
 #[cfg(feature = "ssr")]
-pub async fn auth(pool: Arc<PgPool>, jar: CookieJar) -> Result<(), QuestionBankError> {
-    use anyhow::Context;
+pub async fn auth(ctx: ServiceContext, jar: CookieJar) -> Result<(), AppError> {
     use leptos::logging;
     use uuid::Uuid;
     let session = jar.get("session").map(|cookie| cookie.value());
+    let auth_service = AuthService::from(ctx);
     logging::log!("Session in Auth rs: {:#?}", session);
 
-    if let Some(token) = session {
-        // let token = Uuid::parse_str(token) else {
-        //     return Err(QuestionBankError::Authentication);
-        // };
-        let token = Uuid::parse_str(token)
-            .map_err(|err| {
-                logging::log!("UUID Error: {:?}", err);
-                err
-            })
-            .context("UUID Parseing Error")?;
-
-        let is_authencated = sqlx::query!(
-            r#"
-            SELECT EXISTS(SELECT 1 FROM sessions WHERE session_token = $1)
-            "#,
-            &token
-        )
-        .fetch_one(&*pool)
-        .await
-        .map_err(|err| {
-            use leptos::logging::log;
-
-            log!("Sqlx Error: {:?}", err);
-            err
-        })
-        .context("Something went wrong to fetch session")?
-        .exists;
-        // logging::log!("I AM IN Auth rs");
-        if let Some(true) = is_authencated {
-            Ok(())
-        } else {
-            Err(QuestionBankError::Authentication)
-        }
-    } else {
-        Err(QuestionBankError::Authentication)
-    }
+    let Some(token) = session else {
+        return Err(AppError::Authentication);
+    };
+    let token = Uuid::parse_str(token).map_err(|err| {
+        logging::log!("UUID Error: {:?}", err);
+        AppError::Authentication
+    })?;
+    auth_service.auth(token).await?;
+    Ok(())
 }
