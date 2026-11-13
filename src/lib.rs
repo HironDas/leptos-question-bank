@@ -20,9 +20,6 @@ pub fn hydrate() {
 }
 
 #[cfg(feature = "ssr")]
-use std::sync::Arc;
-
-#[cfg(feature = "ssr")]
 use axum::body::Body;
 
 #[cfg(feature = "ssr")]

@@ -1,10 +1,7 @@
 #[cfg(feature = "ssr")]
 use axum::{http::StatusCode, response::IntoResponse};
 use infra::common::ServiceError;
-use leptos::server_fn::{
-    codec::JsonEncoding,
-    error::{FromServerFnError, ServerFnErrorErr::ServerError},
-};
+use leptos::server_fn::{codec::JsonEncoding, error::FromServerFnError};
 use serde::{Deserialize, Serialize};
 use std::fmt::Debug;
 use thiserror::Error;
@@ -47,7 +44,7 @@ impl From<ServiceError> for AppError {
                     .unwrap_or_else(|| err.code.into_owned()),
             ),
             ServiceError::Authentication => AppError::Authentication,
-            ServiceError::UnexpectedError(err) => AppError::Internal,
+            ServiceError::UnexpectedError(_) => AppError::Internal,
             ServiceError::Domain(err) => match err {
                 domain::Error::Invalid(msg) => AppError::Validation(msg.to_owned()),
                 domain::Error::NotFound => AppError::NotFound,

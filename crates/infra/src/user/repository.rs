@@ -1,4 +1,5 @@
-use sqlx::types::uuid;
+use domain::new_user::NewUser;
+use sqlx::{types::uuid, Postgres, Transaction};
 
 use crate::common::db;
 
@@ -56,4 +57,46 @@ pub(crate) async fn store_session(
         .await
         .map_err(db)?;
     Ok(session_id.to_string())
+}
+
+pub(crate) async fn insert_new_user(
+    tx: &mut Transaction<'_, sqlx::Postgres>,
+    user: NewUser,
+) -> domain::Result<()> {
+    let password_hash = user.hash_password();
+
+    sqlx::query("INSERT INTO users (username, email, password_hash) VALUES ($1, $2,$3)")
+        .bind(user.username.as_ref())
+        .bind(user.email.as_ref())
+        .bind(&password_hash)
+        .execute(&mut **tx)
+        .await
+        .map_err(db)?;
+    Ok(())
+}
+
+pub(crate) async fn check_user(
+    tx: &mut Transaction<'_, Postgres>,
+    username: &str,
+) -> domain::Result<bool> {
+    let exist: bool = sqlx::query_scalar("SELECT EXISTS(SELECT 1 FROM users WHERE username = $1")
+        .bind(username)
+        .fetch_one(&mut **tx)
+        .await
+        .map_err(db)?;
+
+    Ok(exist)
+}
+
+pub(crate) async fn check_email(
+    tx: &mut Transaction<'_, Postgres>,
+    email: &str,
+) -> domain::Result<bool> {
+    let exist: bool = sqlx::query_scalar("SELECT EXISTS(SELECT 1 FROM users WHERE email = $1")
+        .bind(email)
+        .fetch_one(&mut **tx)
+        .await
+        .map_err(db)?;
+
+    Ok(exist)
 }

@@ -11,30 +11,11 @@ pub fn Login() -> impl IntoView {
     let value = login.value();
     let error_msg = RwSignal::new("".to_string());
 
-    // let on_submit = move |ev: SubmitEvent| {
-    //     let data = Login::from_event(&ev);
-    //     log!("Data:{:?}", data);
-    //     if let Ok(Login {
-    //         login: LoginCredential { id, password },
-    //     }) = data
-    //     {
-    //         if id == "" {
-    //             ev.prevent_default();
-    //             error_msg.set("Username/Email is empty. Please put a valid input.".to_string());
-    //         } else if password == "" {
-    //             ev.prevent_default();
-    //             error_msg.set("Password is empty! Please input the password.".to_owned());
-    //         }
-    //     } else {
-    //         ev.prevent_default();
-    //     }
-    // };
-
     Effect::new(move || {
         if value.get().is_some() {
-            if let Err(ServerFnError::ServerError(msg)) = value.get().unwrap() {
-                log!("err-->: {:#?}", msg);
-                error_msg.set(msg);
+            if let Err(err) = value.get().unwrap() {
+                log!("err-->: {:#?}", err);
+                error_msg.set(err.to_string());
             } else {
                 error_msg.set("".to_string());
             }
