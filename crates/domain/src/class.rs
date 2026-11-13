@@ -1,3 +1,28 @@
+#[derive(serde::Serialize, serde::Deserialize, Debug, Clone, PartialEq, Eq)]
+pub struct Class {
+    pub id: u32,
+    pub name: String,
+    pub name_bn: String,
+    pub order: u32,
+}
+#[derive(serde::Serialize, serde::Deserialize, Debug, Clone, PartialEq, Eq)]
+pub struct Subject {
+    pub id: u32,
+    pub title: String,
+    pub class_id: u32,
+    pub order: u32,
+}
+
+#[derive(serde::Serialize, serde::Deserialize, Debug, Clone, PartialEq, Eq)]
+pub struct Chapter {
+    pub id: u32,
+    pub title: String,
+    pub order: u32,
+    pub class_id: u32,
+    pub subject_id: u32,
+    pub question_count: u32,
+}
+
 #[derive(serde::Deserialize, serde::Serialize, validator::Validate, Debug, Clone)]
 pub struct AddClassInput {
     #[validate(length(
