@@ -36,7 +36,7 @@ pub struct ApplicationSettings {
     #[serde(deserialize_with = "deserialize_number_from_string")]
     pub port: u16,
     pub host: String,
-    // pub base_url: String,
+    pub rate_limit_secret: String, // pub base_url: String,
 }
 
 #[derive(Debug, Deserialize, Clone)]
@@ -158,6 +158,8 @@ mod tests {
         let settings = ApplicationSettings {
             port: 3000,
             host: "127.0.0.1".to_string(),
+            rate_limit_secret: "4b5ee173a257c940d216ac60b67a13960299bc40e90b7662840895bd71ddc22c"
+                .to_string(),
         };
         assert_eq!(settings.port, 3000);
         assert_eq!(settings.host, "127.0.0.1");

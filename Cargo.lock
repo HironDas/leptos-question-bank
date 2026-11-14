@@ -2190,6 +2190,7 @@ dependencies = [
  "console_error_panic_hook",
  "fake",
  "getrandom 0.2.17",
+ "hex",
  "icondata",
  "leptos 0.8.19",
  "leptos_axum",
@@ -3293,8 +3294,10 @@ version = "0.5.11"
 dependencies = [
  "anyhow",
  "chrono",
+ "hmac 0.12.1",
  "pwhash",
  "question-domain",
+ "sha2 0.10.9",
  "sqlx",
  "thiserror 2.0.18",
  "validator",

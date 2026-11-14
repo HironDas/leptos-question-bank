@@ -1,13 +1,16 @@
 use domain::login::Login;
 use domain::new_user::NewUser;
 use domain::Error;
+use hmac::{Hmac, Mac};
+use sha2::Sha256;
 
-use crate::common::db;
 use crate::common::ServiceContext;
 use crate::common::ServiceError;
 use crate::user::repository;
 use crate::user::repository::User;
 use pwhash::bcrypt;
+
+type HmacSha256 = Hmac<Sha256>;
 
 #[derive(Clone)]
 pub struct UserService {
@@ -22,52 +25,58 @@ impl From<ServiceContext> for UserService {
 
 impl UserService {
     pub async fn login(&self, user_login: Login) -> Result<String, ServiceError> {
-        let mut tx = self.context.pool.begin().await.map_err(db)?;
-        let user: User = match user_login {
+        let pool = &self.context.pool;
+        let user: User = match &user_login {
             Login {
                 email: Some(email),
                 username: None,
                 password: _,
-            } => repository::get_user_by_email(&mut tx, email.as_ref()).await?,
+            } => repository::get_user_by_email(pool, email.as_ref()).await?,
             Login {
                 email: None,
                 username: Some(user),
                 password: _,
-            } => repository::get_user_by_username(&mut tx, user.as_ref()).await?,
-            _ => return Err(Error::NotFound.into()),
+            } => repository::get_user_by_username(pool, user.as_ref()).await?,
+            _ => return Err(Error::Invalid("Provide eithter email or username").into()),
         };
 
         if !bcrypt::verify(user_login.password.as_ref(), &user.password_hash) {
             return Err(Error::Invalid("Invalid username or password").into());
         }
 
-        let session = repository::store_session(&mut tx, user.id).await?;
-        tx.commit().await.map_err(db)?;
+        let session = repository::store_session(&pool, user.id).await?;
+        // tx.commit().await.map_err(db)?;
         Ok(session)
     }
     pub async fn signup(&self, user: NewUser) -> Result<(), ServiceError> {
-        let mut tx = self.context.pool.begin().await.map_err(db)?;
-        let is_user_exist = repository::check_user(&mut tx, user.username.as_ref()).await?;
-
-        let is_email_exist = repository::check_email(&mut tx, user.email.as_ref()).await?;
-
-        if !is_user_exist && !is_email_exist {
-            repository::insert_new_user(&mut tx, user).await?;
-        } else {
-            return Err(anyhow::anyhow!("Username/Email  already exist!!").into());
-        }
-        Ok(())
+        repository::insert_new_user(&self.context.pool, user)
+            .await
+            .map_err(Into::into)
     }
 
     pub async fn is_user_exist(&self, username: String) -> Result<bool, ServiceError> {
-        let mut tx = self.context.pool.begin().await.map_err(db)?;
-        let exist = repository::check_user(&mut tx, username.as_ref()).await?;
+        let pool = &self.context.pool;
+        let exist = repository::check_user(pool, username.as_ref()).await?;
         Ok(exist)
     }
 
     pub async fn is_email_exist(&self, email: String) -> Result<bool, ServiceError> {
-        let mut tx = self.context.pool.begin().await.map_err(db)?;
-        let exist = repository::check_email(&mut tx, email.as_ref()).await?;
+        let pool = &self.context.pool;
+        let exist = repository::check_email(pool, email.as_ref()).await?;
         Ok(exist)
+    }
+
+    fn rate_limit_key(
+        secret: &[u8],
+        scope: &str,
+        identifier: &str,
+    ) -> Result<[u8; 32], ServiceError> {
+        let mut mac = HmacSha256::new_from_slice(secret)
+            .map_err(|_| anyhow::anyhow!("Valid HMAC key"))?;
+        mac.update(scope.as_bytes());
+        mac.update(b":");
+        mac.update(identifier.as_bytes());
+
+        Ok(mac.finalize().into_bytes().into())
     }
 }

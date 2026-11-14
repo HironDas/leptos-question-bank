@@ -2,7 +2,6 @@ use domain::Error;
 
 mod context;
 mod service_error;
-
 pub use context::ServiceContext;
 pub use service_error::ServiceError;
 

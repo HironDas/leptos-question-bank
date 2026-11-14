@@ -8,6 +8,9 @@ pub mod server_function;
 pub mod util;
 
 #[cfg(feature = "ssr")]
+use std::io::ErrorKind;
+
+#[cfg(feature = "ssr")]
 use infra::common::ServiceContext;
 pub use util::error;
 
@@ -40,7 +43,9 @@ use leptos::prelude::*;
 use sqlx::PgPool;
 
 #[cfg(feature = "ssr")]
-use crate::configuration::DatabaseSettings;
+use crate::configuration::{ApplicationSettings, DatabaseSettings};
+#[cfg(feature = "ssr")]
+use crate::util::error::AppError;
 #[cfg(feature = "ssr")]
 use crate::{app::shell, configuration::Settings};
 
@@ -58,6 +63,7 @@ pub struct Application {
 impl Application {
     #[cfg(feature = "ssr")]
     pub async fn build(configuration: Settings) -> Result<Self, std::io::Error> {
+        let rate_limit_secret = load_rate_limit_secret(&configuration.application)?;
         let connection_pool = get_connection_pool(&configuration.database);
         let listener = std::net::TcpListener::bind(format!(
             "{}:{}",
@@ -65,7 +71,7 @@ impl Application {
         ))?;
 
         let port = listener.local_addr().unwrap().port();
-        let application_server = run(listener, connection_pool).await?;
+        let application_server = run(listener, connection_pool, rate_limit_secret).await?;
 
         Ok(Self {
             port,
@@ -102,6 +108,7 @@ impl axum::extract::FromRef<AppState> for LeptosOptions {
 pub async fn run(
     listener: std::net::TcpListener,
     db_pool: PgPool,
+    rate_limit_secret: [u8; 32],
 ) -> Result<(Server, IntoMakeService<axum::Router>), std::io::Error> {
     // use std::sync::Arc;
 
@@ -124,7 +131,7 @@ pub async fn run(
     // Generate the list of routes in your Leptos App
     let routes = generate_route_list(App);
     log!("Registered {} SSR routes: {:#?}", routes.len(), routes);
-    let ctx = ServiceContext::new(db_pool).unwrap();
+    let ctx = ServiceContext::new(db_pool, rate_limit_secret).unwrap();
 
     let app_state = AppState {
         leptos_options,
@@ -205,6 +212,23 @@ pub fn get_connection_pool(configuration: &DatabaseSettings) -> PgPool {
     PgPoolOptions::new()
         .acquire_timeout(std::time::Duration::from_secs(10))
         .connect_lazy_with(configuration.with_db())
+}
+
+#[cfg(feature = "ssr")]
+pub fn load_rate_limit_secret(
+    application: &ApplicationSettings,
+) -> Result<[u8; 32], std::io::Error> {
+    use std::io::Error;
+    let secret = &application.rate_limit_secret;
+    let bytes = hex::decode(secret).map_err(|e| Error::new(ErrorKind::InvalidData, e))?;
+
+    let secret: [u8; 32] = bytes.try_into().map_err(|_| {
+        Error::new(
+            ErrorKind::InvalidData,
+            "LOGIN_RATE_LIMIT_SECRET must be exactly 32 bytes",
+        )
+    })?;
+    Ok(secret)
 }
 
 #[cfg(feature = "ssr")]

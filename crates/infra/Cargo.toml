@@ -11,3 +11,5 @@ chrono.workspace = true
 validator.workspace = true
 thiserror.workspace = true
 anyhow.workspace = true
+sha2.workspace = true
+hmac.workspace = true

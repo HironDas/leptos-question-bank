@@ -69,6 +69,9 @@ ratex-parser = "0.1.11"
 ratex-layout = "0.1.11"
 rust-embed = { version = "8.13", features = ["debug-embed"] }
 regex = "1.12.4"
+sha2 = "0.10"
+hmac = "0.12"
+hex = "0.4.3"
 
 # development and testing (inherited through each crate's [dev-dependencies])
 fake = "4.4.0"
@@ -111,6 +114,7 @@ tower-http  = { workspace = true, optional = true }
 config      = { workspace = true, optional = true }
 sqlx        = { workspace = true, optional = true }
 uuid        = { workspace = true, optional = true }
+hex        = { workspace = true, optional = true }
 
 console_error_panic_hook = { workspace = true, optional = true }
 wasm-bindgen = { workspace = true, optional = true }
@@ -165,6 +169,7 @@ ssr = [
     "dep:axum-server",
     "dep:config",
     "dep:tower-http",
+    "dep:hex"
 ]
 test-fullstack = ["ssr", "hydrate"]
 
