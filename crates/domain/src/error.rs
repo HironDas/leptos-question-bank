@@ -14,5 +14,7 @@ pub enum Error {
     // ProviderUnavailable,
     #[error("Storage temporarily unavailable; retry with the same idempotency key")]
     Storage,
+    #[error("Something went wrong!")]
+    Internal,
 }
 pub type Result<T> = std::result::Result<T, Error>;

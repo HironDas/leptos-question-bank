@@ -31,16 +31,24 @@ pub async fn login(login: LoginCredential) -> Result<(), AppError> {
     leptos::logging::log!("Login attempt: {:?}", login);
     #[cfg(feature = "ssr")]
     {
-        use axum::http::{header::SET_COOKIE, HeaderValue};
+        use std::net::SocketAddr;
+
+        use axum::{
+            extract::ConnectInfo,
+            http::{header::SET_COOKIE, HeaderValue},
+        };
         use infra::{common::ServiceContext, user::UserService};
         use leptos_axum::redirect;
 
         let ctx = expect_context::<ServiceContext>();
+        let ConnectInfo(address) = leptos_axum::extract::<ConnectInfo<SocketAddr>>()
+            .await
+            .map_err(|_| AppError::Validation("Unable to identify client".into()))?;
 
         let max_age_seconds = 7 * 24 * 3600;
 
         let user_service = UserService::from(ctx);
-        let session = user_service.login(login).await?;
+        let session = user_service.login(login, address.ip()).await?;
 
         let cookie_value = HeaderValue::from_str(&format!(
             // "session={}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age={}",

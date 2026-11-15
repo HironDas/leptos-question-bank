@@ -1,3 +1,5 @@
+use std::net::IpAddr;
+
 use domain::login::Login;
 use domain::new_user::NewUser;
 use domain::Error;
@@ -6,11 +8,13 @@ use sha2::Sha256;
 
 use crate::common::ServiceContext;
 use crate::common::ServiceError;
+use crate::rate_limit;
 use crate::user::repository;
 use crate::user::repository::User;
 use pwhash::bcrypt;
 
 type HmacSha256 = Hmac<Sha256>;
+const DUMMY_BCRYPT_HASH: &str = "$2b$10$IBBT1ZKMUhro6XJabnran.UpCG7yrqQxSxGSI5bDnfmAC/Xm9nxpm";
 
 #[derive(Clone)]
 pub struct UserService {
@@ -24,27 +28,67 @@ impl From<ServiceContext> for UserService {
 }
 
 impl UserService {
-    pub async fn login(&self, user_login: Login) -> Result<String, ServiceError> {
+    pub async fn login(
+        &self,
+        user_login: Login,
+        client_ip: IpAddr,
+    ) -> Result<String, ServiceError> {
         let pool = &self.context.pool;
-        let user: User = match &user_login {
+        let id;
+        let ip_key = Self::rate_limit_key(
+            &*self.context.rate_limit_secret,
+            "login:ip",
+            &client_ip.to_string(),
+        )?;
+
+        rate_limit::repository::reserve_login_attempt(pool, &ip_key, 20, 60)
+            .await?
+            .then_some(())
+            .ok_or(Error::RateLimited)?;
+
+        let user: domain::Result<User> = match &user_login {
             Login {
                 email: Some(email),
                 username: None,
                 password: _,
-            } => repository::get_user_by_email(pool, email.as_ref()).await?,
+            } => {
+                id = email.as_ref();
+                repository::get_user_by_email(pool, email.as_ref()).await
+            }
             Login {
                 email: None,
                 username: Some(user),
                 password: _,
-            } => repository::get_user_by_username(pool, user.as_ref()).await?,
+            } => {
+                id = user.as_ref();
+                repository::get_user_by_username(pool, user.as_ref()).await
+            }
             _ => return Err(Error::Invalid("Provide eithter email or username").into()),
         };
 
-        if !bcrypt::verify(user_login.password.as_ref(), &user.password_hash) {
+        let key =
+            Self::rate_limit_key(&*self.context.rate_limit_secret.clone(), "login:acount", id)?;
+
+        rate_limit::repository::reserve_login_attempt(pool, &key, 5, 900)
+            .await?
+            .then_some(())
+            .ok_or(Error::RateLimited)?;
+
+        let user = match user {
+            Ok(user) => Some(user),
+            Err(Error::NotFound) => None,
+            Err(err) => return Err(err.into()),
+        };
+
+        let hash = user
+            .as_ref()
+            .map(|user| user.password_hash.as_str())
+            .unwrap_or(DUMMY_BCRYPT_HASH);
+        if !Self::password_verify(user_login.password.as_ref(), &hash).await? {
             return Err(Error::Invalid("Invalid username or password").into());
         }
 
-        let session = repository::store_session(&pool, user.id).await?;
+        let session = repository::store_session(pool, user.unwrap().id).await?;
         // tx.commit().await.map_err(db)?;
         Ok(session)
     }
@@ -67,16 +111,24 @@ impl UserService {
     }
 
     fn rate_limit_key(
-        secret: &[u8],
+        secret: &[u8; 32],
         scope: &str,
         identifier: &str,
     ) -> Result<[u8; 32], ServiceError> {
-        let mut mac = HmacSha256::new_from_slice(secret)
-            .map_err(|_| anyhow::anyhow!("Valid HMAC key"))?;
+        let mut mac =
+            HmacSha256::new_from_slice(secret).map_err(|_| anyhow::anyhow!("Valid HMAC key"))?;
         mac.update(scope.as_bytes());
         mac.update(b":");
         mac.update(identifier.as_bytes());
 
         Ok(mac.finalize().into_bytes().into())
+    }
+
+    async fn password_verify(pass: &str, hash: &str) -> domain::Result<bool> {
+        let pass = pass.to_owned();
+        let hash = hash.to_owned();
+        tokio::task::spawn_blocking(move || bcrypt::verify(&pass, &hash))
+            .await
+            .map_err(|_| Error::Internal)
     }
 }
