@@ -1,10 +1,12 @@
 use std::net::IpAddr;
 
+use anyhow::anyhow;
 use domain::login::Login;
 use domain::new_user::NewUser;
 use domain::Error;
 use hmac::{Hmac, Mac};
 use sha2::Sha256;
+use sqlx::types::Uuid;
 
 use crate::common::ServiceContext;
 use crate::common::ServiceError;
@@ -108,6 +110,16 @@ impl UserService {
         let pool = &self.context.pool;
         let exist = repository::check_email(pool, email.as_ref()).await?;
         Ok(exist)
+    }
+
+    pub async fn logout(&self, session_token: &str) -> Result<(), ServiceError> {
+        let pool = &self.context.pool;
+        let session_id =
+            Uuid::parse_str(session_token).map_err(|_| anyhow!("Failed to parse token"))?;
+
+        repository::delete_session_on_logout(pool, session_id).await?;
+
+        Ok(())
     }
 
     fn rate_limit_key(

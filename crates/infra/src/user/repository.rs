@@ -1,5 +1,8 @@
 use domain::new_user::NewUser;
-use sqlx::{types::uuid, Executor, PgPool, Postgres, Transaction};
+use sqlx::{
+    types::{uuid, Uuid},
+    Executor, PgPool, Postgres, Transaction,
+};
 
 use crate::common::db;
 
@@ -38,6 +41,17 @@ pub(crate) async fn delete_expired_session(
     sqlx::query("DELETE FROM sessions WHERE expires_at < $1")
         .bind(&chrono::Local::now().naive_local())
         .execute(&mut **tx)
+        .await
+        .map_err(db)
+}
+
+pub(crate) async fn delete_session_on_logout(
+    pool: &PgPool,
+    session_id: Uuid,
+) -> domain::Result<sqlx::postgres::PgQueryResult> {
+    sqlx::query("DELETE FROM sessions WHERE session_token = $1")
+        .bind(session_id)
+        .execute(pool)
         .await
         .map_err(db)
 }

@@ -53,6 +53,7 @@ impl From<ServiceError> for AppError {
                 domain::Error::RateLimited => AppError::RateLimited,
                 // domain::Error::ProviderUnavailable => StatusCode::SERVICE_UNAVAILABLE,
                 domain::Error::Storage => AppError::Unavialble,
+                domain::Error::Internal => AppError::Internal,
             },
         }
     }
@@ -84,6 +85,7 @@ impl IntoResponse for ApiError {
                 domain::Error::RateLimited => StatusCode::TOO_MANY_REQUESTS,
                 // domain::Error::ProviderUnavailable => StatusCode::SERVICE_UNAVAILABLE,
                 domain::Error::Storage => StatusCode::SERVICE_UNAVAILABLE,
+                domain::Error::Internal => StatusCode::INTERNAL_SERVER_ERROR,
             },
             ServiceError::UnexpectedError(_) => StatusCode::INTERNAL_SERVER_ERROR,
             ServiceError::Authentication => StatusCode::UNAUTHORIZED,
