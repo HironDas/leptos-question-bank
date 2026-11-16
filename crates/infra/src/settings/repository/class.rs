@@ -1,4 +1,4 @@
-use domain::class::{AddClassInput, Class};
+use domain::class::{AddClassInput, Class, UpdateClassInput};
 use sqlx::{prelude::FromRow, PgPool, Postgres, Transaction};
 
 use crate::common::db;
@@ -23,11 +23,10 @@ impl From<ClassRow> for Class {
 }
 
 pub(crate) async fn list_class(pool: &PgPool) -> domain::Result<Vec<Class>> {
-    let classes = sqlx::query_as!(
-        ClassRow,
+    let classes: Vec<Class> = sqlx::query_as::<_, ClassRow>(
         r#"
         SELECT id, name, name_bn, "order"  FROM classes ORDER BY "order" ASC
-        "#
+        "#,
     )
     .fetch_all(pool)
     .await
@@ -39,7 +38,7 @@ pub(crate) async fn list_class(pool: &PgPool) -> domain::Result<Vec<Class>> {
     Ok(classes)
 }
 
-pub(crate) async fn insert_class(pool: &PgPool, class: AddClassInput) -> Result<Class> {
+pub(crate) async fn insert_class(pool: &PgPool, class: AddClassInput) -> domain::Result<Class> {
     let max_order: Option<i32> = sqlx::query_scalar!(
         r#"
                 SELECT MAX("order") FROM classes
@@ -51,17 +50,33 @@ pub(crate) async fn insert_class(pool: &PgPool, class: AddClassInput) -> Result<
 
     let new_order = max_order.unwrap_or(0) + 10;
 
-    sqlx::query_as!(
-        ClassRow,
+    let class = sqlx::query_as::<_, ClassRow>(
         r#"
         INSERT INTO classes (name, name_bn, "order") VALUES ($1, $2, $3) RETURNING id, name, name_bn, "order"
-        "#,
-        class.name,
-        class.name_bn,
-        new_order as i32
-    )
+        "#
+    ).bind(class.name)
+    .bind(class.name_bn)
+    .bind(new_order)
     .fetch_one(&*pool)
     .await
     .map(Class::from)
-    .map_err(db)?
+    .map_err(db)?;
+
+    Ok(class)
+}
+
+pub(crate) async fn update_class(pool: &PgPool, class: UpdateClassInput) -> domain::Result<Class> {
+    let class = sqlx::query_as::<_, ClassRow>(
+        r#"
+            UPDATE classes SET name = $1, name_bn = $2 WHERE id = $3 returning id, name, name_bn, "order"
+            "#,
+    ).bind(class.name)
+    .bind(class.name_bn)
+    .bind(class.class_id as i32)
+    .fetch_one(pool)
+    .await
+    .map(Class::from)
+    .map_err(db)?;
+
+    Ok(class)
 }
