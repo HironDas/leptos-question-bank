@@ -1,5 +1,5 @@
-use domain::class::Subject;
-use sqlx::{prelude::FromRow, PgPool};
+use domain::{class::Subject, Error};
+use sqlx::{prelude::FromRow, PgPool, Postgres};
 
 use crate::common::db;
 
@@ -39,19 +39,55 @@ pub(crate) async fn list_subjects(pool: &PgPool, class_id: u32) -> domain::Resul
     Ok(subjects)
 }
 
-pub(crate) async fn add_subject(
+pub(crate) async fn insert_subject(
     pool: &PgPool,
     title: String,
     class_id: u32,
 ) -> domain::Result<Subject> {
-    let order = sqlx::query_scalar(
+    let order: i32 = sqlx::query_scalar(
         r#"
-    SELECT COALESCE(MAX("order"), 0) as max_order FROM subjects WHERE class_id = $1
+        SELECT COALESCE(MAX("order"), 0) as max_order FROM subjects WHERE class_id = $1
     "#,
     )
     .bind(class_id as i32)
-    .fetch_one(&*pool)
+    .fetch_one(pool)
     .await
     .map_err(db)?;
-    todo!()
+
+    let new_order = order + 10;
+
+    let subject: Subject = sqlx::query_as::<_, SubjectRow>(r#"
+        INSERT INTO subjects (title, class_id, "order") VALUES ($1, $2, $3) RETURNING id, title, class_id, "order"
+    "#)
+    .bind(title)
+    .bind(class_id as i32)
+    .bind(new_order)
+    .fetch_one(pool)
+    .await
+    .map(Subject::from)
+    .map_err(db)?;
+
+    Ok(subject)
+}
+
+pub(crate) async fn update_subject(
+    pool: &PgPool,
+    title: String,
+    subject_id: u32,
+) -> domain::Result<Subject> {
+    let id = i32::try_from(subject_id).map_err(|_| Error::Internal)?;
+    let subject = sqlx::query_as::<_, SubjectRow>(
+        r#"
+        UPDATE subjects SET title = $1 WHERE id = $2
+        RETURNING id, title, class_id, "order"
+        "#,
+    )
+    .bind(title)
+    .bind(id)
+    .fetch_one(pool)
+    .await
+    .map(Subject::from)
+    .map_err(db)?;
+
+    Ok(subject)
 }

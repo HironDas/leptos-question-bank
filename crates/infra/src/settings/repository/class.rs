@@ -39,10 +39,10 @@ pub(crate) async fn list_class(pool: &PgPool) -> domain::Result<Vec<Class>> {
 }
 
 pub(crate) async fn insert_class(pool: &PgPool, class: AddClassInput) -> domain::Result<Class> {
-    let max_order: Option<i32> = sqlx::query_scalar!(
+    let max_order: Option<i32> = sqlx::query_scalar(
         r#"
                 SELECT MAX("order") FROM classes
-                "#
+                "#,
     )
     .fetch_one(pool)
     .await
