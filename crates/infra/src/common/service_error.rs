@@ -1,13 +1,13 @@
 use std::fmt::Debug;
 use thiserror::Error;
-use validator::ValidationError;
+use validator::{ValidationError, ValidationErrors};
 
 #[derive(Error)]
 pub enum ServiceError {
     #[error(transparent)]
     Domain(#[from] domain::Error),
     #[error(transparent)]
-    ValidationError(#[from] ValidationError),
+    ValidationError(#[from] ValidationErrors),
     #[error(transparent)]
     UnexpectedError(#[from] anyhow::Error),
     #[error("Authentication Error!!")]

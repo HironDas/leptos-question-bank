@@ -22,7 +22,7 @@ impl From<SubjectRow> for Subject {
     }
 }
 
-pub(crate) async fn list_subjects(pool: &PgPool, class_id: u32) -> domain::Result<Vec<Subject>> {
+pub(crate) async fn list_subjects(pool: &PgPool, class_id: i32) -> domain::Result<Vec<Subject>> {
     let subjects: Vec<Subject> = sqlx::query_as::<_, SubjectRow>(
         r#"
     SELECT id, title, class_id, "order"  FROM subjects WHERE class_id = $1 ORDER BY "order" ASC
@@ -41,15 +41,15 @@ pub(crate) async fn list_subjects(pool: &PgPool, class_id: u32) -> domain::Resul
 
 pub(crate) async fn insert_subject(
     pool: &PgPool,
-    title: String,
-    class_id: u32,
+    title: &str,
+    class_id: i32,
 ) -> domain::Result<Subject> {
     let order: i32 = sqlx::query_scalar(
         r#"
         SELECT COALESCE(MAX("order"), 0) as max_order FROM subjects WHERE class_id = $1
     "#,
     )
-    .bind(class_id as i32)
+    .bind(class_id)
     .fetch_one(pool)
     .await
     .map_err(db)?;
@@ -70,12 +70,8 @@ pub(crate) async fn insert_subject(
     Ok(subject)
 }
 
-pub(crate) async fn update_subject(
-    pool: &PgPool,
-    title: String,
-    subject_id: u32,
-) -> domain::Result<Subject> {
-    let id = i32::try_from(subject_id).map_err(|_| Error::Internal)?;
+pub(crate) async fn update_subject(pool: &PgPool, title: &str, id: i32) -> domain::Result<Subject> {
+    let id = i32::try_from(id).map_err(|_| Error::Internal)?;
     let subject = sqlx::query_as::<_, SubjectRow>(
         r#"
         UPDATE subjects SET title = $1 WHERE id = $2

@@ -25,7 +25,7 @@ impl From<ChapterRow> for Chapter {
         }
     }
 }
-pub(crate) async fn list_chapters(pool: &PgPool, subject_id: u32) -> domain::Result<Vec<Chapter>> {
+pub(crate) async fn list_chapters(pool: &PgPool, subject_id: i32) -> domain::Result<Vec<Chapter>> {
     let chapters = sqlx::query_as::<Postgres, ChapterRow>(
         r#"
         SELECT id, title, class_id, subject_id, question_count, "order" FROM chapters
@@ -45,8 +45,8 @@ pub(crate) async fn list_chapters(pool: &PgPool, subject_id: u32) -> domain::Res
 
 pub(crate) async fn insert_chapter(
     pool: &PgPool,
-    title: String,
-    subject_id: u32,
+    title: &str,
+    subject_id: i32,
 ) -> domain::Result<Chapter> {
     let order: i32 = sqlx::query_scalar(
         r#"
@@ -84,10 +84,13 @@ pub(crate) async fn insert_chapter(
     Ok(chapter)
 }
 
-pub(crate) async fn update_chapter(
-    pool: &PgPool,
-    title: String,
-    chapter_id: u32,
-) -> domain::Result<Chapter> {
-    todo!()
+pub(crate) async fn update_chapter(pool: &PgPool, title: &str, id: i32) -> domain::Result<Chapter> {
+    sqlx::query_as::<_, ChapterRow>(r#"
+        UPDATE chapters SET title = $1 WHERE id = $2 returning id, title, class_id, subject_id, question_count, "order"
+        "#).bind(title)
+    .bind(id as i32)
+    .fetch_one(pool)
+    .await
+    .map(Chapter::from)
+    .map_err(db)
 }

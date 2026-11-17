@@ -1,4 +1,4 @@
-mod chapter;
-mod class;
-mod profile;
-mod subject;
+pub mod chapter;
+pub mod class;
+pub mod profile;
+pub mod subject;

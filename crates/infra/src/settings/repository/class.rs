@@ -38,7 +38,11 @@ pub(crate) async fn list_class(pool: &PgPool) -> domain::Result<Vec<Class>> {
     Ok(classes)
 }
 
-pub(crate) async fn insert_class(pool: &PgPool, class: AddClassInput) -> domain::Result<Class> {
+pub(crate) async fn insert_class(
+    pool: &PgPool,
+    name: &str,
+    name_bn: &str,
+) -> domain::Result<Class> {
     let max_order: Option<i32> = sqlx::query_scalar(
         r#"
                 SELECT MAX("order") FROM classes
@@ -54,8 +58,8 @@ pub(crate) async fn insert_class(pool: &PgPool, class: AddClassInput) -> domain:
         r#"
         INSERT INTO classes (name, name_bn, "order") VALUES ($1, $2, $3) RETURNING id, name, name_bn, "order"
         "#
-    ).bind(class.name)
-    .bind(class.name_bn)
+    ).bind(name)
+    .bind(name_bn)
     .bind(new_order)
     .fetch_one(&*pool)
     .await
@@ -65,14 +69,19 @@ pub(crate) async fn insert_class(pool: &PgPool, class: AddClassInput) -> domain:
     Ok(class)
 }
 
-pub(crate) async fn update_class(pool: &PgPool, class: UpdateClassInput) -> domain::Result<Class> {
+pub(crate) async fn update_class(
+    pool: &PgPool,
+    id: i32,
+    name: &str,
+    name_bn: &str,
+) -> domain::Result<Class> {
     let class = sqlx::query_as::<_, ClassRow>(
         r#"
             UPDATE classes SET name = $1, name_bn = $2 WHERE id = $3 returning id, name, name_bn, "order"
             "#,
-    ).bind(class.name)
-    .bind(class.name_bn)
-    .bind(class.class_id as i32)
+    ).bind(name)
+    .bind(name_bn)
+    .bind(id)
     .fetch_one(pool)
     .await
     .map(Class::from)
