@@ -1,7 +1,7 @@
 use domain::new_user::NewUser;
 use sqlx::{
     types::{uuid, Uuid},
-    Executor, PgPool, Postgres, Transaction,
+    Executor, PgPool, Postgres,
 };
 
 use crate::common::db;

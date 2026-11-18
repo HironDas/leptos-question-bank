@@ -1,5 +1,5 @@
 use domain::{class::Subject, Error};
-use sqlx::{prelude::FromRow, PgPool, Postgres};
+use sqlx::{prelude::FromRow, PgPool};
 
 use crate::common::db;
 

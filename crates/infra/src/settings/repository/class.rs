@@ -1,5 +1,5 @@
-use domain::class::{AddClassInput, Class, UpdateClassInput};
-use sqlx::{prelude::FromRow, PgPool, Postgres, Transaction};
+use domain::class::Class;
+use sqlx::{prelude::FromRow, PgPool};
 
 use crate::common::db;
 

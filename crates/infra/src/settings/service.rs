@@ -6,7 +6,7 @@ use validator::Validate;
 
 use crate::{
     common::{ServiceContext, ServiceError},
-    settings::repository::{self, subject},
+    settings::repository,
 };
 
 #[derive(Clone)]
