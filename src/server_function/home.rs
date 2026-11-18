@@ -4,20 +4,20 @@ use leptos::prelude::*;
 pub async fn home() -> Result<(), ServerFnError> {
     #[cfg(feature = "ssr")]
     {
-        use axum_extra::extract::CookieJar;
+        // use axum_extra::extract::CookieJar;
         use infra::common::ServiceContext;
-        use leptos::logging::log;
+        // use leptos::logging::log;
 
-        use crate::util::auth::auth;
-        let jar = expect_context::<CookieJar>();
-        let ctx = expect_context::<ServiceContext>();
+        // use crate::util::auth::auth;
+        // let jar = expect_context::<CookieJar>();
+        let _ctx = expect_context::<ServiceContext>();
 
-        if let Err(_) = auth(ctx, jar).await {
-            use leptos_axum::redirect;
+        // if let Err(_) = auth(ctx, jar).await {
+        //     use leptos_axum::redirect;
 
-            log!("Unauthorized");
-            redirect("/unauthorized");
-        }
+        //     log!("Unauthorized");
+        //     redirect("/unauthorized");
+        // }
     }
     Ok(())
 }

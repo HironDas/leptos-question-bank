@@ -2,25 +2,31 @@
 use axum_extra::extract::CookieJar;
 #[cfg(feature = "ssr")]
 use infra::{auth::AuthService, common::ServiceContext};
+use leptos::prelude::*;
+#[cfg(feature = "ssr")]
+use leptos::server;
 
 #[cfg(feature = "ssr")]
 use crate::error::AppError;
 
-#[cfg(feature = "ssr")]
-pub async fn auth(ctx: ServiceContext, jar: CookieJar) -> Result<(), AppError> {
-    // use leptos::logging;
+// #[cfg(feature = "ssr")]
+// pub async fn auth(ctx: ServiceContext, jar: CookieJar) -> Result<Option<bool>, AppError> {
+//     // use leptos::logging;
 
+//     let session = jar.get("session").map(|cookie| cookie.value());
+//     let auth_service = AuthService::from(ctx);
+//     let allowed = auth_service.auth(session).await?.is_ok();
+//     Ok(Some(allowed))
+// }
+//
+
+#[server]
+pub async fn is_auth() -> Result<Option<bool>, AppError> {
+    // use leptos::logging;
+    let ctx = expect_context::<ServiceContext>();
+    let jar = expect_context::<CookieJar>();
     let session = jar.get("session").map(|cookie| cookie.value());
     let auth_service = AuthService::from(ctx);
-    auth_service.auth(session).await?;
-    Ok(())
+    let allowed = auth_service.auth(session).await.is_ok();
+    Ok(Some(allowed))
 }
-// logging::log!("Session in Auth rs: {:#?}", session);
-
-// let Some(token) = session else {
-//     return Err(AppError::Authentication);
-// };
-// let token = Uuid::parse_str(token).map_err(|err| {
-//     logging::log!("UUID Error: {:?}", err);
-//     AppError::Authentication
-// })?;

@@ -2,9 +2,11 @@ use crate::components::ui::toast::ToastProvider;
 use crate::components::Layout;
 use crate::pages::{AddEditQuestion, ClassSettingRoute, HomePage, UnAuthorized, ViewQuestions};
 use crate::pages::{Login, NotFound, Signup};
+use crate::util::auth::is_auth;
 
 use leptos::prelude::*;
 use leptos_meta::{provide_meta_context, MetaTags, Stylesheet, Title};
+use leptos_router::components::ProtectedParentRoute;
 use leptos_router::Lazy;
 use leptos_router::{
     components::{ParentRoute, Route, Router, Routes},
@@ -34,8 +36,10 @@ pub fn shell(options: LeptosOptions) -> impl IntoView {
 pub fn App() -> impl IntoView {
     // Provides context that manages stylesheets, titles, meta tags, etc.
     provide_meta_context();
-
+    let authed = Resource::new(|| (), |_| is_auth());
     let academic_setting: Lazy<ClassSettingRoute> = Lazy::new();
+
+    let condition = move || authed.get().map(|r| r.ok().flatten().unwrap_or(false));
 
     view! {
         // injects a stylesheet into the document <head>
@@ -55,13 +59,16 @@ pub fn App() -> impl IntoView {
                         <Route path=StaticSegment("/signup") view=Signup />
                         <Route path=StaticSegment("/unauthorized") view=UnAuthorized />
                         <Route path=StaticSegment("/health") view=move || view! {} />
-                        <ParentRoute path=StaticSegment("") view=Layout>
+                        <ProtectedParentRoute
+                        redirect_path = ||"/unauthorized"
+                        condition=condition
+                        path=StaticSegment("") view=Layout>
                             <Route path=StaticSegment("/home") view=HomePage />
                             // <Route path=StaticSegment("academic-setting") view=ClassSetting />
                             <Route path=StaticSegment("academic-setting") view=academic_setting />
                             <Route path=StaticSegment("/view") view=ViewQuestions />
                             <Route path=StaticSegment("/question") view=AddEditQuestion />
-                        </ParentRoute>
+                        </ProtectedParentRoute>
                     </Routes>
                 </main>
             </Router>

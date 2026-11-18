@@ -34,6 +34,8 @@ fn error_chain_fmt(e: &dyn std::error::Error, f: &mut std::fmt::Formatter<'_>) -
 mod tests {
     use std::borrow::Cow;
 
+    use validator::ValidationError;
+
     use super::*;
 
     #[test]

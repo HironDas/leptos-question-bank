@@ -3,12 +3,13 @@ use leptos::{html, logging::log, prelude::*};
 use leptos_router::{lazy_route, LazyRoute};
 // use leptos_drag_reorder::provide_drag_reorder;
 use crate::pages::class_setting::column_view::ColumnView;
+
+use crate::server_function::academic_setting::AddClass;
+
+use crate::server_function::academic_setting::EditClass;
 use crate::{
     components::ui::empty_msg::EmptyMsg,
-    server_function::{
-        academic_helper::class::{AddClass, UpdateClass},
-        academic_setting::{academic_setting, Class},
-    },
+    server_function::academic_setting::{academic_setting, Class},
 };
 use singlestage::*;
 
@@ -86,7 +87,7 @@ impl LazyRoute for ClassSettingRoute {
         let ClassSettingRoute { classes_resource } = this;
         let classes = RwSignal::new(Vec::<Class>::new());
 
-        let update_class_action = ServerAction::<UpdateClass>::new();
+        let update_class_action = ServerAction::<EditClass>::new();
 
         // Derived memo for Card class to avoid passing a closure directly
         let card_class = Memo::new(move |_| {
