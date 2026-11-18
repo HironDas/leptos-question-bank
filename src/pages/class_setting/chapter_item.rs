@@ -2,12 +2,12 @@ use icondata::AiEditOutlined;
 use leptos::{html, logging::log, prelude::*};
 use singlestage::*;
 
-use crate::server_function::{academic_helper::chapter::UpdateChapter, academic_setting::Chapter};
+use crate::server_function::academic_setting::{Chapter, EditChapter};
 
 #[component]
 pub fn ChapterAccordionContent(
     chapter: Memo<Chapter>,
-    update_chapter_action: ServerAction<UpdateChapter>,
+    update_chapter_action: ServerAction<EditChapter>,
 ) -> impl IntoView {
     let is_bangle = Memo::new(move |_| !chapter.get().title.is_ascii());
     let update_chapter_value = update_chapter_action.value();
@@ -49,7 +49,7 @@ pub fn ChapterAccordionContent(
 pub fn UpdateChapterDialog(
     #[prop(into)] chapter_dialog_open: RwSignal<bool>,
     chapter_input_ref: NodeRef<html::Input>,
-    update_chapter_action: ServerAction<UpdateChapter>,
+    update_chapter_action: ServerAction<EditChapter>,
     chapter: Memo<Chapter>,
 ) -> impl IntoView {
     view! {

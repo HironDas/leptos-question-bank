@@ -4,19 +4,15 @@ use singlestage::*;
 
 use crate::{
     pages::class_setting::chapter_item::ChapterAccordionContent,
-    server_function::{
-        academic_helper::{
-            chapter::{subject_chapter, AddChapter, UpdateChapter},
-            subject::UpdateSubject,
-        },
-        academic_setting::{Chapter, Subject},
+    server_function::academic_setting::{
+        chapters as list_chapters, AddChapter, Chapter, EditChapter, EditSubject, Subject,
     },
 };
 
 #[component]
 pub fn SubjectAccordionItem(
     subject: Memo<Subject>,
-    update_subject_action: ServerAction<UpdateSubject>,
+    update_subject_action: ServerAction<EditSubject>,
 ) -> impl IntoView {
     let is_bangle = Memo::new(move |_| !subject.get().title.is_ascii());
     let subject_accordion_open = RwSignal::new(false);
@@ -31,7 +27,7 @@ pub fn SubjectAccordionItem(
     let update_subject_value = update_subject_action.value();
     let chapters = RwSignal::new(Vec::<Chapter>::new());
 
-    let update_chapter_action = ServerAction::<UpdateChapter>::new();
+    let update_chapter_action = ServerAction::<EditChapter>::new();
     let update_chapter_value = update_chapter_action.value();
 
     Effect::new(move || {
@@ -83,7 +79,7 @@ pub fn SubjectAccordionItem(
             log!("SubjectAccordionItem expand: {}", expand);
             if expand {
                 log!("Fetching chapters for subject id: {}", subject.get().id);
-                match subject_chapter(subject.get().id).await {
+                match list_chapters(subject.get().id).await {
                     Ok(data) => data,
                     Err(err) => {
                         log!("Error fetching chapters: {:?}", err);
@@ -175,7 +171,7 @@ pub fn UpdateSubjectDialog(
     subject_dialog_open: RwSignal<bool>,
     input_ref: NodeRef<html::Input>,
     subject: Memo<Subject>,
-    update_subject_action: ServerAction<UpdateSubject>,
+    update_subject_action: ServerAction<EditSubject>,
 ) -> impl IntoView {
     view! {
         <Dialog open=subject_dialog_open>

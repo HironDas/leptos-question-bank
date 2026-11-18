@@ -4,19 +4,15 @@ use singlestage::*;
 
 use crate::{
     pages::class_setting::subject_item::SubjectAccordionItem,
-    server_function::{
-        academic_helper::{
-            class::UpdateClass,
-            subject::{self, AddSubject, UpdateSubject},
-        },
-        academic_setting::{Class, Subject},
+    server_function::academic_setting::{
+        subjects as list_subjects, AddSubject, Class, EditClass, EditSubject, Subject,
     },
 };
 
 #[component]
 pub fn ClassAccordionItem(
     class: Memo<Class>,
-    update_class_action: ServerAction<UpdateClass>,
+    update_class_action: ServerAction<EditClass>,
 ) -> impl IntoView {
     // let class = RwSignal::new(item.get());
     let class_accordion_open = RwSignal::new(false);
@@ -31,7 +27,7 @@ pub fn ClassAccordionItem(
     let subject_value = add_subject_action.value();
     let input_ref = NodeRef::<html::Input>::new();
 
-    let update_subject_action = ServerAction::<UpdateSubject>::new();
+    let update_subject_action = ServerAction::<EditSubject>::new();
     let update_subject_value = update_subject_action.value();
 
     let subjects = RwSignal::new(Vec::<Subject>::new());
@@ -49,7 +45,7 @@ pub fn ClassAccordionItem(
             log!("ClassAccordionItem expand: {}", expand);
             if expand {
                 log!("Fetching subjects for class id: {}", class.get().id);
-                match subject::subject(class.get().id).await {
+                match list_subjects(class.get().id).await {
                     Ok(data) => data,
                     Err(err) => {
                         log!("Error fetching subjects: {:?}", err);
@@ -181,7 +177,7 @@ pub fn ClassAccordionItem(
 pub fn UpdateClassDialog(
     #[prop(into)] class_dialog_update_open: RwSignal<bool>,
     // class_input_ref: NodeRef<html::Input>,
-    update_class_action: ServerAction<UpdateClass>,
+    update_class_action: ServerAction<EditClass>,
     class: Memo<Class>,
 ) -> impl IntoView {
     view! {

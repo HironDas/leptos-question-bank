@@ -8,23 +8,9 @@ pub async fn get_questions(chapter_id: u32) -> Result<Vec<Question>, ServerFnErr
     let mut questions = Vec::new();
     #[cfg(feature = "ssr")]
     {
-        use axum_extra::extract::CookieJar;
         use infra::common::ServiceContext;
-        use sqlx::PgPool;
-        use std::sync::Arc;
 
-        use crate::util::auth::auth;
-
-        let jar = expect_context::<CookieJar>();
         let ctx = expect_context::<ServiceContext>();
-
-        if let Err(_) = auth(ctx, jar).await {
-            use leptos::logging::log;
-            use leptos_axum::redirect;
-
-            log!("Unauthorized");
-            redirect("/unauthorized");
-        }
 
         let rows = sqlx::query!(
             r#"
