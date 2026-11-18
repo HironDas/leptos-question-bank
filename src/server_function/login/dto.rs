@@ -1,5 +1,6 @@
 use domain::{login::Login, user_email::UserEmail, user_password::UserPassword};
 use infra::common::ServiceError;
+use validator::ValidationErrors;
 
 #[derive(serde::Serialize, serde::Deserialize, Clone, Debug)]
 pub struct LoginCredential {
@@ -12,7 +13,11 @@ impl TryFrom<LoginCredential> for Login {
 
     fn try_from(value: LoginCredential) -> Result<Self, Self::Error> {
         use domain::user_username::Username as Name;
-        let password = UserPassword::parse(value.password)?;
+        let password = UserPassword::parse(value.password).map_err(|err| {
+            let mut errors = ValidationErrors::new();
+            errors.add("password", err);
+            errors
+        })?;
         match UserEmail::parse(value.id.clone()) {
             Ok(email) => Ok(Login {
                 username: None,
@@ -25,7 +30,11 @@ impl TryFrom<LoginCredential> for Login {
                     email: None,
                     password,
                 }),
-                Err(err) => Err(ServiceError::ValidationError(err)),
+                Err(err) => {
+                    let mut errors = ValidationErrors::new();
+                    errors.add("Identifier", err);
+                    return Err(errors.into());
+                }
             },
         }
     }

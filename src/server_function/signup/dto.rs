@@ -2,7 +2,7 @@ use domain::{
     new_user::NewUser, user_email::UserEmail, user_password::UserPassword, user_username::Username,
 };
 use infra::common::ServiceError;
-use validator::{Validate, ValidationError};
+use validator::{Validate, ValidationErrors};
 
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct User {
@@ -17,19 +17,27 @@ impl TryFrom<User> for NewUser {
     fn try_from(value: User) -> Result<Self, Self::Error> {
         let username = Username::parse(value.username).map_err(|err| {
             println!("{}:{}", err.code, err.message.as_ref().unwrap());
-            err
+            let mut errors = ValidationErrors::new();
+            errors.add("username", err);
+            errors
         })?;
         let email = UserEmail::parse(value.email).map_err(|err| {
             println!("{}:{}", err.code, err.message.as_ref().unwrap());
-            err
+            let mut errors = ValidationErrors::new();
+            errors.add("email", err);
+            errors
         })?;
         let password = UserPassword::parse(value.password).map_err(|err| {
             println!("{}:{}", err.code, err.message.as_ref().unwrap());
-            err
+            let mut errors = ValidationErrors::new();
+            errors.add("password", err);
+            errors
         })?;
         let confirm_password = UserPassword::parse(value.confirm_password).map_err(|err| {
             println!("{}:{}", err.code, err.message.as_ref().unwrap());
-            err
+            let mut errors = ValidationErrors::new();
+            errors.add("confirmPass", err);
+            errors
         })?;
 
         let new_user = NewUser {
@@ -42,19 +50,20 @@ impl TryFrom<User> for NewUser {
         match new_user.validate() {
             Ok(_) => Ok(new_user),
             Err(errs) => {
-                let mut first_error = None;
-                errs.field_errors().into_iter().for_each(|(field, errors)| {
-                    errors.into_iter().for_each(|error| {
-                        println!("{}: {}", field, error.message.as_ref().unwrap());
-                    });
-                    first_error = errors.into_iter().next();
-                });
+                Err(errs.into())
+                // let mut first_error = None;
+                // errs.field_errors().into_iter().for_each(|(field, errors)| {
+                //     errors.into_iter().for_each(|error| {
+                //         println!("{}: {}", field, error.message.as_ref().unwrap());
+                //     });
+                //     first_error = errors.into_iter().next();
+                // });
 
-                if let Some(error) = first_error {
-                    Err(error.clone().into())
-                } else {
-                    Err(ValidationError::new("Unknown error").into())
-                }
+                // if let Some(error) = first_error {
+                //     Err(error.clone().into())
+                // } else {
+                //     Err(ValidationError::new("Unknown error").into())
+                // }
             }
         }
     }

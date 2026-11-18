@@ -1,6 +1,6 @@
 use std::fmt::Debug;
 use thiserror::Error;
-use validator::{ValidationError, ValidationErrors};
+use validator::ValidationErrors;
 
 #[derive(Error)]
 pub enum ServiceError {
@@ -42,7 +42,7 @@ mod tests {
 
         let mut err = ValidationError::new("TEST_CODE");
         err.message = Some(Cow::Borrowed("Test error message"));
-        errors.add("username", err);
+        errors.add("VALIDATAION_ERROR", err);
         let qb_err = ServiceError::ValidationError(errors);
         let display = format!("{}", qb_err);
         assert!(display.contains("Test error message"));
