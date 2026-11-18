@@ -32,12 +32,18 @@ fn error_chain_fmt(e: &dyn std::error::Error, f: &mut std::fmt::Formatter<'_>) -
 
 #[cfg(test)]
 mod tests {
+    use std::borrow::Cow;
+
     use super::*;
 
     #[test]
     fn validation_error_display() {
-        let err = ValidationError::new("TEST_CODE").with_message("Test error message".into());
-        let qb_err = ServiceError::ValidationError(err);
+        let mut errors = ValidationErrors::new();
+
+        let mut err = ValidationError::new("TEST_CODE");
+        err.message = Some(Cow::Borrowed("Test error message"));
+        errors.add("username", err);
+        let qb_err = ServiceError::ValidationError(errors);
         let display = format!("{}", qb_err);
         assert!(display.contains("Test error message"));
     }

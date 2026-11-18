@@ -57,6 +57,32 @@ pub struct UpdateClassInput {
     pub name_bn: String,
 }
 
+#[derive(Clone, Debug, serde::Serialize, serde::Deserialize, validator::Validate)]
+pub struct SubjectInput {
+    #[validate(range(min = 1, message = "Invlid primary id"))]
+    pub id: u32,
+
+    #[validate(length(
+        min = 2,
+        max = 50,
+        message = "Subject title be between 2 and 50 characters"
+    ))]
+    pub title: String,
+}
+
+#[derive(Clone, Debug, serde::Serialize, serde::Deserialize, validator::Validate)]
+pub struct ChapterInput {
+    #[validate(range(min = 1, message = "Invlid primary id"))]
+    pub id: u32,
+
+    #[validate(length(
+        min = 2,
+        max = 50,
+        message = "Subject title be between 2 and 50 characters"
+    ))]
+    pub title: String,
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
