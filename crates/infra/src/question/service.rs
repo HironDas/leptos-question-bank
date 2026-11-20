@@ -3,6 +3,8 @@ use domain::Result;
 use sqlx::types::uuid::timestamp::context;
 
 use crate::common::ServiceContext;
+use crate::question::repository::{list_question_options, list_questions};
+use crate::user::repository;
 
 #[derive(Clone)]
 pub struct QuestionService {
@@ -16,7 +18,13 @@ impl From<ServiceContext> for QuestionService {
 }
 
 impl QuestionService {
-    pub async fn load_questions(&self, _chapter_id: i32) -> Result<Vec<Question>> {
+    pub async fn load_questions(&self, chapter_id: i32) -> Result<Vec<Question>> {
+        let pool = &self.context.pool;
+
+        let (questions, options) = tokio::try_join!(
+            list_questions(pool, chapter_id),
+            list_question_options(pool, chapter_id)
+        )?;
         todo!()
     }
 

@@ -1,5 +1,4 @@
-use domain::question::Question;
-use sqlx::{postgres::PgRow, PgPool};
+use sqlx::PgPool;
 
 use crate::common::db;
 
@@ -65,4 +64,39 @@ pub(crate) async fn list_question_options(
     .map_err(db)?;
 
     Ok(options)
+}
+
+pub(crate) async fn find_question_by_id(pool: &PgPool, id: i32) -> domain::Result<QuestionRow> {
+    sqlx::query_as::<_, QuestionRow>(
+        r#"
+        SELECT id, question_text, answer_text, question_type,chapter_id, class_id, subject_id, difficulty, created_at, updated_at
+        FROM questions WHERE id = $1
+        "#,
+    )
+    .bind(id)
+    .fetch_one(pool)
+    .await
+    .map_err(db)
+}
+
+pub(crate) async fn list_options_by_question_id(
+    pool: &PgPool,
+    question_id: i32,
+) -> domain::Result<Vec<OptionRow>> {
+    sqlx::query_as(
+        r#"SELECT
+        qo.id,
+        qo.question_id,
+        qo.option_text,
+        qo.is_correct,
+        qo."order" AS "order!"
+        FROM question_options qo
+        WHERE qo.question_id = $1
+   ORDER BY qo.question_id, qo."order"
+   "#,
+    )
+    .bind(question_id)
+    .fetch_all(pool)
+    .await
+    .map_err(db)
 }
