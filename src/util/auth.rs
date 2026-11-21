@@ -6,7 +6,6 @@ use leptos::prelude::*;
 #[cfg(feature = "ssr")]
 use leptos::server;
 
-#[cfg(feature = "ssr")]
 use crate::error::AppError;
 
 // #[cfg(feature = "ssr")]

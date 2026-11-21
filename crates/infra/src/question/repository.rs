@@ -1,4 +1,7 @@
-use sqlx::PgPool;
+use domain::question::{
+    AddQuestionInput, AddQuestionOptionInput, Question, QuestionOption, QuestionType,
+};
+use sqlx::{PgPool, Postgres, QueryBuilder};
 
 use crate::common::db;
 
@@ -10,7 +13,7 @@ pub struct QuestionRow {
     pub chapter_id: i32,
     pub class_id: i32,
     pub subject_id: i32,
-    pub dufficulty: i32,
+    pub difficulty: i32,
     pub answer_text: Option<String>,
     pub created_at: String,
     pub updated_at: String,
@@ -99,4 +102,95 @@ pub(crate) async fn list_options_by_question_id(
     .fetch_all(pool)
     .await
     .map_err(db)
+}
+
+pub(crate) fn map_question(
+    row: QuestionRow,
+    options: Vec<QuestionOption>,
+) -> domain::Result<Question> {
+    let question_type = match row.question_type.as_str() {
+        "mcq" => QuestionType::MCQ,
+        "cq" => QuestionType::CQ,
+        _ => return Err(domain::Error::Invalid("Unknown question type")),
+    };
+
+    Ok(Question {
+        id: row.id,
+        question_text: row.question_text,
+        question_type,
+        chapter_id: row.chapter_id,
+        class_id: row.class_id,
+        subject_id: row.subject_id,
+        difficulty: row.difficulty,
+        answer_text: row.answer_text,
+        created_at: row.created_at.to_string(),
+        updated_at: row.updated_at.to_string(),
+        options,
+    })
+}
+
+pub(crate) async fn insert_question(
+    tx: &mut sqlx::Transaction<'_, Postgres>,
+    input: AddQuestionInput,
+) -> domain::Result<QuestionRow> {
+    sqlx::query_as::<_, QuestionRow>(r#"
+        INSERT INTO questions (question_text, question_type, chapter_id, class_id, subject_id, difficulty, answer_text)
+        VALUES ($1, $2, $3, $4, $5, $6, $7)
+        RETURNING id, question_text, question_type, chapter_id, class_id, subject_id, difficulty, answer_text, created_at, updated_at
+        "#)
+    .bind(input.question_text)
+    .bind(input.question_type)
+    .bind(input.chapter_id)
+    .bind(input.class_id)
+    .bind(input.subject_id)
+    .bind(input.difficulty)
+    .bind(input.answer_text.as_deref())
+        .fetch_one(&mut **tx)
+        .await
+        .map_err(db)
+}
+
+pub(crate) async fn insert_options(
+    tx: &mut sqlx::Transaction<'_, Postgres>,
+    question_id: i32,
+    options: &[AddQuestionOptionInput],
+) -> domain::Result<Vec<QuestionOption>> {
+    if options.is_empty() {
+        return Ok(Vec::new());
+    }
+
+    let mut builder = QueryBuilder::<Postgres>::new(
+        r#"
+        INSERT INTO question_options (question_id, option_text, is_correct, "order")
+        "#,
+    );
+
+    builder.push_values(options, |mut b, option| {
+        b.push_bind(question_id)
+            .push_bind(&option.option_text)
+            .push_bind(option.is_correct)
+            .push_bind(option.order);
+    });
+
+    builder.push(r#"RETURNING id, question_id, option_text, is_correct, "order" "#);
+
+    let rows = builder
+        .build_query_as::<OptionRow>()
+        .fetch_all(&mut **tx)
+        .await
+        .map_err(db)?;
+
+    let mut result: Vec<QuestionOption> = rows
+        .into_iter()
+        .map(|row| QuestionOption {
+            id: row.id,
+            option_text: row.option_text,
+            is_correct: row.is_correct,
+            order: row.order,
+        })
+        .collect();
+
+    result.sort_by_key(|option| option.order);
+
+    Ok(result)
 }

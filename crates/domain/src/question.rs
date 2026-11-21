@@ -1,5 +1,7 @@
 use serde::{Deserialize, Serialize};
 
+use crate::Error;
+
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub enum QuestionType {
     #[serde(rename = "mcq")]
@@ -67,6 +69,33 @@ pub struct AddQuestionInput {
     pub answer_text: Option<String>,
     #[serde(default)]
     pub options: Vec<AddQuestionOptionInput>,
+}
+
+impl AddQuestionInput {
+    pub fn validate_question(&self) -> Result<(), Error> {
+        match self.question_type.as_str() {
+            "mcq" => {
+                if self.options.len() < 2 {
+                    return Err(Error::Invalid(
+                        "MCQ requires exactly one correct option".into(),
+                    ));
+                }
+                if self.options.iter().filter(|o| o.is_correct).count() >= 1 {
+                    return Err(Error::Invalid("MCQ requires atlease one correct option"));
+                }
+            }
+            "cq" => {
+                if !self.options.is_empty() {
+                    return Err(Error::Invalid("CQ cannot conatain MCQ options".into()));
+                }
+            }
+            _other => {
+                return Err(Error::Invalid("Unsupported questiont type".into()));
+            }
+        }
+
+        Ok(())
+    }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, validator::Validate)]
