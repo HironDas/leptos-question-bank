@@ -1,5 +1,9 @@
-use domain::question::{
-    AddQuestionInput, AddQuestionOptionInput, Question, QuestionOption, QuestionType,
+use domain::{
+    class::UpdateClassInput,
+    question::{
+        AddQuestionInput, AddQuestionOptionInput, Question, QuestionOption, QuestionType,
+        UpdateQuestionInput,
+    },
 };
 use sqlx::{PgPool, Postgres, QueryBuilder};
 
@@ -193,4 +197,38 @@ pub(crate) async fn insert_options(
     result.sort_by_key(|option| option.order);
 
     Ok(result)
+}
+
+pub(crate) async fn increment_chapter_question_count(
+    tx: &mut sqlx::Transaction<'_, Postgres>,
+    chapter_id: i32,
+) -> domain::Result<()> {
+    sqlx::query(r#"UPDATE chapters SET question_count = question_count +1 where id= $1"#)
+        .bind(chapter_id)
+        .execute(&mut **tx)
+        .await
+        .map_err(db)?;
+    Ok(())
+}
+
+pub(crate) async fn find_question_chapter(
+    tx: &mut sqlx::Transaction<'_, Postgres>,
+    question_id: i32,
+) -> domain::Result<i32> {
+    sqlx::query_scalar(r#"SELECT chapter_id FROM questions WHERE id=$1 FOR UPDATE"#)
+        .bind(question_id)
+        .fetch_one(&mut **tx)
+        .await
+        .map_err(db)
+}
+
+pub(crate) async fn update_question(
+    tx: &mut sqlx::Transaction<'_, Postgres>,
+    input: UpdateQuestionInput,
+) -> domain::Result<QuestionRow> {
+    sqlx::query_as::<_, QuestionRow>(r#""#)
+        .fetch_one(&mut **tx)
+        .await
+        .map_err(db);
+    todo!()
 }

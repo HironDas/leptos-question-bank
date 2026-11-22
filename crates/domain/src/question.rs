@@ -106,16 +106,43 @@ pub struct UpdateQuestionInput {
     pub question_text: String,
     #[validate(length(min = 1, message = "Question type is required"))]
     pub question_type: String, // "mcq" or "cq"
-    #[validate(range(min = 1, message = "Chapter is required"))]
-    pub chapter_id: i32,
-    #[validate(range(min = 1, message = "Class is required"))]
-    pub class_id: i32,
-    #[validate(range(min = 1, message = "Subject is required"))]
-    pub subject_id: i32,
+    // #[validate(range(min = 1, message = "Chapter is required"))]
+    // pub chapter_id: i32,
+    // #[validate(range(min = 1, message = "Class is required"))]
+    // pub class_id: i32,
+    // #[validate(range(min = 1, message = "Subject is required"))]
+    // pub subject_id: i32,
     #[validate(range(min = 0, max = 2, message = "Difficulty is required"))]
     pub difficulty: i32,
     #[serde(default)]
     pub answer_text: Option<String>,
     #[serde(default)]
     pub options: Vec<AddQuestionOptionInput>,
+}
+
+impl UpdateQuestionInput {
+    pub fn validate_question(&self) -> Result<(), Error> {
+        match self.question_type.as_str() {
+            "mcq" => {
+                if self.options.len() < 2 {
+                    return Err(Error::Invalid(
+                        "MCQ requires exactly one correct option".into(),
+                    ));
+                }
+                if self.options.iter().filter(|o| o.is_correct).count() >= 1 {
+                    return Err(Error::Invalid("MCQ requires atlease one correct option"));
+                }
+            }
+            "cq" => {
+                if !self.options.is_empty() {
+                    return Err(Error::Invalid("CQ cannot conatain MCQ options".into()));
+                }
+            }
+            _other => {
+                return Err(Error::Invalid("Unsupported questiont type".into()));
+            }
+        }
+
+        Ok(())
+    }
 }
