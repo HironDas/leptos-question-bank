@@ -226,9 +226,23 @@ pub(crate) async fn update_question(
     tx: &mut sqlx::Transaction<'_, Postgres>,
     input: UpdateQuestionInput,
 ) -> domain::Result<QuestionRow> {
-    sqlx::query_as::<_, QuestionRow>(r#""#)
+    sqlx::query_as::<_, QuestionRow>(r#"
+        UPDATE questions SET question_text = $1, question_type = $2, difficulty = $3, answer_text = $4, updated_at = NOW()
+        WHERE id = $5
+        RETURNING id, question_text, question_type, chapter_id, class_id, subject_id, difficulty, answer_text, created_at, updated_at
+        "#)
+    .bind(input.question_text)
+    .bind(input.question_type)
+    .bind(input.answer_text)
+    .bind(input.id)
         .fetch_one(&mut **tx)
         .await
-        .map_err(db);
+        .map_err(db)
+}
+
+pub(crate) async fn delete_old_options(
+    tx: &mut sqlx::Transaction<'_, Postgres>,
+    question_id: i32,
+) -> domain::Result<()> {
     todo!()
 }
