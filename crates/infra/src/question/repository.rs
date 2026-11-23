@@ -1,9 +1,6 @@
-use domain::{
-    class::UpdateClassInput,
-    question::{
-        AddQuestionInput, AddQuestionOptionInput, Question, QuestionOption, QuestionType,
-        UpdateQuestionInput,
-    },
+use domain::question::{
+    AddQuestionInput, AddQuestionOptionInput, Question, QuestionOption, QuestionType,
+    UpdateQuestionInput,
 };
 use sqlx::{PgPool, Postgres, QueryBuilder};
 
@@ -135,15 +132,15 @@ pub(crate) fn map_question(
 
 pub(crate) async fn insert_question(
     tx: &mut sqlx::Transaction<'_, Postgres>,
-    input: AddQuestionInput,
+    input: &AddQuestionInput,
 ) -> domain::Result<QuestionRow> {
     sqlx::query_as::<_, QuestionRow>(r#"
         INSERT INTO questions (question_text, question_type, chapter_id, class_id, subject_id, difficulty, answer_text)
         VALUES ($1, $2, $3, $4, $5, $6, $7)
         RETURNING id, question_text, question_type, chapter_id, class_id, subject_id, difficulty, answer_text, created_at, updated_at
         "#)
-    .bind(input.question_text)
-    .bind(input.question_type)
+    .bind(&input.question_text)
+    .bind(&input.question_type)
     .bind(input.chapter_id)
     .bind(input.class_id)
     .bind(input.subject_id)
@@ -224,16 +221,16 @@ pub(crate) async fn find_question_chapter(
 
 pub(crate) async fn update_question(
     tx: &mut sqlx::Transaction<'_, Postgres>,
-    input: UpdateQuestionInput,
+    input: &UpdateQuestionInput,
 ) -> domain::Result<QuestionRow> {
     sqlx::query_as::<_, QuestionRow>(r#"
         UPDATE questions SET question_text = $1, question_type = $2, difficulty = $3, answer_text = $4, updated_at = NOW()
         WHERE id = $5
         RETURNING id, question_text, question_type, chapter_id, class_id, subject_id, difficulty, answer_text, created_at, updated_at
         "#)
-    .bind(input.question_text)
-    .bind(input.question_type)
-    .bind(input.answer_text)
+    .bind(&input.question_text)
+    .bind(&input.question_type)
+    .bind(&input.answer_text)
     .bind(input.id)
         .fetch_one(&mut **tx)
         .await
@@ -244,5 +241,10 @@ pub(crate) async fn delete_old_options(
     tx: &mut sqlx::Transaction<'_, Postgres>,
     question_id: i32,
 ) -> domain::Result<()> {
-    todo!()
+    sqlx::query(r#"DELETE FROM question_options WHERE question_id = $1"#)
+        .bind(question_id)
+        .execute(&mut **tx)
+        .await
+        .map_err(db)?;
+    Ok(())
 }

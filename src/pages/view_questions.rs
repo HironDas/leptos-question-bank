@@ -1,7 +1,7 @@
 use crate::components::ui::empty_msg::EmptyMsg;
-use crate::server_function::academic_helper::chapter::subject_chapter;
-use crate::server_function::academic_helper::subject::subject;
-use crate::server_function::academic_setting::{academic_setting, Chapter, Class, Subject};
+use crate::server_function::academic_setting::{
+    academic_setting, chapters as list_chapters, subjects as list_subjects, Chapter, Class, Subject,
+};
 use crate::server_function::question::get_questions;
 use domain::question::{Question, QuestionType};
 // use crate::util::preview_markdown::render_markdown;
@@ -57,7 +57,7 @@ pub fn ViewQuestions() -> impl IntoView {
             if class_id == 0 {
                 return vec![];
             }
-            match subject(class_id).await {
+            match list_subjects(class_id).await {
                 Ok(data) => data,
                 Err(err) => {
                     log!("Error fetching subjects: {:?}", err);
@@ -78,7 +78,7 @@ pub fn ViewQuestions() -> impl IntoView {
             if subject_id == 0 {
                 return vec![];
             }
-            match subject_chapter(subject_id).await {
+            match list_chapters(subject_id).await {
                 Ok(data) => data,
                 Err(err) => {
                     log!("Error fetching chapters: {:?}", err);
@@ -95,7 +95,7 @@ pub fn ViewQuestions() -> impl IntoView {
             if chapter_id_str.is_empty() {
                 return vec![];
             }
-            let chapter_id: u32 = chapter_id_str.parse().unwrap_or(0);
+            let chapter_id: i32 = chapter_id_str.parse().unwrap_or(0);
             if chapter_id == 0 {
                 return vec![];
             }

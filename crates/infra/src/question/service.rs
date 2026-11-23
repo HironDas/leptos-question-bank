@@ -1,9 +1,9 @@
 use std::collections::HashMap;
 
-use domain::question::{Question, QuestionOption};
-use domain::Result;
+use anyhow::Context;
+use domain::question::{AddQuestionInput, Question, QuestionOption, UpdateQuestionInput};
 
-use crate::common::ServiceContext;
+use crate::common::{db, ServiceContext, ServiceError};
 use crate::question::repository::{self, map_question};
 use crate::question::repository::{list_question_options, list_questions};
 
@@ -19,7 +19,7 @@ impl From<ServiceContext> for QuestionService {
 }
 
 impl QuestionService {
-    pub async fn load_questions(&self, chapter_id: i32) -> Result<Vec<Question>> {
+    pub async fn load_questions(&self, chapter_id: i32) -> Result<Vec<Question>, ServiceError> {
         let pool = &self.context.pool;
 
         let (questions, options) = tokio::try_join!(
@@ -44,18 +44,18 @@ impl QuestionService {
             },
         );
 
-        questions
+        let questions: Vec<Question> = questions
             .into_iter()
             .map(|q| {
                 let o = options_by_question.remove(&q.id).unwrap();
                 map_question(q, o)
             })
-            .collect()
+            .collect::<domain::Result<Vec<Question>>>()?;
 
-        // todo!()
+        Ok(questions)
     }
 
-    pub async fn find_quesiton(&self, id: i32) -> Result<Question> {
+    pub async fn find_quesiton(&self, id: i32) -> Result<Question, ServiceError> {
         let pool = &self.context.pool;
 
         let questions = repository::find_question_by_id(pool, id).await?;
@@ -70,14 +70,40 @@ impl QuestionService {
             })
             .collect::<Vec<QuestionOption>>();
 
-        map_question(questions, options)
+        let question = map_question(questions, options)?;
+        Ok(question)
     }
 
-    pub async fn add_question(&self) -> Result<()> {
-        todo!()
+    pub async fn add_question(&self, input: AddQuestionInput) -> Result<Question, ServiceError> {
+        let mut tx = self
+            .context
+            .pool
+            .begin()
+            .await
+            .context("Failed to connect postgres tx")?;
+
+        let question = repository::insert_question(&mut tx, &input).await?;
+
+        let options = repository::insert_options(&mut tx, question.id, &input.options).await?;
+        repository::increment_chapter_question_count(&mut tx, input.chapter_id).await?;
+
+        tx.commit().await.map_err(db)?;
+
+        Ok(map_question(question, options)?)
     }
 
-    pub async fn update_question(&self) -> Result<()> {
-        todo!()
+    pub async fn edit_question(
+        &self,
+        input: UpdateQuestionInput,
+    ) -> Result<Question, ServiceError> {
+        let mut tx = self.context.pool.begin().await.map_err(db)?;
+
+        let question = repository::update_question(&mut tx, &input).await?;
+        repository::delete_old_options(&mut tx, question.id).await?;
+        let options = repository::insert_options(&mut tx, question.id, &input.options).await?;
+
+        tx.commit().await.map_err(db)?;
+
+        Ok(map_question(question, options)?)
     }
 }

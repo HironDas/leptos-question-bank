@@ -65,7 +65,7 @@ pub fn AddEditQuestion() -> impl IntoView {
         move || page_mode.get(),
         |mode| async move {
             if let Some(Mode::Edit(id)) = mode {
-                match get_question_by_id(id).await {
+                match get_question_by_id(id as i32).await {
                     Ok(question) => Some(question),
                     Err(_) => None,
                 }
@@ -213,7 +213,7 @@ pub fn AddEditQuestion() -> impl IntoView {
                     options.push(AddQuestionOptionInput {
                         option_text: opt_text,
                         is_correct,
-                        order: i as u32,
+                        order: i as i32,
                     });
                 }
             }
@@ -228,7 +228,7 @@ pub fn AddEditQuestion() -> impl IntoView {
                 // class_id: question.class_id,
                 // subject_id: question.subject_id,
                 answer_text: answer,
-                difficulty: difficulty as u32,
+                difficulty: difficulty as i32,
                 options,
             };
 
@@ -243,11 +243,11 @@ pub fn AddEditQuestion() -> impl IntoView {
                 let input = AddQuestionInput {
                     question_text: text,
                     question_type: qtype,
-                    chapter_id: chapter_id,
-                    class_id: class_id,
-                    subject_id: subject_id,
+                    chapter_id: chapter_id as i32,
+                    class_id: class_id as i32,
+                    subject_id: subject_id as i32,
                     answer_text: answer,
-                    difficulty: difficulty as u32,
+                    difficulty: difficulty as i32,
                     options,
                 };
 
