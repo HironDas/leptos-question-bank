@@ -1,3 +1,4 @@
+#[cfg(feature = "ssr")]
 use infra::common::ServiceError;
 
 #[cfg(feature = "ssr")]

@@ -1,6 +1,7 @@
 mod dto;
 use domain::class::{AddClassInput, ChapterInput, SubjectInput, UpdateClassInput};
 pub use dto::{Chapter, Class, Subject};
+#[cfg(feature = "ssr")]
 use infra::common::ServiceContext;
 use leptos::prelude::*;
 

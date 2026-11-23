@@ -1,5 +1,5 @@
 use domain::new_user::NewUser;
-
+#[cfg(feature = "ssr")]
 use infra::{common::ServiceContext, user::UserService};
 use leptos::prelude::*;
 

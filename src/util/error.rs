@@ -1,5 +1,6 @@
 #[cfg(feature = "ssr")]
 use axum::{http::StatusCode, response::IntoResponse};
+#[cfg(feature = "ssr")]
 use infra::common::ServiceError;
 use leptos::server_fn::{codec::JsonEncoding, error::FromServerFnError};
 use serde::{Deserialize, Serialize};
@@ -38,25 +39,21 @@ impl From<ServiceError> for AppError {
     fn from(err: ServiceError) -> Self {
         match err {
             ServiceError::ValidationError(errs) => {
-                //AppError::Validation(
-                // err.message
-                //     .as_ref()
-                //     .map(|msg| msg.to_string())
-                //     .unwrap_or_else(|| err.code.into_owned()),
+                let message = errs
+                    .field_errors()
+                    .values()
+                    .flat_map(|errors| errors.iter())
+                    .next()
+                    .map(|error| {
+                        error
+                            .message
+                            .as_deref()
+                            .unwrap_or(error.code.as_ref())
+                            .to_owned()
+                    })
+                    .unwrap_or_else(|| "Validation failed".to_owned());
 
-                let mut first_error = None;
-                errs.field_errors().into_iter().for_each(|(field, errors)| {
-                    errors.into_iter().for_each(|error| {
-                        println!("{}: {}", field, error.message.as_ref().unwrap());
-                    });
-                    first_error = errors.into_iter().next();
-                });
-
-                if let Some(error) = first_error {
-                    AppError::Validation(error.code.clone().into_owned())
-                } else {
-                    AppError::Validation("Unknown error".into())
-                }
+                AppError::Validation(message)
             }
             //),
             ServiceError::Authentication => AppError::Authentication,
@@ -75,8 +72,10 @@ impl From<ServiceError> for AppError {
     }
 }
 
+#[cfg(feature = "ssr")]
 pub struct ApiError(pub ServiceError);
 
+#[cfg(feature = "ssr")]
 impl From<ServiceError> for ApiError {
     fn from(error: ServiceError) -> Self {
         Self(error)
@@ -137,7 +136,6 @@ mod tests {
     //     let display = format!("{}", qb_err);
     //     assert!(display.contains("Test error message"));
     // }
-
     #[test]
     fn authentication_error_display() {
         let err = AppError::Authentication;
@@ -145,6 +143,7 @@ mod tests {
         assert!(display.contains("Authentication required"));
     }
 
+    #[cfg(feature = "ssr")]
     #[test]
     fn unexpected_error_display() {
         let anyhow_err = anyhow::anyhow!("Something went wrong");

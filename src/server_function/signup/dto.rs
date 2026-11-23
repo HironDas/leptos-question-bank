@@ -1,6 +1,7 @@
 use domain::{
     new_user::NewUser, user_email::UserEmail, user_password::UserPassword, user_username::Username,
 };
+#[cfg(feature = "ssr")]
 use infra::common::ServiceError;
 use validator::{Validate, ValidationErrors};
 
@@ -12,6 +13,7 @@ pub struct User {
     pub confirm_password: String,
 }
 
+#[cfg(feature = "ssr")]
 impl TryFrom<User> for NewUser {
     type Error = ServiceError;
     fn try_from(value: User) -> Result<Self, Self::Error> {

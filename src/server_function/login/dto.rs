@@ -1,4 +1,5 @@
 use domain::{login::Login, user_email::UserEmail, user_password::UserPassword};
+#[cfg(feature = "ssr")]
 use infra::common::ServiceError;
 use validator::ValidationErrors;
 
@@ -8,6 +9,7 @@ pub struct LoginCredential {
     pub password: String,
 }
 
+#[cfg(feature = "ssr")]
 impl TryFrom<LoginCredential> for Login {
     type Error = ServiceError;
 

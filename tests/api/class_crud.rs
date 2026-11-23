@@ -71,10 +71,8 @@ async fn fetch_classes_returns_inserted_classes() {
     let app = spawn_app().await;
     use std::sync::Arc;
 
-    use leptos_question_bank::{
-        domain::class::AddClassInput,
-        server_function::academic_helper::class::{class, insert_class},
-    };
+    domain::class::AddClassInput;
+    use leptos_question_bank::server_function::academic_helper::class::{class, insert_class};
 
     let pool = Arc::new(app.db_pool.clone());
 
