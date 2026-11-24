@@ -40,7 +40,6 @@ pub async fn login(login: LoginCredential) -> Result<(), AppError> {
             http::{header::SET_COOKIE, HeaderValue},
         };
         use infra::{common::ServiceContext, user::UserService};
-        use leptos_axum::redirect;
 
         let ctx = expect_context::<ServiceContext>();
         let ConnectInfo(address) = leptos_axum::extract::<ConnectInfo<SocketAddr>>()
@@ -72,7 +71,8 @@ pub async fn login(login: LoginCredential) -> Result<(), AppError> {
         })?;
 
         response.insert_header(SET_COOKIE, cookie_value);
-        redirect("/home");
+        // No server redirect: the client does a full page load to /home after
+        // success (see pages/login.rs) so App re-runs is_auth() with the new cookie.
     }
     Ok(())
 }
