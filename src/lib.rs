@@ -9,7 +9,11 @@ pub mod util;
 
 #[cfg(feature = "ssr")]
 use std::io::ErrorKind;
+#[cfg(feature = "ssr")]
+use std::net::SocketAddr;
 
+#[cfg(feature = "ssr")]
+use axum::extract::connect_info::IntoMakeServiceWithConnectInfo;
 #[cfg(feature = "ssr")]
 use infra::common::ServiceContext;
 pub use util::error;
@@ -56,7 +60,8 @@ use axum::routing::IntoMakeService;
 pub struct Application {
     port: u16,
     server: Server,
-    service: IntoMakeService<axum::Router>,
+    // service: IntoMakeService<axum::Router>,
+    service: IntoMakeServiceWithConnectInfo<axum::Router, SocketAddr>,
 }
 
 #[cfg(feature = "ssr")]
@@ -109,7 +114,13 @@ pub async fn run(
     listener: std::net::TcpListener,
     db_pool: PgPool,
     rate_limit_secret: [u8; 32],
-) -> Result<(Server, IntoMakeService<axum::Router>), std::io::Error> {
+) -> Result<
+    (
+        Server,
+        IntoMakeServiceWithConnectInfo<axum::Router, SocketAddr>,
+    ),
+    std::io::Error,
+> {
     // use std::sync::Arc;
 
     use crate::app::App;
@@ -201,7 +212,10 @@ pub async fn run(
     let server = Server::from_tcp(listener);
     //server.serve(app.into_make_service()).await?;
     // Ok(server)
-    Ok((server, app.into_make_service()))
+    Ok((
+        server,
+        app.into_make_service_with_connect_info::<SocketAddr>(),
+    ))
 }
 
 #[cfg(feature = "ssr")]

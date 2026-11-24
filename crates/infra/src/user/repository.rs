@@ -60,7 +60,7 @@ pub(crate) async fn store_session(pool: &PgPool, user_id: i32) -> domain::Result
     let date = chrono::Local::now() + chrono::Duration::days(7);
     let session_id = uuid::Uuid::new_v4();
 
-    sqlx::query("UPDATE INTO session(user_id, session_token, expires_at) VALUES ($1, $2, $3)")
+    sqlx::query("INSERT INTO sessions (user_id, session_token, expires_at) VALUES ($1, $2, $3)")
         .bind(&user_id)
         .bind(&session_id)
         .bind(&date.naive_local())
@@ -87,7 +87,7 @@ where
 }
 
 pub(crate) async fn check_user(pool: &PgPool, username: &str) -> domain::Result<bool> {
-    let exist: bool = sqlx::query_scalar("SELECT EXISTS(SELECT 1 FROM users WHERE username = $1")
+    let exist: bool = sqlx::query_scalar("SELECT EXISTS(SELECT 1 FROM users WHERE username = $1)")
         .bind(username)
         .fetch_one(pool)
         .await
@@ -97,7 +97,7 @@ pub(crate) async fn check_user(pool: &PgPool, username: &str) -> domain::Result<
 }
 
 pub(crate) async fn check_email(pool: &PgPool, email: &str) -> domain::Result<bool> {
-    let exist: bool = sqlx::query_scalar("SELECT EXISTS(SELECT 1 FROM users WHERE email = $1")
+    let exist: bool = sqlx::query_scalar("SELECT EXISTS(SELECT 1 FROM users WHERE email = $1)")
         .bind(email)
         .fetch_one(pool)
         .await

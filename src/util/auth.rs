@@ -22,10 +22,14 @@ use crate::error::AppError;
 #[server]
 pub async fn is_auth() -> Result<Option<bool>, AppError> {
     // use leptos::logging;
-    let ctx = expect_context::<ServiceContext>();
-    let jar = expect_context::<CookieJar>();
-    let session = jar.get("session").map(|cookie| cookie.value());
-    let auth_service = AuthService::from(ctx);
-    let allowed = auth_service.auth(session).await.is_ok();
-    Ok(Some(allowed))
+    #[cfg(feature = "ssr")]
+    {
+        // let ctx = expect_context::<ServiceContext>();
+        let ctx = use_context::<ServiceContext>().ok_or(AppError::Internal)?;
+        let jar = expect_context::<CookieJar>();
+        let session = jar.get("session").map(|cookie| cookie.value());
+        let auth_service = AuthService::from(ctx);
+        let allowed = auth_service.auth(session).await.is_ok();
+        Ok(Some(allowed))
+    }
 }

@@ -7,7 +7,8 @@ use leptos::prelude::*;
 #[cfg(feature = "ssr")]
 use leptos_axum::ResponseOptions;
 
-use crate::{error::AppError, server_function::login::dto::LoginCredential};
+use crate::error::AppError;
+use crate::server_function::login::dto::LoginCredential;
 
 mod dto;
 
@@ -44,12 +45,21 @@ pub async fn login(login: LoginCredential) -> Result<(), AppError> {
         let ctx = expect_context::<ServiceContext>();
         let ConnectInfo(address) = leptos_axum::extract::<ConnectInfo<SocketAddr>>()
             .await
-            .map_err(|_| AppError::Validation("Unable to identify client".into()))?;
+            .map_err(|e| {
+                log!("The ERROR: {}", e);
+                AppError::Validation("Unable to identify client".into())
+            })?;
 
         let max_age_seconds = 7 * 24 * 3600;
 
         let user_service = UserService::from(ctx);
-        let session = user_service.login(login, address.ip()).await?;
+        let session = user_service
+            .login(login, address.ip())
+            .await
+            .map_err(|err| {
+                log!("Login service failed: {}", err);
+                AppError::from(err)
+            })?;
 
         let cookie_value = HeaderValue::from_str(&format!(
             // "session={}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age={}",

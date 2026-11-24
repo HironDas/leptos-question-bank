@@ -35,6 +35,7 @@ impl UserService {
         user_login: Login,
         client_ip: IpAddr,
     ) -> Result<String, ServiceError> {
+        // println!("I M in login {}", client_ip.to_string());
         let pool = &self.context.pool;
         let id;
         let ip_key = Self::rate_limit_key(

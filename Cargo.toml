@@ -36,7 +36,7 @@ leptos_drag_reorder = { version = "0.1.0" }
 axum        = { version = "0.8.0", features = ["macros"] }
 axum-server = { version = "0.7.2" }
 axum-extra  = { version = "0.12.2", features = ["cookie"] }
-tokio       = { version = "1", features = ["rt-multi-thread"] }
+tokio       = { version = "1", features = ["macros","rt-multi-thread"] }
 tower-http  = { version = "0.7.0", features = ["fs", "compression-br", "compression-gzip"] }
 config      = { version = "0.15.18" }
 sqlx = { version = "0.8.6", default-features = false, features = [
