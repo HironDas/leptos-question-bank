@@ -1,12 +1,21 @@
 use leptos::prelude::*;
 use leptos::wasm_bindgen::JsCast;
+use leptos_router::hooks::use_navigate;
 use singlestage::*;
+
+use crate::server_function::signout::Signout;
+use crate::util::auth::AuthContext;
 
 #[component]
 pub fn ThemeSwitcher() -> impl IntoView {
     let theme_context = expect_context::<ThemeProviderContext>();
     let prefers_dark = RwSignal::new(false);
     let selected_theme = RwSignal::new("default".to_string());
+
+    let logout = ServerAction::<Signout>::new();
+
+    let auth = expect_context::<AuthContext>();
+    let navigate = use_navigate();
 
     // TODO: Make reactive
     Effect::new(move || {
@@ -96,6 +105,13 @@ pub fn ThemeSwitcher() -> impl IntoView {
             })
     });
 
+    Effect::new(move || {
+        if let Some(Ok(_)) = logout.value().get() {
+            navigate("/", Default::default());
+            // auth.set_authenticated(false);
+        }
+    });
+
     view! {
         <span class="flex space-x-2">
             <Tooltip side="bottom" value="Select theme">
@@ -135,7 +151,7 @@ pub fn ThemeSwitcher() -> impl IntoView {
                 </Button>
             </Tooltip>
             <Tooltip side="bottom" align="end" value="User Logout">
-                <Button variant="secondary" size="sm-icon">{icon!(icondata::LuLogOut)}</Button>
+                <Button variant="secondary" size="small" on:click=move|_|{logout.dispatch(Signout{});}>{icon!(icondata::LuLogOut)}"Logout"</Button>
                 // <Avatar class="size-8 cursor-pointer">
                 //     <AvatarFallback class="bg-(--primary) text-(--primary-foreground)">"H"</AvatarFallback>
                 // </Avatar>

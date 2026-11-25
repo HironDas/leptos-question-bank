@@ -3,4 +3,5 @@ pub mod academic_setting;
 pub mod home;
 pub mod login;
 pub mod question;
+pub mod signout;
 pub mod signup;
