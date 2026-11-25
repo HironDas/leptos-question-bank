@@ -2,7 +2,10 @@ use leptos::{logging::log, prelude::*};
 use singlestage::*;
 // use web_sys::SubmitEvent;
 
-use crate::{components::ui::spinner::Spinner, error::AppError, server_function::login::Login};
+use crate::{
+    components::ui::spinner::Spinner, error::AppError, server_function::login::Login,
+    util::auth::AuthContext,
+};
 
 /// Matches the per-account lockout window in `UserService::login` (5 attempts / 900s).
 const LOCKOUT_SECS: i64 = 15 * 60;
@@ -13,6 +16,9 @@ pub fn Login() -> impl IntoView {
     let pending = login.pending();
     let value = login.value();
     let error_msg = RwSignal::new("".to_string());
+
+    let auth = expect_context::<AuthContext>();
+    let navigate = leptos_router::hooks::use_navigate();
 
     // Unix timestamp (seconds) until which login is locked after a RateLimited error.
     let locked_until = RwSignal::new(None::<i64>);
@@ -56,8 +62,9 @@ pub fn Login() -> impl IntoView {
                     error_msg.set(err.to_string());
                 }
                 Ok(_) => {
-                    error_msg.set("".to_string());
-                    let _ = window().location().set_href("/home");
+                    error_msg.set(String::new());
+                    auth.set_authenticated(true);
+                    navigate("/home", Default::default());
                 }
             }
         }

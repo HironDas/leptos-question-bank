@@ -2,7 +2,7 @@ use crate::components::ui::toast::ToastProvider;
 use crate::components::Layout;
 use crate::pages::{AddEditQuestion, ClassSettingRoute, HomePage, UnAuthorized, ViewQuestions};
 use crate::pages::{Login, NotFound, Signup};
-use crate::util::auth::is_auth;
+use crate::util::auth::{is_auth, AuthContext};
 
 use leptos::prelude::*;
 use leptos_meta::{provide_meta_context, MetaTags, Stylesheet, Title};
@@ -36,10 +36,26 @@ pub fn shell(options: LeptosOptions) -> impl IntoView {
 pub fn App() -> impl IntoView {
     // Provides context that manages stylesheets, titles, meta tags, etc.
     provide_meta_context();
+    let auth = AuthContext::new();
+    provide_context(auth);
+
     let authed = Resource::new(|| (), |_| is_auth());
     let academic_setting: Lazy<ClassSettingRoute> = Lazy::new();
 
-    let condition = move || authed.get().map(|r| r.ok().flatten().unwrap_or(false));
+    Effect::new(move |_| {
+        if let Some(result) = authed.get() {
+            match result {
+                Ok(Some(value)) => auth.set_authenticated(value),
+                Ok(None) => auth.authenticated.set(None),
+                Err(err) => {
+                    leptos::logging::error!("Authentication check failed: {:?}", err);
+                    auth.authenticated.set(None)
+                }
+            }
+        }
+    });
+
+    let condition = move || auth.is_authenticated();
 
     view! {
         // injects a stylesheet into the document <head>
