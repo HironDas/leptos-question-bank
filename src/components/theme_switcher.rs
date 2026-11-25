@@ -134,10 +134,11 @@ pub fn ThemeSwitcher() -> impl IntoView {
                     }}
                 </Button>
             </Tooltip>
-            <Tooltip side="bottom" align="end" value="User profile">
-                <Avatar class="size-8 cursor-pointer">
-                    <AvatarFallback class="bg-(--primary) text-(--primary-foreground)">"H"</AvatarFallback>
-                </Avatar>
+            <Tooltip side="bottom" align="end" value="User Logout">
+                <Button variant="secondary" size="sm-icon">{icon!(icondata::LuLogOut)}</Button>
+                // <Avatar class="size-8 cursor-pointer">
+                //     <AvatarFallback class="bg-(--primary) text-(--primary-foreground)">"H"</AvatarFallback>
+                // </Avatar>
             </Tooltip>
         </span>
     }
