@@ -73,6 +73,9 @@ pub struct AddQuestionInput {
 
 impl AddQuestionInput {
     pub fn validate_question(&self) -> Result<(), Error> {
+        if self.question_text.trim().is_empty() {
+            return Err(Error::Invalid("Question field can't be empty"));
+        }
         match self.question_type.as_str() {
             "mcq" => {
                 if self.options.len() < 2 {
@@ -122,6 +125,9 @@ pub struct UpdateQuestionInput {
 
 impl UpdateQuestionInput {
     pub fn validate_question(&self) -> Result<(), Error> {
+        if self.question_text.trim().is_empty() {
+            return Err(Error::Invalid("Question field can't be empty"));
+        }
         match self.question_type.as_str() {
             "mcq" => {
                 if self.options.len() < 2 {

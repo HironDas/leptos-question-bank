@@ -37,7 +37,7 @@ pub(crate) async fn list_questions(
 
     let questions: Vec<QuestionRow> = sqlx::query_as::<_, QuestionRow>(r#"
         SELECT id, question_text, answer_text, question_type,chapter_id, class_id, subject_id, difficulty, created_at, updated_at
-        FROM questions WHERE chapter_id = $1 ORDER BY id
+        FROM questions WHERE chapter_id = $1 ORDER BY question_type DESC, id
         "#)
         .bind(chapter_id)
         .fetch_all(pool)
