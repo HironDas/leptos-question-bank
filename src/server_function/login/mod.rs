@@ -10,7 +10,7 @@ use leptos_axum::ResponseOptions;
 use crate::error::AppError;
 use crate::server_function::login::dto::LoginCredential;
 
-mod dto;
+pub mod dto;
 
 #[server]
 pub async fn login(login: LoginCredential) -> Result<(), AppError> {

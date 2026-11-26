@@ -1,10 +1,12 @@
+#[cfg(feature = "test-fullstack")]
+use infra::common::ServiceContext;
 use leptos_question_bank::configuration::DatabaseSettings;
 use sqlx::{Connection, Executor, PgConnection, PgPool};
 
 #[cfg(feature = "test-fullstack")]
 pub struct TestApp {
     pub address: String,
-    pub db_pool: sqlx::PgPool,
+    pub ctx: ServiceContext,
     pub _port: u16,
 }
 
@@ -30,9 +32,16 @@ pub async fn spawn_app() -> TestApp {
 
     let _ = tokio::spawn(application.run_until_stopped());
 
+    let secret: [u8; 32] = "ec60deb5490efe950336d95e7e8ed80e8faac0ea2dfe0c4c0d4e68bfe0429dcb"
+        .as_bytes()
+        .try_into()
+        .expect("String must be exacttly 32 bytes");
+
+    let ctx = ServiceContext::new(db_pool, secret).unwrap();
+
     TestApp {
         address,
-        db_pool: db_pool, //get_connection_pool(&configuration.database),
+        ctx, //get_connection_pool(&configuration.database),
         _port: application_port,
     }
 }

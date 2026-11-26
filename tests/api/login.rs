@@ -1,3 +1,7 @@
+use std::net::IpAddr;
+
+use leptos_question_bank::server_function::login::dto::LoginCredential;
+
 #[cfg(feature = "test-fullstack")]
 use crate::helpers::TestApp;
 
@@ -6,7 +10,7 @@ use crate::helpers::TestApp;
 async fn login_return_a_200_for_valid_input() {
     use std::sync::Arc;
 
-    use leptos_question_bank::server_function::{login::user_logged_in, login::LoginCredential};
+    use leptos_question_bank::server_function::login::dto::LoginCredential;
 
     let app = create_user().await;
     let pool = Arc::new(app.db_pool);
@@ -39,8 +43,6 @@ async fn login_return_a_200_for_valid_input() {
 async fn create_user() -> TestApp {
     use std::sync::Arc;
 
-    use leptos_question_bank::server_function::{signup::insert_new_user, signup::User};
-
     use crate::helpers::spawn_app;
 
     let app = spawn_app().await;
@@ -65,17 +67,17 @@ async fn create_user() -> TestApp {
 #[cfg(feature = "test-fullstack")]
 #[tokio::test]
 async fn login_with_wrong_password_fails() {
-    use std::sync::Arc;
-
-    use leptos_question_bank::server_function::login::{user_logged_in, LoginCredential};
+    use domain::login::Login;
+    use infra::user::UserService;
 
     let app = create_user().await;
-    let pool = Arc::new(app.db_pool);
+    let service = UserService::from(app.ctx);
     let login_user = LoginCredential {
         id: "hiron".to_string(),
         password: "Wrong@123".to_string(),
     };
-    let login_user = login_user.try_into().expect("Parsing error");
-    let result = user_logged_in(login_user, pool.clone()).await;
+    let login_user: Login = login_user.try_into().expect("Parsing error");
+    let ip: IpAddr = app.address.parse().expect("Invalid Ip Address");
+    let result = service.login(login_user, ip).await;
     assert!(result.is_err());
 }
