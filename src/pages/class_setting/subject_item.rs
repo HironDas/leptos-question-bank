@@ -140,9 +140,9 @@ pub fn SubjectAccordionItem(
                         }
                     >
                         <For
-                            each=move || chapters.get()
-                            key=|chapter| chapter.id.clone()
-                            children=move |chapter| {
+                            each=move || chapters.get().into_iter().enumerate()
+                            key=|(_,chapter)| chapter.id.clone()
+                            children=move |(index,chapter)| {
                                 let memo_chapter = Memo::new(move |_| {
                                     chapters
                                         .get()
@@ -152,6 +152,7 @@ pub fn SubjectAccordionItem(
                                 });
                                 view! {
                                     <ChapterAccordionContent
+                                        index = index
                                         chapter=memo_chapter
                                         update_chapter_action=update_chapter_action
                                     />
@@ -206,7 +207,7 @@ pub fn UpdateSubjectDialog(
                         <div class="grid gap-4">
 
                             <Input
-                                name="subject_id"
+                                name="input[id]" //subject_id
                                 input_type="hidden"
                                 prop:value=move || subject.get().id.to_string()
                             />
@@ -215,7 +216,7 @@ pub fn UpdateSubjectDialog(
                                 <Label label_for="subject_title">"Title"</Label>
                                 <InputGroup>
                                     <Input
-                                        name="title"
+                                        name="input[title]"
                                         input_type="text"
                                         placeholder="Enter subject title"
                                         node_ref=input_ref
@@ -311,7 +312,7 @@ pub fn AddChapterDialog(
                     <div class="grid gap-4">
 
                         <Input
-                            name="subject_id"
+                            name= "input[id]" //"subject_id"
                             input_type="hidden"
                             prop:value=move || subject.get().id.to_string()
                         />
@@ -321,7 +322,7 @@ pub fn AddChapterDialog(
                             <InputGroup>
                                 <Input
                                     id="chapter_title"
-                                    name="title"
+                                    name="input[title]"
                                     input_type="text"
                                     placeholder="Enter chapter title"
                                     node_ref=chapter_input_ref

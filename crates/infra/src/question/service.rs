@@ -47,7 +47,7 @@ impl QuestionService {
         let questions: Vec<Question> = questions
             .into_iter()
             .map(|q| {
-                let o = options_by_question.remove(&q.id).unwrap();
+                let o = options_by_question.remove(&q.id).unwrap_or_default();
                 map_question(q, o)
             })
             .collect::<domain::Result<Vec<Question>>>()?;
@@ -75,6 +75,7 @@ impl QuestionService {
     }
 
     pub async fn add_question(&self, input: AddQuestionInput) -> Result<Question, ServiceError> {
+        input.validate_question()?;
         let mut tx = self
             .context
             .pool
@@ -96,6 +97,7 @@ impl QuestionService {
         &self,
         input: UpdateQuestionInput,
     ) -> Result<Question, ServiceError> {
+        input.validate_question()?;
         let mut tx = self.context.pool.begin().await.map_err(db)?;
 
         let question = repository::update_question(&mut tx, &input).await?;

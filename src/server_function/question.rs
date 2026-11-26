@@ -7,15 +7,45 @@ use crate::error::AppError;
 pub async fn get_questions(chapter_id: i32) -> Result<Vec<Question>, AppError> {
     #[cfg(feature = "ssr")]
     {
+        use domain::question::QuestionOption;
         use infra::{common::ServiceContext, question::QuestionService};
+
+        use crate::util::preview_markdown::render_markdown;
 
         let ctx = expect_context::<ServiceContext>();
         let question_service = QuestionService::from(ctx);
 
-        question_service
+        let questions = question_service
             .load_questions(chapter_id)
-            .await
-            .map_err(|err| err.into())
+            .await?
+            .into_iter()
+            .map(|q| Question {
+                id: q.id,
+                question_text: render_markdown(&q.question_text),
+                answer_text: match q.answer_text {
+                    Some(txt) => Some(render_markdown(&txt)),
+                    None => None,
+                },
+                options: q
+                    .options
+                    .into_iter()
+                    .map(|o| QuestionOption {
+                        id: o.id,
+                        option_text: render_markdown(&o.option_text),
+                        is_correct: o.is_correct,
+                        order: o.order,
+                    })
+                    .collect::<Vec<QuestionOption>>(),
+                question_type: q.question_type,
+                chapter_id: q.chapter_id,
+                class_id: q.class_id,
+                subject_id: q.subject_id,
+                difficulty: q.difficulty,
+                created_at: q.created_at,
+                updated_at: q.updated_at,
+            })
+            .collect::<Vec<Question>>();
+        Ok(questions)
     }
 }
 
@@ -57,10 +87,12 @@ pub async fn edit_question(input: UpdateQuestionInput) -> Result<Question, AppEr
     #[cfg(feature = "ssr")]
     {
         use infra::{common::ServiceContext, question::QuestionService};
+        use leptos::logging::log;
 
         let ctx = expect_context::<ServiceContext>();
         let question_service = QuestionService::from(ctx);
 
+        log!("update Input: {:#?}", input);
         question_service
             .edit_question(input)
             .await

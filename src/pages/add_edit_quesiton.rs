@@ -2,6 +2,7 @@ use crate::components::ui::rich_text_editor::RichTextEditor;
 use crate::components::ui::toast::use_toast;
 use crate::server_function::question::{get_question_by_id, EditQuestion};
 
+use leptos::logging::log;
 use leptos::{html, prelude::*};
 use leptos_router::hooks::{use_navigate, use_query};
 use leptos_router::params::Params;
@@ -209,6 +210,7 @@ pub fn AddEditQuestion() -> impl IntoView {
                     .get()
                     .map(|el| el.checked())
                     .unwrap_or(false);
+                log!("is correct : {}", is_correct);
                 if !opt_text.trim().is_empty() {
                     options.push(AddQuestionOptionInput {
                         option_text: opt_text,

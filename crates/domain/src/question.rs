@@ -80,7 +80,7 @@ impl AddQuestionInput {
                         "MCQ requires exactly one correct option".into(),
                     ));
                 }
-                if self.options.iter().filter(|o| o.is_correct).count() >= 1 {
+                if !self.options.iter().any(|o| o.is_correct) {
                     return Err(Error::Invalid("MCQ requires atlease one correct option"));
                 }
             }
@@ -125,11 +125,9 @@ impl UpdateQuestionInput {
         match self.question_type.as_str() {
             "mcq" => {
                 if self.options.len() < 2 {
-                    return Err(Error::Invalid(
-                        "MCQ requires exactly one correct option".into(),
-                    ));
+                    return Err(Error::Invalid("MCQ requires atlease two options".into()));
                 }
-                if self.options.iter().filter(|o| o.is_correct).count() >= 1 {
+                if !self.options.iter().any(|o| o.is_correct) {
                     return Err(Error::Invalid("MCQ requires atlease one correct option"));
                 }
             }

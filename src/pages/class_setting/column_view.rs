@@ -216,8 +216,8 @@ pub fn ColumnView(
             <div class="w-1/3 px-2">
             <div class="flex w-full max-w-md flex-col gap-2">
                <ItemGroup class="divide-y" class:hidden = move||hide_chapter.get()>
-                   <For each=move || chapters.get() key=|chapter| chapter.id
-                   children=move |chapter| {
+                   <For each=move || chapters.get().into_iter().enumerate() key=|(_,chapter)| chapter.id
+                   children=move |(index,chapter)| {
                        let memo_chapter = Memo::new(move |_| {
                            chapters
                                .get()
@@ -227,6 +227,7 @@ pub fn ColumnView(
                        });
                        view! {
                            <ChapterUpdateModal
+                               index = index
                                chapter=memo_chapter
                                update_chapter_action=update_chapter_action
                            />
@@ -244,6 +245,7 @@ pub fn ColumnView(
 fn ChapterUpdateModal(
     chapter: Memo<Chapter>,
     update_chapter_action: ServerAction<EditChapter>,
+    index: usize,
 ) -> impl IntoView {
     let chapter_dialog_open = RwSignal::new(false);
     let chapter_input_ref = NodeRef::<html::Input>::new();
@@ -266,7 +268,7 @@ fn ChapterUpdateModal(
         <Item size="sm" class="border-b border-b-[var(--border)] last:border-b-0 rounded-none">
              <ItemContent class="block">
                  <ItemTitle class:font-bengali=move|| is_bengali.get()>{move||chapter.get().title}</ItemTitle>
-                 <ItemDescription >{move||format!("chapter {} ({})",chapter.get().order, chapter.get().question_count)}</ItemDescription>
+                 <ItemDescription >{move||format!("chapter {} ({})",(index + 1), chapter.get().question_count)}</ItemDescription>
 
              </ItemContent>
              <ItemActions>

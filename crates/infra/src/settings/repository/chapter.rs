@@ -48,12 +48,13 @@ pub(crate) async fn insert_chapter(
     title: &str,
     subject_id: i32,
 ) -> domain::Result<Chapter> {
+    // println!("I am in chapter insert");
     let order: i32 = sqlx::query_scalar(
         r#"
         SELECT COALESCE(MAX("order"), 0) FROM chapters WHERE subject_id = $1
         "#,
     )
-    .bind(subject_id as i32)
+    .bind(subject_id)
     .fetch_one(pool)
     .await
     .map_err(db)?;
@@ -61,20 +62,20 @@ pub(crate) async fn insert_chapter(
     let new_order = order + 10;
 
     let class_id =
-        sqlx::query_scalar::<_, i32>(r#"SELECT class_id FROM SUBJECTS WHERE id = $1 LIMIT 1"#)
-            .bind(subject_id as i32)
+        sqlx::query_scalar::<_, i32>(r#"SELECT class_id FROM subjects WHERE id = $1 LIMIT 1"#)
+            .bind(subject_id)
             .fetch_one(pool)
             .await
             .map_err(db)?;
     let chapter = sqlx::query_as::<_, ChapterRow>(
         r#"
         INSERT INTO chapters (title, class_id, subject_id, "order")
-        VALUES ($1, $2,$3, $4) RETURN id, title, class_id, subject_id, question_count, "order"
+        VALUES ($1, $2,$3, $4) RETURNING id, title, class_id, subject_id, question_count, "order"
         "#,
     )
     .bind(title)
     .bind(class_id)
-    .bind(subject_id as i32)
+    .bind(subject_id)
     .bind(new_order)
     .fetch_one(pool)
     .await
@@ -88,7 +89,7 @@ pub(crate) async fn update_chapter(pool: &PgPool, title: &str, id: i32) -> domai
     sqlx::query_as::<_, ChapterRow>(r#"
         UPDATE chapters SET title = $1 WHERE id = $2 returning id, title, class_id, subject_id, question_count, "order"
         "#).bind(title)
-    .bind(id as i32)
+    .bind(id)
     .fetch_one(pool)
     .await
     .map(Chapter::from)

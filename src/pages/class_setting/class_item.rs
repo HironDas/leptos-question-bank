@@ -212,7 +212,7 @@ pub fn UpdateClassDialog(
                     <div class="form grid gap-4">
                         <div class="grid gap-2">
                             <Input
-                                name="class[class_id]"
+                                name="input[class_id]"
                                 input_type="hidden"
                                 value=class.get_untracked().id.to_string()
                             />
@@ -221,7 +221,7 @@ pub fn UpdateClassDialog(
                                 <Input
                                     id="class_name"
                                     value=class.get_untracked().name
-                                    name="class[name]"
+                                    name="input[name]"
                                     input_type="text"
                                     placeholder="Enter class name in English"
                                 />
@@ -243,7 +243,7 @@ pub fn UpdateClassDialog(
                                 <Input
                                     id="class_name_bn"
                                     value= class.get_untracked().name_bn
-                                    name="class[name_bn]"
+                                    name="input[name_bn]"
                                     input_type="text"
                                     placeholder="Enter class name in Bangla"
                                 />
@@ -332,7 +332,7 @@ pub fn AddSubjectDialog(
                         <div class="grid gap-4">
 
                             <Input
-                                name="class_id"
+                                name="input[id]"
                                 input_type="hidden"
                                 value=class.get_untracked().id.to_string()
                             />
@@ -341,7 +341,7 @@ pub fn AddSubjectDialog(
                                 <Label label_for="subject_title">"Title"</Label>
                                 <InputGroup>
                                     <Input
-                                        name="title"
+                                        name="input[title]"
                                         input_type="text"
                                         placeholder="Enter subject title"
                                         node_ref=input_ref

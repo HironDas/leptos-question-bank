@@ -251,7 +251,7 @@ impl LazyRoute for ClassSettingRoute {
                                                 <InputGroup>
                                                     <Input
                                                         node_ref=class_name_ref
-                                                        name="class[name]"
+                                                        name="input[name]"
                                                         input_type="text"
                                                         placeholder="Enter class name in English"
                                                         id="class_name"
@@ -272,7 +272,7 @@ impl LazyRoute for ClassSettingRoute {
                                                 <InputGroup>
                                                     <Input
                                                         node_ref=class_name_bn_ref
-                                                        name="class[name_bn]"
+                                                        name="input[name_bn]"
                                                         input_type="text"
                                                         placeholder="Enter class name in Bangla"
                                                         id="class_name_bn"

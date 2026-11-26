@@ -16,8 +16,8 @@ pub struct QuestionRow {
     pub subject_id: i32,
     pub difficulty: i32,
     pub answer_text: Option<String>,
-    pub created_at: String,
-    pub updated_at: String,
+    pub created_at: chrono::DateTime<chrono::Utc>, //chrono::NaiveDateTime,
+    pub updated_at: chrono::DateTime<chrono::Utc>, //chrono::NaiveDateTime,
 }
 
 #[derive(Debug, sqlx::FromRow)]
@@ -33,15 +33,17 @@ pub(crate) async fn list_questions(
     pool: &PgPool,
     chapter_id: i32,
 ) -> domain::Result<Vec<QuestionRow>> {
+    println!("I am in list questions");
+
     let questions: Vec<QuestionRow> = sqlx::query_as::<_, QuestionRow>(r#"
         SELECT id, question_text, answer_text, question_type,chapter_id, class_id, subject_id, difficulty, created_at, updated_at
-        FROM questions WHERE chapter_id = $1
+        FROM questions WHERE chapter_id = $1 ORDER BY id
         "#)
         .bind(chapter_id)
         .fetch_all(pool)
         .await
         .map_err(db)?;
-
+    println!("questions {:?}", questions);
     Ok(questions)
 }
 
@@ -49,24 +51,29 @@ pub(crate) async fn list_question_options(
     pool: &PgPool,
     chapter_id: i32,
 ) -> domain::Result<Vec<OptionRow>> {
-    let options: Vec<OptionRow> = sqlx::query_as(
-        r#"SELECT
+    println!("I am in list question options");
+    let options: Vec<OptionRow> = sqlx::query_as::<_, OptionRow>(
+        r#"
+        SELECT
         qo.id,
         qo.question_id,
         qo.option_text,
         qo.is_correct,
-        qo."order" AS "order!"
+        qo."order"
         FROM question_options qo
     JOIN questions q ON q.id = qo.question_id
-        WHERE q.chapter_id = $1 and q.question_type = 'mcq'
+        WHERE q.chapter_id = $1 AND q.question_type = 'mcq'
    ORDER BY qo.question_id, qo."order"
    "#,
     )
     .bind(chapter_id)
     .fetch_all(pool)
     .await
-    .map_err(db)?;
-
+    .map_err(|err| {
+        println!("Error Options:-->{}", err);
+        db(err)
+    })?;
+    println!("Options : {:#?}", options);
     Ok(options)
 }
 
@@ -93,7 +100,7 @@ pub(crate) async fn list_options_by_question_id(
         qo.question_id,
         qo.option_text,
         qo.is_correct,
-        qo."order" AS "order!"
+        qo."order"
         FROM question_options qo
         WHERE qo.question_id = $1
    ORDER BY qo.question_id, qo."order"
@@ -173,7 +180,7 @@ pub(crate) async fn insert_options(
             .push_bind(option.order);
     });
 
-    builder.push(r#"RETURNING id, question_id, option_text, is_correct, "order" "#);
+    builder.push(r#" RETURNING id, question_id, option_text, is_correct, "order" "#);
 
     let rows = builder
         .build_query_as::<OptionRow>()
@@ -230,6 +237,7 @@ pub(crate) async fn update_question(
         "#)
     .bind(&input.question_text)
     .bind(&input.question_type)
+    .bind(input.difficulty)
     .bind(&input.answer_text)
     .bind(input.id)
         .fetch_one(&mut **tx)

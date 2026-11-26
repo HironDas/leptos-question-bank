@@ -8,6 +8,7 @@ use crate::server_function::academic_setting::{Chapter, EditChapter};
 pub fn ChapterAccordionContent(
     chapter: Memo<Chapter>,
     update_chapter_action: ServerAction<EditChapter>,
+    index: usize,
 ) -> impl IntoView {
     let is_bangle = Memo::new(move |_| !chapter.get().title.is_ascii());
     let update_chapter_value = update_chapter_action.value();
@@ -33,7 +34,7 @@ pub fn ChapterAccordionContent(
                         move || is_bangle.get(),
                     )>{move || chapter.get().title}</span>
                     <span class="text-gray-400 text-xs">
-                        "Chapter "{move || chapter.get().order}
+                        "Chapter "{index+1}
                     </span>
                     <span class="text-gray-400">"("{move || chapter.get().question_count}")"</span>
                 </div>
@@ -87,7 +88,7 @@ pub fn UpdateChapterDialog(
                         <div class="grid gap-4">
 
                             <Input
-                                name="chapter_id"
+                                name="input[id]"//"chapter_id"
                                 input_type="hidden"
                                 prop:value=move || chapter.get().id.to_string()
                             />
@@ -97,7 +98,7 @@ pub fn UpdateChapterDialog(
                                 <InputGroup>
                                     <Input
                                         id="chapter_title"
-                                        name="title"
+                                        name="input[title]"
                                         input_type="text"
                                         placeholder="Enter chapter title"
                                         node_ref=chapter_input_ref
