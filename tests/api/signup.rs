@@ -1,14 +1,14 @@
+use infra::user::UserService;
+
 #[cfg(feature = "test-fullstack")]
 #[tokio::test]
 async fn signup_return_200_for_valid_input() {
-    use leptos_question_bank::server_function::signup::{insert_new_user, User};
-    use pwhash::bcrypt;
-    use std::{
-        //net::{IpAddr, Ipv4Addr},
-        sync::Arc,
-    };
-
     use crate::helpers::spawn_app;
+    use domain::new_user::NewUser;
+    use infra::user::UserService;
+    use leptos_question_bank::server_function::signup::dto::User;
+    use pwhash::bcrypt;
+
     // let _runtime = leptos_reactive::create_runtime();
     // After (fixes the error during cargo test)
     // let mut conf =
@@ -28,12 +28,14 @@ async fn signup_return_200_for_valid_input() {
         confirm_password: "Hiron@123".to_string(),
     };
 
-    let pool = Arc::new(app.db_pool);
-    let new_user = user.clone().try_into().unwrap();
+    let ctx = app.ctx;
+    let service = UserService::from(ctx);
+    let new_user: NewUser = user.clone().try_into().unwrap();
 
     // leptos::context::provide_context(pool.clone());
 
-    insert_new_user(new_user, pool.clone())
+    service
+        .signup(new_user)
         .await
         .expect("Signup action failed to run");
 
@@ -41,7 +43,7 @@ async fn signup_return_200_for_valid_input() {
         "SELECT username, active, password_hash FROM users WHERE email = $1",
         user.email
     )
-    .fetch_one(&*pool)
+    .fetch_one(&app.pool)
     .await
     .expect("Failed to fetch user");
 
@@ -53,13 +55,13 @@ async fn signup_return_200_for_valid_input() {
 #[cfg(feature = "test-fullstack")]
 #[tokio::test]
 async fn signup_with_duplicate_username_fails() {
-    use leptos_question_bank::server_function::signup::{insert_new_user, User};
-    use std::sync::Arc;
+    use domain::new_user::NewUser;
+    use leptos_question_bank::server_function::signup::dto::User;
 
     use crate::helpers::spawn_app;
 
     let app = spawn_app().await;
-    let pool = Arc::new(app.db_pool.clone());
+    let service = UserService::from(app.ctx);
 
     let user = User {
         username: "duplicate".to_string(),
@@ -67,8 +69,10 @@ async fn signup_with_duplicate_username_fails() {
         password: "Hiron@123".to_string(),
         confirm_password: "Hiron@123".to_string(),
     };
-    let new_user = user.clone().try_into().unwrap();
-    insert_new_user(new_user, pool.clone())
+    let new_user: NewUser = user.clone().try_into().unwrap();
+
+    service
+        .signup(new_user)
         .await
         .expect("First signup should succeed");
 
@@ -78,21 +82,20 @@ async fn signup_with_duplicate_username_fails() {
         password: "Hiron@123".to_string(),
         confirm_password: "Hiron@123".to_string(),
     };
-    let new_user = duplicate.try_into().unwrap();
-    let result = insert_new_user(new_user, pool.clone()).await;
+    let new_user: NewUser = duplicate.try_into().unwrap();
+    let result = service.signup(new_user).await;
     assert!(result.is_err());
 }
 
 #[cfg(feature = "test-fullstack")]
 #[tokio::test]
 async fn signup_with_duplicate_email_fails() {
-    use leptos_question_bank::server_function::signup::{insert_new_user, User};
-    use std::sync::Arc;
+    use leptos_question_bank::server_function::signup::dto::User;
 
     use crate::helpers::spawn_app;
 
     let app = spawn_app().await;
-    let pool = Arc::new(app.db_pool.clone());
+    let service = UserService::from(app.ctx);
 
     let user = User {
         username: "user_one".to_string(),
@@ -101,7 +104,9 @@ async fn signup_with_duplicate_email_fails() {
         confirm_password: "Hiron@123".to_string(),
     };
     let new_user = user.try_into().unwrap();
-    insert_new_user(new_user, pool.clone())
+
+    service
+        .signup(new_user)
         .await
         .expect("First signup should succeed");
 
@@ -112,6 +117,6 @@ async fn signup_with_duplicate_email_fails() {
         confirm_password: "Hiron@123".to_string(),
     };
     let new_user = duplicate.try_into().unwrap();
-    let result = insert_new_user(new_user, pool.clone()).await;
+    let result = service.signup(new_user).await;
     assert!(result.is_err());
 }

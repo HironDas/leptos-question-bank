@@ -7,12 +7,13 @@ use sqlx::{Connection, Executor, PgConnection, PgPool};
 pub struct TestApp {
     pub address: String,
     pub ctx: ServiceContext,
-    pub _port: u16,
+    // pub _port: u16,
+    pub pool: PgPool,
 }
 
 #[cfg(feature = "test-fullstack")]
 pub async fn spawn_app() -> TestApp {
-    let _runtime = leptos_reactive::create_runtime();
+    // let _runtime = leptos_reactive::create_runtime();
 
     use leptos_question_bank::{configuration::get_configuration, Application};
 
@@ -27,22 +28,24 @@ pub async fn spawn_app() -> TestApp {
     let application = Application::build(configuration.clone())
         .await
         .expect("Failed to build server");
+
+    println!("Before Application::build");
+
     let application_port = application.port();
     let address = format!("http://127.0.0.1:{}", application_port);
 
     let _ = tokio::spawn(application.run_until_stopped());
 
-    let secret: [u8; 32] = "ec60deb5490efe950336d95e7e8ed80e8faac0ea2dfe0c4c0d4e68bfe0429dcb"
-        .as_bytes()
-        .try_into()
-        .expect("String must be exacttly 32 bytes");
+    println!("After server spawn");
 
-    let ctx = ServiceContext::new(db_pool, secret).unwrap();
+    let secret: [u8; 32] = [42u8; 32];
+
+    let ctx = ServiceContext::new(db_pool.clone(), secret).unwrap();
 
     TestApp {
         address,
         ctx, //get_connection_pool(&configuration.database),
-        _port: application_port,
+        pool: db_pool,
     }
 }
 

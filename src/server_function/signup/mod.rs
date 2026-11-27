@@ -3,7 +3,7 @@ use domain::new_user::NewUser;
 use infra::{common::ServiceContext, user::UserService};
 use leptos::prelude::*;
 
-mod dto;
+pub mod dto;
 
 #[server]
 pub async fn signup_action(user: User) -> Result<(), AppError> {
