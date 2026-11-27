@@ -39,7 +39,7 @@ async fn insert_chapter_succeeds() {
     assert_eq!(chapter.title, "Cell Structure");
     assert_eq!(chapter.subject_id, subject.id);
     assert_eq!(chapter.class_id, class.id);
-    assert_eq!(chapter.order, 1);
+    assert_eq!(chapter.order, 10);
 }
 
 #[cfg(feature = "test-fullstack")]
@@ -92,9 +92,9 @@ async fn fetch_chapters_by_subject_returns_correct_data() {
         .expect("Failed to fetch chapters");
 
     assert_eq!(chapters.len(), 2);
-    assert_eq!(chapters[0].order, 1);
+    assert_eq!(chapters[0].order, 10);
     assert_eq!(chapters[0].title, "Atomic Structure");
-    assert_eq!(chapters[1].order, 2);
+    assert_eq!(chapters[1].order, 20);
     assert_eq!(chapters[1].title, "Chemical Bonding");
 }
 

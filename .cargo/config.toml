@@ -1,0 +1,4 @@
+[build]
+# Leptos: type-erase components in dev builds. Massively reduces debug-build
+# size, compile memory and compile time for deeply nested view! types.
+rustflags = ["--cfg", "erase_components"]

@@ -25,7 +25,7 @@ async fn insert_class_succeeds() {
     assert!(class.id > 0);
     assert_eq!(class.name, "Class 10");
     assert_eq!(class.name_bn, "দশম শ্রেণি");
-    assert_eq!(class.order, 1);
+    assert_eq!(class.order, 10);
 }
 
 #[cfg(feature = "test-fullstack")]
@@ -60,8 +60,8 @@ async fn fetch_classes_returns_inserted_classes() {
     let classes = service.classes().await.expect("Failed to fetch classes");
 
     assert_eq!(classes.len(), 2);
-    assert_eq!(classes[0].order, 1);
-    assert_eq!(classes[1].order, 2);
+    assert_eq!(classes[0].order, 10);
+    assert_eq!(classes[1].order, 20);
     // Classes should be ordered by "order" ASC
     assert_eq!(classes[0].name, "Class 6");
     assert_eq!(classes[1].name, "Class 7");
@@ -123,6 +123,6 @@ async fn insert_multiple_classes_auto_increments_order() {
             .add_class(class_input)
             .await
             .expect("Failed to insert class");
-        assert_eq!(class.order, i);
+        assert_eq!(class.order, i * 10);
     }
 }

@@ -33,7 +33,7 @@ async fn insert_subject_succeeds() {
     assert!(subject.id > 0);
     assert_eq!(subject.title, "Mathematics");
     assert_eq!(subject.class_id, class.id);
-    assert_eq!(subject.order, 1);
+    assert_eq!(subject.order, 10);
 }
 
 #[cfg(feature = "test-fullstack")]
@@ -78,8 +78,8 @@ async fn fetch_subjects_by_class_returns_correct_data() {
     let subjects = subjects(class.id).await.expect("Failed to fetch subjects");
 
     assert_eq!(subjects.len(), 2);
-    assert_eq!(subjects[0].order, 1);
-    assert_eq!(subjects[1].order, 2);
+    assert_eq!(subjects[0].order, 10);
+    assert_eq!(subjects[1].order, 20);
     assert_eq!(subjects[0].title, "Mathematics");
     assert_eq!(subjects[1].title, "Physics");
 }

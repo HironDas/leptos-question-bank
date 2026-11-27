@@ -22,7 +22,7 @@ async fn login_return_session_for_valid_input() {
     };
 
     let login_user = login_user.try_into().expect("Parsing error");
-    let ip: IpAddr = app.address.parse().expect("Invalid Ip Address");
+    let ip: IpAddr = IpAddr::from([127, 0, 0, 1]); //app.address.parse().expect("Invalid Ip Address");
     let session = service
         .login(login_user, ip)
         .await

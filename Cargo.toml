@@ -171,7 +171,7 @@ ssr = [
     "dep:tower-http",
     "dep:hex"
 ]
-test-fullstack = ["ssr", "hydrate"]
+test-fullstack = ["ssr"]
 
 ############################################################
 # PROFILES (must stay in the workspace root)
@@ -212,3 +212,7 @@ bin-default-features = false
 lib-features = ["hydrate"]
 lib-default-features = false
 lib-profile-release = "wasm-release"
+
+[profile.dev]
+# Full debuginfo for Leptos view types produced multi-GB object files.
+debug = "line-tables-only"
