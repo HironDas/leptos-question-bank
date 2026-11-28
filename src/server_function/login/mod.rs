@@ -1,0 +1,129 @@
+#[cfg(feature = "ssr")]
+use infra::common::ServiceError;
+
+#[cfg(feature = "ssr")]
+use leptos::logging::log;
+use leptos::prelude::*;
+#[cfg(feature = "ssr")]
+use leptos_axum::ResponseOptions;
+
+use crate::error::AppError;
+use crate::server_function::login::dto::LoginCredential;
+
+pub mod dto;
+
+#[server]
+pub async fn login(login: LoginCredential) -> Result<(), AppError> {
+    let response = expect_context::<ResponseOptions>();
+    if login.id == "" {
+        return Err(AppError::Validation(
+            "Username/Email is empty. Please put a valid input.".to_string(),
+        ));
+    } else if login.password == "" {
+        return Err(AppError::Validation(
+            "Password is empty! Please input the password.".to_string(),
+        ));
+    }
+    let login = login.try_into().map_err(|err: ServiceError| {
+        log!("validataion Error: {:?}", err);
+        AppError::Validation("Invalid username or password! please try again.".into())
+    })?;
+    // .context("Invalid username or password, please try again")?;
+
+    leptos::logging::log!("Login attempt: {:?}", login);
+    #[cfg(feature = "ssr")]
+    {
+        use std::net::SocketAddr;
+
+        use axum::{
+            extract::ConnectInfo,
+            http::{header::SET_COOKIE, HeaderValue},
+        };
+        use infra::{common::ServiceContext, user::UserService};
+
+        let ctx = expect_context::<ServiceContext>();
+        let ConnectInfo(address) = leptos_axum::extract::<ConnectInfo<SocketAddr>>()
+            .await
+            .map_err(|e| {
+                log!("The ERROR: {}", e);
+                AppError::Validation("Unable to identify client".into())
+            })?;
+
+        let max_age_seconds = 7 * 24 * 3600;
+
+        let user_service = UserService::from(ctx);
+        let session = user_service
+            .login(login, address.ip())
+            .await
+            .map_err(|err| {
+                log!("Login service failed: {}", err);
+                AppError::from(err)
+            })?;
+
+        let cookie_value = HeaderValue::from_str(&format!(
+            // "session={}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age={}",
+            "session={}; Path=/; HttpOnly; SameSite=Lax; Max-Age={}",
+            session, max_age_seconds
+        ))
+        .map_err(|error| {
+            log!("Invalid Header: {}", error.to_string());
+            AppError::Internal
+        })?;
+
+        response.insert_header(SET_COOKIE, cookie_value);
+        // No server redirect: the client does a full page load to /home after
+        // success (see pages/login.rs) so App re-runs is_auth() with the new cookie.
+    }
+    Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use domain::login::Login as DomainLogin;
+    #[test]
+    fn login_credential_with_email_parses_correctly() {
+        let cred = LoginCredential {
+            id: "test@example.com".to_string(),
+            password: "Hiron@12345".to_string(),
+        };
+        let result: Result<DomainLogin, _> = cred.try_into();
+        assert!(result.is_ok());
+        let login = result.unwrap();
+        assert!(login.email.is_some());
+        assert!(login.username.is_none());
+    }
+
+    #[test]
+    fn login_credential_with_username_parses_correctly() {
+        let cred = LoginCredential {
+            id: "testuser".to_string(),
+            password: "Hiron@12345".to_string(),
+        };
+        let result: Result<DomainLogin, _> = cred.try_into();
+        assert!(result.is_ok());
+        let login = result.unwrap();
+        assert!(login.username.is_some());
+        assert!(login.email.is_none());
+    }
+
+    #[test]
+    fn login_credential_with_invalid_id_fails() {
+        let cred = LoginCredential {
+            id: "ab".to_string(),
+            password: "Hiron@12345".to_string(),
+        };
+        let result: Result<DomainLogin, _> = cred.try_into();
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn login_credential_with_invalid_password_fails() {
+        let cred = LoginCredential {
+            id: "testuser".to_string(),
+            password: "weak".to_string(),
+        };
+        let result: Result<DomainLogin, _> = cred.try_into();
+        assert!(result.is_err());
+    }
+}

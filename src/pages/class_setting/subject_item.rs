@@ -4,19 +4,15 @@ use singlestage::*;
 
 use crate::{
     pages::class_setting::chapter_item::ChapterAccordionContent,
-    server_function::{
-        academic_helper::{
-            chapter::{subject_chapter, AddChapter, UpdateChapter},
-            subject::UpdateSubject,
-        },
-        academic_setting::{Chapter, Subject},
+    server_function::academic_setting::{
+        chapters as list_chapters, AddChapter, Chapter, EditChapter, EditSubject, Subject,
     },
 };
 
 #[component]
 pub fn SubjectAccordionItem(
     subject: Memo<Subject>,
-    update_subject_action: ServerAction<UpdateSubject>,
+    update_subject_action: ServerAction<EditSubject>,
 ) -> impl IntoView {
     let is_bangle = Memo::new(move |_| !subject.get().title.is_ascii());
     let subject_accordion_open = RwSignal::new(false);
@@ -31,7 +27,7 @@ pub fn SubjectAccordionItem(
     let update_subject_value = update_subject_action.value();
     let chapters = RwSignal::new(Vec::<Chapter>::new());
 
-    let update_chapter_action = ServerAction::<UpdateChapter>::new();
+    let update_chapter_action = ServerAction::<EditChapter>::new();
     let update_chapter_value = update_chapter_action.value();
 
     Effect::new(move || {
@@ -83,7 +79,7 @@ pub fn SubjectAccordionItem(
             log!("SubjectAccordionItem expand: {}", expand);
             if expand {
                 log!("Fetching chapters for subject id: {}", subject.get().id);
-                match subject_chapter(subject.get().id).await {
+                match list_chapters(subject.get().id).await {
                     Ok(data) => data,
                     Err(err) => {
                         log!("Error fetching chapters: {:?}", err);
@@ -144,9 +140,9 @@ pub fn SubjectAccordionItem(
                         }
                     >
                         <For
-                            each=move || chapters.get()
-                            key=|chapter| chapter.id.clone()
-                            children=move |chapter| {
+                            each=move || chapters.get().into_iter().enumerate()
+                            key=|(_,chapter)| chapter.id.clone()
+                            children=move |(index,chapter)| {
                                 let memo_chapter = Memo::new(move |_| {
                                     chapters
                                         .get()
@@ -156,6 +152,7 @@ pub fn SubjectAccordionItem(
                                 });
                                 view! {
                                     <ChapterAccordionContent
+                                        index = index
                                         chapter=memo_chapter
                                         update_chapter_action=update_chapter_action
                                     />
@@ -175,7 +172,7 @@ pub fn UpdateSubjectDialog(
     subject_dialog_open: RwSignal<bool>,
     input_ref: NodeRef<html::Input>,
     subject: Memo<Subject>,
-    update_subject_action: ServerAction<UpdateSubject>,
+    update_subject_action: ServerAction<EditSubject>,
 ) -> impl IntoView {
     view! {
         <Dialog open=subject_dialog_open>
@@ -210,7 +207,7 @@ pub fn UpdateSubjectDialog(
                         <div class="grid gap-4">
 
                             <Input
-                                name="subject_id"
+                                name="input[id]" //subject_id
                                 input_type="hidden"
                                 prop:value=move || subject.get().id.to_string()
                             />
@@ -219,7 +216,7 @@ pub fn UpdateSubjectDialog(
                                 <Label label_for="subject_title">"Title"</Label>
                                 <InputGroup>
                                     <Input
-                                        name="title"
+                                        name="input[title]"
                                         input_type="text"
                                         placeholder="Enter subject title"
                                         node_ref=input_ref
@@ -315,7 +312,7 @@ pub fn AddChapterDialog(
                     <div class="grid gap-4">
 
                         <Input
-                            name="subject_id"
+                            name= "input[id]" //"subject_id"
                             input_type="hidden"
                             prop:value=move || subject.get().id.to_string()
                         />
@@ -325,7 +322,7 @@ pub fn AddChapterDialog(
                             <InputGroup>
                                 <Input
                                     id="chapter_title"
-                                    name="title"
+                                    name="input[title]"
                                     input_type="text"
                                     placeholder="Enter chapter title"
                                     node_ref=chapter_input_ref

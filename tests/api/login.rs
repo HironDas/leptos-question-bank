@@ -1,27 +1,34 @@
+use std::net::IpAddr;
+
+#[cfg(feature = "test-fullstack")]
+use infra::user::UserService;
+use leptos_question_bank::server_function::login::dto::LoginCredential;
+#[cfg(feature = "test-fullstack")]
+use leptos_question_bank::server_function::signup::dto::User;
+
 #[cfg(feature = "test-fullstack")]
 use crate::helpers::TestApp;
 
 #[cfg(feature = "test-fullstack")]
 #[tokio::test]
-async fn login_return_a_200_for_valid_input() {
-    use std::sync::Arc;
-
-    use leptos_question_bank::server_function::{login::user_logged_in, login::LoginCredential};
+async fn login_return_session_for_valid_input() {
+    use leptos_question_bank::server_function::login::dto::LoginCredential;
 
     let app = create_user().await;
-    let pool = Arc::new(app.db_pool);
+    let service = UserService::from(app.ctx);
     let login_user = LoginCredential {
         id: "hiron".to_string(),
         password: "Hiron@123".to_string(),
     };
 
     let login_user = login_user.try_into().expect("Parsing error");
-    let id = user_logged_in(login_user, pool.clone())
+    let ip: IpAddr = IpAddr::from([127, 0, 0, 1]); //IpAddr::from([127, 0, 0, 1]);
+    let session = service
+        .login(login_user, ip)
         .await
         .expect("Failed to get the user id");
 
-    assert_eq!(id, 1);
-
+    assert_eq!(session.len(), 36);
     // search with email
     let login_user = LoginCredential {
         id: "hcdas@gmail.com".to_string(),
@@ -29,19 +36,17 @@ async fn login_return_a_200_for_valid_input() {
     };
 
     let login_user = login_user.try_into().expect("Parsing error");
-    let id = user_logged_in(login_user, pool.clone())
+    let session = service
+        .login(login_user, ip)
         .await
         .expect("Failed to get the user id");
-    assert_eq!(id, 1);
+    assert_eq!(session.len(), 36);
 }
 
 #[cfg(feature = "test-fullstack")]
 async fn create_user() -> TestApp {
-    use std::sync::Arc;
-
-    use leptos_question_bank::server_function::{signup::insert_new_user, signup::User};
-
     use crate::helpers::spawn_app;
+    use domain::new_user::NewUser;
 
     let app = spawn_app().await;
 
@@ -52,11 +57,12 @@ async fn create_user() -> TestApp {
         confirm_password: "Hiron@123".to_string(),
     };
 
-    let new_user = user.clone().try_into().unwrap();
+    let new_user: NewUser = user.clone().try_into().unwrap();
 
-    let pool = Arc::new(app.db_pool.clone());
+    let service = UserService::from(app.ctx.clone());
 
-    insert_new_user(new_user, pool.clone())
+    service
+        .signup(new_user)
         .await
         .expect("Signup action failed to run");
     app
@@ -65,17 +71,17 @@ async fn create_user() -> TestApp {
 #[cfg(feature = "test-fullstack")]
 #[tokio::test]
 async fn login_with_wrong_password_fails() {
-    use std::sync::Arc;
-
-    use leptos_question_bank::server_function::login::{user_logged_in, LoginCredential};
+    use domain::login::Login;
+    use infra::user::UserService;
 
     let app = create_user().await;
-    let pool = Arc::new(app.db_pool);
+    let service = UserService::from(app.ctx);
     let login_user = LoginCredential {
         id: "hiron".to_string(),
         password: "Wrong@123".to_string(),
     };
-    let login_user = login_user.try_into().expect("Parsing error");
-    let result = user_logged_in(login_user, pool.clone()).await;
+    let login_user: Login = login_user.try_into().expect("Parsing error");
+    let ip: IpAddr = IpAddr::from([127, 0, 0, 1]);
+    let result = service.login(login_user, ip).await;
     assert!(result.is_err());
 }

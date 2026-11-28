@@ -1,5 +1,6 @@
 application:
   host: 0.0.0.0
+  rate_limit_secret: null # set in on .env or docker compose APP_APPLICATION__RATE_LIMIT_SECRET generate it using `openssl rand -hex 32`
   # base_url: https://question-bank.up.railway.app/
 database:
   require_ssl: true

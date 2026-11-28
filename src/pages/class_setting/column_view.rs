@@ -9,22 +9,20 @@ use crate::pages::class_setting::class_item::AddSubjectDialog;
 use crate::pages::class_setting::class_item::UpdateClassDialog;
 use crate::pages::class_setting::subject_item::AddChapterDialog;
 use crate::pages::class_setting::subject_item::UpdateSubjectDialog;
-use crate::server_function::academic_helper::chapter::subject_chapter;
-use crate::server_function::academic_helper::chapter::AddChapter;
-use crate::server_function::academic_helper::chapter::UpdateChapter;
-use crate::server_function::academic_helper::class::UpdateClass;
-use crate::server_function::academic_helper::subject;
-use crate::server_function::academic_helper::subject::AddSubject;
-use crate::server_function::academic_helper::subject::UpdateSubject;
-use crate::server_function::academic_setting::Chapter;
+use crate::server_function::academic_setting::AddChapter;
+use crate::server_function::academic_setting::AddSubject;
 use crate::server_function::academic_setting::Class;
-use crate::server_function::academic_setting::Subject;
+use crate::server_function::academic_setting::EditChapter;
+use crate::server_function::academic_setting::EditClass;
+use crate::server_function::academic_setting::EditSubject;
+use crate::server_function::academic_setting::{chapters as list_chapters, Chapter};
+use crate::server_function::academic_setting::{subjects as list_subjects, Subject};
 
 #[component]
 
 pub fn ColumnView(
     #[prop(into)] classes: Signal<Vec<Class>>,
-    update_class_action: ServerAction<UpdateClass>,
+    update_class_action: ServerAction<EditClass>,
 ) -> impl IntoView {
     println!("{:?}", classes);
     let selected_class_id: RwSignal<Option<u32>> = RwSignal::new(None);
@@ -37,7 +35,7 @@ pub fn ColumnView(
     let chapters: RwSignal<Vec<Chapter>> = RwSignal::new(Vec::new());
     let hide_chapter: RwSignal<bool> = RwSignal::new(false);
 
-    let update_subject_action = ServerAction::<UpdateSubject>::new();
+    let update_subject_action = ServerAction::<EditSubject>::new();
     let update_subject_value = update_subject_action.value();
 
     let add_subject_action = ServerAction::<AddSubject>::new();
@@ -83,7 +81,7 @@ pub fn ColumnView(
         }
     });
 
-    let update_chapter_action = ServerAction::<UpdateChapter>::new();
+    let update_chapter_action = ServerAction::<EditChapter>::new();
     let update_chapter_value = update_chapter_action.value();
 
     Effect::new(move || {
@@ -107,7 +105,7 @@ pub fn ColumnView(
         move |class_id| async move {
             if let Some(id) = class_id {
                 log!("Fetching subjects for class id: {}", id);
-                match subject::subject(id).await {
+                match list_subjects(id).await {
                     Ok(data) => data,
                     Err(err) => {
                         log!("Error fetching subjects: {:?}", err);
@@ -131,7 +129,7 @@ pub fn ColumnView(
         move |subject_id| async move {
             if let Some(id) = subject_id {
                 log!("Fetching chapters for subject id: {}", id);
-                match subject_chapter(id).await {
+                match list_chapters(id).await {
                     Ok(data) => data,
                     Err(err) => {
                         log!("Error fetching subjects: {:?}", err);
@@ -218,8 +216,8 @@ pub fn ColumnView(
             <div class="w-1/3 px-2">
             <div class="flex w-full max-w-md flex-col gap-2">
                <ItemGroup class="divide-y" class:hidden = move||hide_chapter.get()>
-                   <For each=move || chapters.get() key=|chapter| chapter.id
-                   children=move |chapter| {
+                   <For each=move || chapters.get().into_iter().enumerate() key=|(_,chapter)| chapter.id
+                   children=move |(index,chapter)| {
                        let memo_chapter = Memo::new(move |_| {
                            chapters
                                .get()
@@ -229,6 +227,7 @@ pub fn ColumnView(
                        });
                        view! {
                            <ChapterUpdateModal
+                               index = index
                                chapter=memo_chapter
                                update_chapter_action=update_chapter_action
                            />
@@ -245,7 +244,8 @@ pub fn ColumnView(
 #[component]
 fn ChapterUpdateModal(
     chapter: Memo<Chapter>,
-    update_chapter_action: ServerAction<UpdateChapter>,
+    update_chapter_action: ServerAction<EditChapter>,
+    index: usize,
 ) -> impl IntoView {
     let chapter_dialog_open = RwSignal::new(false);
     let chapter_input_ref = NodeRef::<html::Input>::new();
@@ -268,7 +268,7 @@ fn ChapterUpdateModal(
         <Item size="sm" class="border-b border-b-[var(--border)] last:border-b-0 rounded-none">
              <ItemContent class="block">
                  <ItemTitle class:font-bengali=move|| is_bengali.get()>{move||chapter.get().title}</ItemTitle>
-                 <ItemDescription >{move||format!("chapter {} ({})",chapter.get().order, chapter.get().question_count)}</ItemDescription>
+                 <ItemDescription >{move||format!("chapter {} ({})",(index + 1), chapter.get().question_count)}</ItemDescription>
 
              </ItemContent>
              <ItemActions>
@@ -281,7 +281,7 @@ fn ChapterUpdateModal(
 #[component]
 fn ClassItem(
     class: Memo<Class>,
-    update_class_action: ServerAction<UpdateClass>,
+    update_class_action: ServerAction<EditClass>,
     add_subject_action: ServerAction<AddSubject>,
     selected_class_id: RwSignal<Option<u32>>,
     hide_chapter: RwSignal<bool>,
@@ -342,7 +342,7 @@ fn ClassItem(
 #[component]
 fn SubjectItem(
     subject: Memo<Subject>,
-    update_subject_action: ServerAction<UpdateSubject>,
+    update_subject_action: ServerAction<EditSubject>,
     add_chapter_action: ServerAction<AddChapter>,
     selected_subject_id: RwSignal<Option<u32>>,
     hide_chapter: RwSignal<bool>,

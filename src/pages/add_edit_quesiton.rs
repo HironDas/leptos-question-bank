@@ -1,17 +1,17 @@
 use crate::components::ui::rich_text_editor::RichTextEditor;
+use crate::components::ui::toast::use_toast;
 use crate::server_function::question::{get_question_by_id, EditQuestion};
 
+use leptos::logging::log;
 use leptos::{html, prelude::*};
 use leptos_router::hooks::{use_navigate, use_query};
 use leptos_router::params::Params;
 use singlestage::*;
 use web_sys::MouseEvent;
 
-use crate::{
-    domain::question::{
-        AddQuestionInput, AddQuestionOptionInput, QuestionType, UpdateQuestionInput,
-    },
-    server_function::question::AddQuestion,
+use crate::server_function::question::AddQuestion;
+use domain::question::{
+    AddQuestionInput, AddQuestionOptionInput, QuestionType, UpdateQuestionInput,
 };
 
 // 1. Define a struct that maps your browser query parameters
@@ -66,7 +66,7 @@ pub fn AddEditQuestion() -> impl IntoView {
         move || page_mode.get(),
         |mode| async move {
             if let Some(Mode::Edit(id)) = mode {
-                match get_question_by_id(id).await {
+                match get_question_by_id(id as i32).await {
                     Ok(question) => Some(question),
                     Err(_) => None,
                 }
@@ -119,9 +119,34 @@ pub fn AddEditQuestion() -> impl IntoView {
 
     // --- Server actions ---
     let add_question_action = ServerAction::<AddQuestion>::new();
-    let _add_question_value = add_question_action.value();
+    let add_question_value = add_question_action.value();
 
     let edit_question_action = ServerAction::<EditQuestion>::new();
+    let edit_question_value = edit_question_action.value();
+
+    // --- Toast feedback on add/update ---
+    let toast = use_toast();
+    Effect::new(move || match add_question_value.get() {
+        Some(Ok(_)) => {
+            toast.success("Question added successfully");
+            question_text_ref.get().map(|el| el.set_value(""));
+            answer_text_ref.get().map(|el| el.set_value(""));
+            for i in 0..8usize {
+                option_refs.get_value()[i].get().map(|el| el.set_value(""));
+                option_check_refs.get_value()[i]
+                    .get()
+                    .map(|el| el.set_checked(false));
+            }
+            option_count.set(4);
+        }
+        Some(Err(e)) => toast.error("Failed to add question", e.to_string()),
+        None => {}
+    });
+    Effect::new(move || match edit_question_value.get() {
+        Some(Ok(_)) => toast.success("Question updated successfully"),
+        Some(Err(e)) => toast.error("Failed to update question", e.to_string()),
+        None => {}
+    });
 
     // --- Dialog state ---
     // let question_dialog_open = RwSignal::new(false);
@@ -185,11 +210,12 @@ pub fn AddEditQuestion() -> impl IntoView {
                     .get()
                     .map(|el| el.checked())
                     .unwrap_or(false);
+                log!("is correct : {}", is_correct);
                 if !opt_text.trim().is_empty() {
                     options.push(AddQuestionOptionInput {
                         option_text: opt_text,
                         is_correct,
-                        order: i as u32,
+                        order: i as i32,
                     });
                 }
             }
@@ -200,11 +226,11 @@ pub fn AddEditQuestion() -> impl IntoView {
                 id: question.id,
                 question_text: text,
                 question_type: qtype,
-                chapter_id: question.chapter_id,
-                class_id: question.class_id,
-                subject_id: question.subject_id,
+                // chapter_id: question.chapter_id,
+                // class_id: question.class_id,
+                // subject_id: question.subject_id,
                 answer_text: answer,
-                difficulty: difficulty as u32,
+                difficulty: difficulty as i32,
                 options,
             };
 
@@ -219,11 +245,11 @@ pub fn AddEditQuestion() -> impl IntoView {
                 let input = AddQuestionInput {
                     question_text: text,
                     question_type: qtype,
-                    chapter_id: chapter_id,
-                    class_id: class_id,
-                    subject_id: subject_id,
+                    chapter_id: chapter_id as i32,
+                    class_id: class_id as i32,
+                    subject_id: subject_id as i32,
                     answer_text: answer,
-                    difficulty: difficulty as u32,
+                    difficulty: difficulty as i32,
                     options,
                 };
 

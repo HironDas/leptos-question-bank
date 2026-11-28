@@ -1,0 +1,6 @@
+[package]
+name="question-worker"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]

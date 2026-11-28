@@ -1,4 +1,30 @@
 
+## 0.5.12 (2026-11-28)
+
+### Features
+
+- Refactor is started
+- Add toast notification component
+- Show toast on question add/update
+- Filter questions by type and show difficulty badges
+- implement logout
+
+### Fixes
+
+- Now to cargo.tomal is runable
+- class_items reactiveity issue
+- class_items reactiveity issue
+- Update pages math view from font to csv path
+- Tighten math block spacing and font size in markdown preview
+- Show proper svg on live preview of add/update question
+- Clear question form after a successful addition
+- Add ServiceContext in AppState
+- now the login and singup is working from infra service
+- Authenticati issue on login
+- Question mangement add/edit issue. Also make the academic classes add/edit workable
+- fixing all test
+- issue of test cases
+
 ## 0.5.11 (2026-10-25)
 
 ### Features

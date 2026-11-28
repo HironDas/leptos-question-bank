@@ -1,5 +1,6 @@
 application:
   host: 127.0.0.1
+  rate_limit_secret: ec60deb5490efe950336d95e7e8ed80e8faac0ea2dfe0c4c0d4e68bfe0429dcb
   # base_url: http://127.0.0.1
 database:
   require_ssl: false

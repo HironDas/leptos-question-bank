@@ -1,51 +1,45 @@
-use std::sync::Arc;
-
+#[cfg(feature = "ssr")]
 use axum_extra::extract::CookieJar;
 #[cfg(feature = "ssr")]
-use sqlx::PgPool;
-
+use infra::{auth::AuthService, common::ServiceContext};
+use leptos::prelude::*;
 #[cfg(feature = "ssr")]
-use crate::error::QuestionBankError;
+use leptos::server;
 
-#[cfg(feature = "ssr")]
-pub async fn auth(pool: Arc<PgPool>, jar: CookieJar) -> Result<(), QuestionBankError> {
-    use anyhow::Context;
-    use leptos::logging;
-    use uuid::Uuid;
-    let session = jar.get("session").map(|cookie| cookie.value());
-    logging::log!("Session in Auth rs: {:#?}", session);
+use crate::error::AppError;
 
-    if let Some(token) = session {
-        let token = Uuid::parse_str(token)
-            .map_err(|err| {
-                logging::log!("UUID Error: {:?}", err);
-                err
-            })
-            .context("UUID Parseing Error")?;
+#[server]
+pub async fn is_auth() -> Result<Option<bool>, AppError> {
+    // use leptos::logging;
+    #[cfg(feature = "ssr")]
+    {
+        // let ctx = expect_context::<ServiceContext>();
+        let ctx = use_context::<ServiceContext>().ok_or(AppError::Internal)?;
+        let jar = expect_context::<CookieJar>();
+        let session = jar.get("session").map(|cookie| cookie.value());
+        let auth_service = AuthService::from(ctx);
+        let allowed = auth_service.auth(session).await.is_ok();
+        Ok(Some(allowed))
+    }
+}
 
-        let is_authencated = sqlx::query!(
-            r#"
-            SELECT EXISTS(SELECT 1 FROM sessions WHERE session_token = $1)
-            "#,
-            &token
-        )
-        .fetch_one(&*pool)
-        .await
-        .map_err(|err| {
-            use leptos::logging::log;
+#[derive(Clone, Copy)]
+pub struct AuthContext {
+    pub authenticated: RwSignal<Option<bool>>,
+}
 
-            log!("Sqlx Error: {:?}", err);
-            err
-        })
-        .context("Something went wrong to fetch session")?
-        .exists;
-        logging::log!("I AM IN Auth rs");
-        if let Some(true) = is_authencated {
-            Ok(())
-        } else {
-            Err(QuestionBankError::Authentication)
+impl AuthContext {
+    pub fn new() -> Self {
+        Self {
+            authenticated: RwSignal::new(None),
         }
-    } else {
-        Err(QuestionBankError::Authentication)
+    }
+
+    pub fn set_authenticated(&self, value: bool) {
+        self.authenticated.set(Some(value))
+    }
+
+    pub fn is_authenticated(&self) -> Option<bool> {
+        self.authenticated.get()
     }
 }

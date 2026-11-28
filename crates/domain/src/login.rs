@@ -1,4 +1,4 @@
-use crate::domain::{user_email::UserEmail, user_password::UserPassword, user_username::Username};
+use crate::{user_email::UserEmail, user_password::UserPassword, user_username::Username};
 
 #[derive(Debug)]
 pub struct Login {

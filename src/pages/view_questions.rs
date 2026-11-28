@@ -1,10 +1,10 @@
 use crate::components::ui::empty_msg::EmptyMsg;
-use crate::domain::question::Question;
-use crate::server_function::academic_helper::chapter::subject_chapter;
-use crate::server_function::academic_helper::subject::subject;
-use crate::server_function::academic_setting::{academic_setting, Chapter, Class, Subject};
+use crate::server_function::academic_setting::{
+    academic_setting, chapters as list_chapters, subjects as list_subjects, Chapter, Class, Subject,
+};
 use crate::server_function::question::get_questions;
-use crate::util::preview_markdown::render_markdown;
+use domain::question::{Question, QuestionType};
+// use crate::util::preview_markdown::render_markdown;
 use icondata::{FiCheckCircle, LuPlus, MdiCloseCircle};
 use leptos::{logging::log, prelude::*};
 use leptos_router::hooks::use_navigate;
@@ -20,6 +20,9 @@ pub fn ViewQuestions() -> impl IntoView {
     let questions = RwSignal::new(Vec::<Question>::new());
 
     // let is_bangle = Memo::new(move |_| !subject.get().title.is_ascii());
+
+    let mcq_switch = RwSignal::new(true);
+    let cq_switch = RwSignal::new(true);
 
     // --- Selection signals (stored as Strings for the <Select>) ---
     let selected_class_id = RwSignal::new(String::new());
@@ -54,7 +57,7 @@ pub fn ViewQuestions() -> impl IntoView {
             if class_id == 0 {
                 return vec![];
             }
-            match subject(class_id).await {
+            match list_subjects(class_id).await {
                 Ok(data) => data,
                 Err(err) => {
                     log!("Error fetching subjects: {:?}", err);
@@ -75,7 +78,7 @@ pub fn ViewQuestions() -> impl IntoView {
             if subject_id == 0 {
                 return vec![];
             }
-            match subject_chapter(subject_id).await {
+            match list_chapters(subject_id).await {
                 Ok(data) => data,
                 Err(err) => {
                     log!("Error fetching chapters: {:?}", err);
@@ -92,7 +95,7 @@ pub fn ViewQuestions() -> impl IntoView {
             if chapter_id_str.is_empty() {
                 return vec![];
             }
-            let chapter_id: u32 = chapter_id_str.parse().unwrap_or(0);
+            let chapter_id: i32 = chapter_id_str.parse().unwrap_or(0);
             if chapter_id == 0 {
                 return vec![];
             }
@@ -174,6 +177,10 @@ pub fn ViewQuestions() -> impl IntoView {
         questions
             .get()
             .into_iter()
+            .filter(|q| {
+                (mcq_switch.get() && q.question_type == QuestionType::MCQ)
+                    || (cq_switch.get() && q.question_type == QuestionType::CQ)
+            })
             .enumerate()
             .collect::<Vec<(usize, Question)>>()
     };
@@ -257,19 +264,24 @@ pub fn ViewQuestions() -> impl IntoView {
                 }
             >
                 <div class="mb-4 flex items-center justify-between">
-                    <h2 class="text-lg font-semibold">
-                        <Show
-                            when=move || !selected_chapter_name.get().is_empty()
-                            fallback=move || view! { <p>"Questions"</p> }
-                        >
-                            <p>
-                                "Questions in: "
-                                <span class:font-bengali=move || !selected_chapter_name.get().is_ascii()>
-                                    {move || selected_chapter_name.get()}
-                                </span>
-                            </p>
-                        </Show>
-                    </h2>
+                    <div class="flex item-center">
+                        <h2 class="text-lg font-semibold">
+                            <Show
+                                when=move || !selected_chapter_name.get().is_empty()
+                                fallback=move || view! { <p>"Questions"</p> }
+                            >
+                                <p>
+                                    "Questions in: "
+                                    <span class:font-bengali=move || !selected_chapter_name.get().is_ascii()>
+                                        {move || selected_chapter_name.get()}
+                                    </span>
+
+                                </p>
+                            </Show>
+                        </h2>
+                        <Switch class="ml-2" value="mcq" checked=mcq_switch> MCQ</Switch>
+                        <Switch class="ml-2" value="cq" checked=cq_switch> CQ</Switch>
+                    </div>
                     <a  href=move ||{format!("/question?class={}&subject={}&chapter={}", selected_class_id.get(), selected_subject_id.get(), selected_chapter_id.get())} class = "singlestage-btn-primary singlestage-btn-sm">
                         {icon!(LuPlus)}
                         "Add Question"
@@ -322,12 +334,26 @@ fn QuestionCard(question: Question, index: usize) -> impl IntoView {
             .map(|ctx| ctx.mode.get() == Mode::Dark)
             .unwrap_or(false)
     });
-    let variant = match question.get_value().question_type {
-        crate::domain::question::QuestionType::MCQ => {
+    let badge_variant = match question.get_value().question_type {
+        domain::question::QuestionType::MCQ => {
             "bg-blue-50 text-blue-700" // dark:bg-blue-950 dark:text-blue-300"
         }
-        crate::domain::question::QuestionType::CQ => {
+        domain::question::QuestionType::CQ => {
             "bg-green-50 text-green-700" // dark:bg-green-950 dark:text-green-300"
+        }
+    };
+    let dificulty_variant = match question.get_value().difficulty {
+        0 => {
+            "inline-flex text-green-500 [&_svg]:w-2 [&_svg]:h-2" // dark:bg-blue-950 dark:text-blue-300"
+        }
+        1 => {
+            "inline-flex text-yellow-500 [&_svg]:w-2 [&_svg]:h-2" // dark:bg-green-950 dark:text-green-300"
+        }
+        2 => {
+            "inline-flex text-red-500 [&_svg]:w-2 [&_svg]:h-2" // dark:bg-green-950 dark:text-green-300"
+        }
+        _ => {
+            "inline-flex text-green-500 [&_svg]:w-2 [&_svg]:h-2" // dark:bg-blue-950 dark:text-blue-300"
         }
     };
     // let order = question.get_value().order;
@@ -336,10 +362,10 @@ fn QuestionCard(question: Question, index: usize) -> impl IntoView {
     let navigate = use_navigate();
 
     view! {
-        <Card class="cursor-pointer hover:shadow-md transition-shadow">
-            <div class="p-4" on:click=move |_| expanded.set(!expanded.get())>
-                <div class="flex items-start justify-between mb-2">
-                    <span class="text-xs font-mono text-muted-foreground">
+        <Card class="cursor-pointer hover:shadow-md transition-shadow p-2">
+            <div class="" on:click=move |_| expanded.set(!expanded.get())>
+                <div class="flex items-start justify-between mb-1">
+                    <span class="text-md font-mono text-muted-foreground">
                         "#" {index + 1}
                     </span>
                     <div class="flex items-center gap-1">
@@ -347,8 +373,9 @@ fn QuestionCard(question: Question, index: usize) -> impl IntoView {
                             ev.prevent_default();
                             navigate(format!("/question?id={}", question.get_value().id).as_str(),NavigateOptions::default())
                         } variant="ghost">{icon!(icondata::LuSquarePen)}</Button>
-                        <Badge class=variant>
+                        <Badge class=badge_variant>
                             {qtype_str}
+                            <span class=dificulty_variant>{icon!(icondata::BiCircleSolid)}</span>
                         </Badge>
                     </div>
                 </div>
@@ -357,12 +384,12 @@ fn QuestionCard(question: Question, index: usize) -> impl IntoView {
                     class="markdown-preview question-card-markdown text-sm font-medium"
                     class:invert-math=move || is_dark_mode.get()
                     class:font-bengali={let value = question_text.clone(); move || !value.is_ascii()}
-                    inner_html=render_markdown(&question_text)
+                    inner_html=question_text
                 />
                 <Show when=move || expanded.get()>
                     <div class="mt-3 pt-3 border-t text-sm">
                         {match question.get_value().question_type {
-                            crate::domain::question::QuestionType::MCQ => {
+                            domain::question::QuestionType::MCQ => {
                                 let opts = question.get_value().options.clone();
                                 view! {
                                     <div class="space-y-2">
@@ -398,7 +425,7 @@ fn QuestionCard(question: Question, index: usize) -> impl IntoView {
                                                             } class:invert-math=move || is_dark_mode.get() class:font-bengali= {
                                                                 let value= text.clone();
                                                                 move|| !value.clone().is_ascii()
-                                                            } inner_html=render_markdown(&text)/>
+                                                            } inner_html=text/>
                                                         </div>
                                                     }
                                                 }
@@ -407,14 +434,14 @@ fn QuestionCard(question: Question, index: usize) -> impl IntoView {
                                     </div>
                                 }.into_any()
                             }
-                            crate::domain::question::QuestionType::CQ => {
+                            domain::question::QuestionType::CQ => {
                                 let ans = question.get_value().answer_text.clone().unwrap_or_default();
                                 view! {
                                     <div>
                                         <p class="text-xs font-semibold text-muted-foreground">
                                             "Answer:"
                                         </p>
-                                        <div class="markdown-preview question-card-answer text-green-600" class:invert-math=move || is_dark_mode.get() inner_html=render_markdown(&ans)/>
+                                        <div class="markdown-preview question-card-answer text-green-600" class:invert-math=move || is_dark_mode.get() inner_html=ans/>
                                     </div>
                                 }.into_any()
                             }

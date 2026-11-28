@@ -1,3 +1,28 @@
+#[derive(serde::Serialize, serde::Deserialize, Debug, Clone, PartialEq, Eq)]
+pub struct Class {
+    pub id: u32,
+    pub name: String,
+    pub name_bn: String,
+    pub order: u32,
+}
+#[derive(serde::Serialize, serde::Deserialize, Debug, Clone, PartialEq, Eq)]
+pub struct Subject {
+    pub id: u32,
+    pub title: String,
+    pub class_id: u32,
+    pub order: u32,
+}
+
+#[derive(serde::Serialize, serde::Deserialize, Debug, Clone, PartialEq, Eq)]
+pub struct Chapter {
+    pub id: u32,
+    pub title: String,
+    pub order: u32,
+    pub class_id: u32,
+    pub subject_id: u32,
+    pub question_count: u32,
+}
+
 #[derive(serde::Deserialize, serde::Serialize, validator::Validate, Debug, Clone)]
 pub struct AddClassInput {
     #[validate(length(
@@ -32,10 +57,36 @@ pub struct UpdateClassInput {
     pub name_bn: String,
 }
 
+#[derive(Clone, Debug, serde::Serialize, serde::Deserialize, validator::Validate)]
+pub struct SubjectInput {
+    #[validate(range(min = 1, message = "Invlid primary id"))]
+    pub id: u32,
+
+    #[validate(length(
+        min = 2,
+        max = 50,
+        message = "Subject title be between 2 and 50 characters"
+    ))]
+    pub title: String,
+}
+
+#[derive(Clone, Debug, serde::Serialize, serde::Deserialize, validator::Validate)]
+pub struct ChapterInput {
+    #[validate(range(min = 1, message = "Invlid primary id"))]
+    pub id: u32,
+
+    #[validate(length(
+        min = 2,
+        max = 50,
+        message = "Subject title be between 2 and 50 characters"
+    ))]
+    pub title: String,
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
-    use leptos::logging;
+    //use leptos::logging;
     use validator::Validate;
 
     #[test]
@@ -50,7 +101,7 @@ mod tests {
             name: "".to_string(),
             name_bn: "ক্লাস ১".to_string(),
         };
-        logging::log!("Testing invalid input: {:?}", invalid_input);
+        //logging::log!("Testing invalid input: {:?}", invalid_input);
         assert!(invalid_input.validate().is_err());
     }
 

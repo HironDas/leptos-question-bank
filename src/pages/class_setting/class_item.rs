@@ -4,19 +4,15 @@ use singlestage::*;
 
 use crate::{
     pages::class_setting::subject_item::SubjectAccordionItem,
-    server_function::{
-        academic_helper::{
-            class::UpdateClass,
-            subject::{self, AddSubject, UpdateSubject},
-        },
-        academic_setting::{Class, Subject},
+    server_function::academic_setting::{
+        subjects as list_subjects, AddSubject, Class, EditClass, EditSubject, Subject,
     },
 };
 
 #[component]
 pub fn ClassAccordionItem(
     class: Memo<Class>,
-    update_class_action: ServerAction<UpdateClass>,
+    update_class_action: ServerAction<EditClass>,
 ) -> impl IntoView {
     // let class = RwSignal::new(item.get());
     let class_accordion_open = RwSignal::new(false);
@@ -31,7 +27,7 @@ pub fn ClassAccordionItem(
     let subject_value = add_subject_action.value();
     let input_ref = NodeRef::<html::Input>::new();
 
-    let update_subject_action = ServerAction::<UpdateSubject>::new();
+    let update_subject_action = ServerAction::<EditSubject>::new();
     let update_subject_value = update_subject_action.value();
 
     let subjects = RwSignal::new(Vec::<Subject>::new());
@@ -49,7 +45,7 @@ pub fn ClassAccordionItem(
             log!("ClassAccordionItem expand: {}", expand);
             if expand {
                 log!("Fetching subjects for class id: {}", class.get().id);
-                match subject::subject(class.get().id).await {
+                match list_subjects(class.get().id).await {
                     Ok(data) => data,
                     Err(err) => {
                         log!("Error fetching subjects: {:?}", err);
@@ -181,7 +177,7 @@ pub fn ClassAccordionItem(
 pub fn UpdateClassDialog(
     #[prop(into)] class_dialog_update_open: RwSignal<bool>,
     // class_input_ref: NodeRef<html::Input>,
-    update_class_action: ServerAction<UpdateClass>,
+    update_class_action: ServerAction<EditClass>,
     class: Memo<Class>,
 ) -> impl IntoView {
     view! {
@@ -216,16 +212,16 @@ pub fn UpdateClassDialog(
                     <div class="form grid gap-4">
                         <div class="grid gap-2">
                             <Input
-                                name="class[class_id]"
+                                name="input[class_id]"
                                 input_type="hidden"
-                                prop:value=move || class.get().id.to_string()
+                                value=class.get_untracked().id.to_string()
                             />
                             <Label label_for="class_name">"Class Name (English)"</Label>
                             <InputGroup>
                                 <Input
                                     id="class_name"
-                                    value=class.get().name
-                                    name="class[name]"
+                                    value=class.get_untracked().name
+                                    name="input[name]"
                                     input_type="text"
                                     placeholder="Enter class name in English"
                                 />
@@ -246,8 +242,8 @@ pub fn UpdateClassDialog(
                             <InputGroup>
                                 <Input
                                     id="class_name_bn"
-                                    value=class.get().name_bn
-                                    name="class[name_bn]"
+                                    value= class.get_untracked().name_bn
+                                    name="input[name_bn]"
                                     input_type="text"
                                     placeholder="Enter class name in Bangla"
                                 />
@@ -336,16 +332,16 @@ pub fn AddSubjectDialog(
                         <div class="grid gap-4">
 
                             <Input
-                                name="class_id"
+                                name="input[id]"
                                 input_type="hidden"
-                                value=class.get().id.to_string()
+                                value=class.get_untracked().id.to_string()
                             />
 
                             <div class="grid gap-2">
                                 <Label label_for="subject_title">"Title"</Label>
                                 <InputGroup>
                                     <Input
-                                        name="title"
+                                        name="input[title]"
                                         input_type="text"
                                         placeholder="Enter subject title"
                                         node_ref=input_ref
@@ -381,6 +377,7 @@ pub fn AddSubjectDialog(
                         button_type="submit"
                         attr:disabled=move || add_subject_action.pending().get()
                     >
+
 
                         <Show
                             when=move || add_subject_action.pending().get()

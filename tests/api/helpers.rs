@@ -1,16 +1,19 @@
+#[cfg(feature = "test-fullstack")]
+use infra::common::ServiceContext;
 use leptos_question_bank::configuration::DatabaseSettings;
 use sqlx::{Connection, Executor, PgConnection, PgPool};
 
 #[cfg(feature = "test-fullstack")]
 pub struct TestApp {
     pub address: String,
-    pub db_pool: sqlx::PgPool,
-    pub _port: u16,
+    pub ctx: ServiceContext,
+    // pub _port: u16,
+    pub pool: PgPool,
 }
 
 #[cfg(feature = "test-fullstack")]
 pub async fn spawn_app() -> TestApp {
-    let _runtime = leptos_reactive::create_runtime();
+    // let _runtime = leptos_reactive::create_runtime();
 
     use leptos_question_bank::{configuration::get_configuration, Application};
 
@@ -25,15 +28,24 @@ pub async fn spawn_app() -> TestApp {
     let application = Application::build(configuration.clone())
         .await
         .expect("Failed to build server");
+
+    println!("Before Application::build");
+
     let application_port = application.port();
     let address = format!("http://127.0.0.1:{}", application_port);
 
     let _ = tokio::spawn(application.run_until_stopped());
 
+    println!("After server spawn");
+
+    let secret: [u8; 32] = [42u8; 32];
+
+    let ctx = ServiceContext::new(db_pool.clone(), secret).unwrap();
+
     TestApp {
         address,
-        db_pool: db_pool, //get_connection_pool(&configuration.database),
-        _port: application_port,
+        ctx, //get_connection_pool(&configuration.database),
+        pool: db_pool,
     }
 }
 

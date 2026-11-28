@@ -1,0 +1,16 @@
+[package]
+name = "question-domain"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+serde.workspace = true
+validator.workspace = true
+pwhash.workspace = true
+serde-aux.workspace = true
+thiserror.workspace = true
+
+[dev-dependencies]
+fake.workspace = true
+proptest.workspace = true
+rand.workspace = true

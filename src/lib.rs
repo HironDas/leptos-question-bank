@@ -2,11 +2,20 @@
 pub mod app;
 pub mod components;
 pub mod configuration;
-pub mod domain;
+// pub mod domain;
 pub mod pages;
 pub mod server_function;
 pub mod util;
 
+#[cfg(feature = "ssr")]
+use std::io::ErrorKind;
+#[cfg(feature = "ssr")]
+use std::net::SocketAddr;
+
+#[cfg(feature = "ssr")]
+use axum::extract::connect_info::IntoMakeServiceWithConnectInfo;
+#[cfg(feature = "ssr")]
+use infra::common::ServiceContext;
 pub use util::error;
 
 #[cfg(feature = "hydrate")]
@@ -16,8 +25,6 @@ pub fn hydrate() {
     console_error_panic_hook::set_once();
     leptos::mount::hydrate_lazy(App);
 }
-
-use std::sync::Arc;
 
 #[cfg(feature = "ssr")]
 use axum::body::Body;
@@ -33,13 +40,16 @@ use axum_extra::extract::CookieJar;
 #[cfg(feature = "ssr")]
 use axum_server::Server;
 
+#[cfg(feature = "ssr")]
 use leptos::prelude::*;
 
 #[cfg(feature = "ssr")]
 use sqlx::PgPool;
 
 #[cfg(feature = "ssr")]
-use crate::configuration::DatabaseSettings;
+use crate::configuration::{ApplicationSettings, DatabaseSettings};
+#[cfg(feature = "ssr")]
+use crate::util::error::AppError;
 #[cfg(feature = "ssr")]
 use crate::{app::shell, configuration::Settings};
 
@@ -50,13 +60,15 @@ use axum::routing::IntoMakeService;
 pub struct Application {
     port: u16,
     server: Server,
-    service: IntoMakeService<axum::Router>,
+    // service: IntoMakeService<axum::Router>,
+    service: IntoMakeServiceWithConnectInfo<axum::Router, SocketAddr>,
 }
 
 #[cfg(feature = "ssr")]
 impl Application {
     #[cfg(feature = "ssr")]
     pub async fn build(configuration: Settings) -> Result<Self, std::io::Error> {
+        let rate_limit_secret = load_rate_limit_secret(&configuration.application)?;
         let connection_pool = get_connection_pool(&configuration.database);
         let listener = std::net::TcpListener::bind(format!(
             "{}:{}",
@@ -64,7 +76,7 @@ impl Application {
         ))?;
 
         let port = listener.local_addr().unwrap().port();
-        let application_server = run(listener, connection_pool).await?;
+        let application_server = run(listener, connection_pool, rate_limit_secret).await?;
 
         Ok(Self {
             port,
@@ -87,7 +99,7 @@ impl Application {
 #[derive(Clone)]
 pub struct AppState {
     pub leptos_options: LeptosOptions,
-    pub db_pool: Arc<PgPool>,
+    pub ctx: ServiceContext,
 }
 
 #[cfg(feature = "ssr")]
@@ -101,8 +113,15 @@ impl axum::extract::FromRef<AppState> for LeptosOptions {
 pub async fn run(
     listener: std::net::TcpListener,
     db_pool: PgPool,
-) -> Result<(Server, IntoMakeService<axum::Router>), std::io::Error> {
-    use std::sync::Arc;
+    rate_limit_secret: [u8; 32],
+) -> Result<
+    (
+        Server,
+        IntoMakeServiceWithConnectInfo<axum::Router, SocketAddr>,
+    ),
+    std::io::Error,
+> {
+    // use std::sync::Arc;
 
     use crate::app::App;
     // use crate::util::auth_middleware::auth_middleware;
@@ -123,11 +142,11 @@ pub async fn run(
     // Generate the list of routes in your Leptos App
     let routes = generate_route_list(App);
     log!("Registered {} SSR routes: {:#?}", routes.len(), routes);
-    let db_pool = Arc::new(db_pool);
+    let ctx = ServiceContext::new(db_pool, rate_limit_secret).unwrap();
 
     let app_state = AppState {
         leptos_options,
-        db_pool,
+        ctx,
     };
 
     // let api_protedted_router = Router::new()
@@ -193,7 +212,10 @@ pub async fn run(
     let server = Server::from_tcp(listener);
     //server.serve(app.into_make_service()).await?;
     // Ok(server)
-    Ok((server, app.into_make_service()))
+    Ok((
+        server,
+        app.into_make_service_with_connect_info::<SocketAddr>(),
+    ))
 }
 
 #[cfg(feature = "ssr")]
@@ -207,6 +229,23 @@ pub fn get_connection_pool(configuration: &DatabaseSettings) -> PgPool {
 }
 
 #[cfg(feature = "ssr")]
+pub fn load_rate_limit_secret(
+    application: &ApplicationSettings,
+) -> Result<[u8; 32], std::io::Error> {
+    use std::io::Error;
+    let secret = &application.rate_limit_secret;
+    let bytes = hex::decode(secret).map_err(|e| Error::new(ErrorKind::InvalidData, e))?;
+
+    let secret: [u8; 32] = bytes.try_into().map_err(|_| {
+        Error::new(
+            ErrorKind::InvalidData,
+            "LOGIN_RATE_LIMIT_SECRET must be exactly 32 bytes",
+        )
+    })?;
+    Ok(secret)
+}
+
+#[cfg(feature = "ssr")]
 async fn leptos_handler(
     State(state): State<AppState>,
     jar: CookieJar,
@@ -214,10 +253,14 @@ async fn leptos_handler(
 ) -> impl IntoResponse {
     use leptos::logging::log;
     use leptos_axum::render_app_to_stream_with_context;
-    log!("leptos_handler received request: {} {}", req.method(), req.uri());
+    log!(
+        "leptos_handler received request: {} {}",
+        req.method(),
+        req.uri()
+    );
     let handler = render_app_to_stream_with_context(
         move || {
-            provide_context(state.db_pool.clone());
+            provide_context(state.ctx.clone());
             provide_context(jar.clone());
         },
         {
@@ -238,7 +281,7 @@ async fn leptos_server_handler(
     use leptos_axum::handle_server_fns_with_context;
     let handler = handle_server_fns_with_context(
         move || {
-            provide_context(state.db_pool.clone());
+            provide_context(state.ctx.clone());
             provide_context(jar.clone());
         },
         req,
