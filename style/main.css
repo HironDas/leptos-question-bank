@@ -100,7 +100,7 @@
 }
 
 .markdown-preview:empty::before {
-    content: "Your formatted answer will appear here…";
+    content: "Your formatted text will appear here…";
     color: var(--muted-foreground);
     font-style: italic;
 }
