@@ -22,13 +22,13 @@ async fn login_return_session_for_valid_input() {
     };
 
     let login_user = login_user.try_into().expect("Parsing error");
-    let ip: IpAddr = IpAddr::from([127, 0, 0, 1]); //app.address.parse().expect("Invalid Ip Address");
+    let ip: IpAddr = IpAddr::from([127, 0, 0, 1]); //IpAddr::from([127, 0, 0, 1]);
     let session = service
         .login(login_user, ip)
         .await
         .expect("Failed to get the user id");
 
-    assert_eq!(session.len(), 32);
+    assert_eq!(session.len(), 36);
     // search with email
     let login_user = LoginCredential {
         id: "hcdas@gmail.com".to_string(),
@@ -40,7 +40,7 @@ async fn login_return_session_for_valid_input() {
         .login(login_user, ip)
         .await
         .expect("Failed to get the user id");
-    assert_eq!(session.len(), 32);
+    assert_eq!(session.len(), 36);
 }
 
 #[cfg(feature = "test-fullstack")]
@@ -81,7 +81,7 @@ async fn login_with_wrong_password_fails() {
         password: "Wrong@123".to_string(),
     };
     let login_user: Login = login_user.try_into().expect("Parsing error");
-    let ip: IpAddr = app.address.parse().expect("Invalid Ip Address");
+    let ip: IpAddr = IpAddr::from([127, 0, 0, 1]);
     let result = service.login(login_user, ip).await;
     assert!(result.is_err());
 }

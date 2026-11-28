@@ -75,7 +75,10 @@ async fn fetch_subjects_by_class_returns_correct_data() {
         .expect("Failed to insert Physics");
 
     // Fetch subjects for this class
-    let subjects = subjects(class.id).await.expect("Failed to fetch subjects");
+    let subjects = service
+        .subjects(class.id)
+        .await
+        .expect("Failed to fetch subjects");
 
     assert_eq!(subjects.len(), 2);
     assert_eq!(subjects[0].order, 10);
