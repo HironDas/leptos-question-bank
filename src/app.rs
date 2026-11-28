@@ -9,7 +9,8 @@ use leptos_meta::{provide_meta_context, MetaTags, Stylesheet, Title};
 use leptos_router::components::ProtectedParentRoute;
 use leptos_router::Lazy;
 use leptos_router::{
-    components::{ParentRoute, Route, Router, Routes},
+    components::{Route, Router, Routes},
+    // ParentRoute,
     StaticSegment,
 };
 use singlestage::*;

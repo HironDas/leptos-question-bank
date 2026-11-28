@@ -4,7 +4,7 @@ use leptos_router::hooks::use_navigate;
 use singlestage::*;
 
 use crate::server_function::signout::Signout;
-use crate::util::auth::AuthContext;
+// use crate::util::auth::AuthContext;
 
 #[component]
 pub fn ThemeSwitcher() -> impl IntoView {
@@ -14,7 +14,7 @@ pub fn ThemeSwitcher() -> impl IntoView {
 
     let logout = ServerAction::<Signout>::new();
 
-    let auth = expect_context::<AuthContext>();
+    // let auth = expect_context::<AuthContext>();
     let navigate = use_navigate();
 
     // TODO: Make reactive

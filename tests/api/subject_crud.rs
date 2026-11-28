@@ -41,7 +41,6 @@ async fn insert_subject_succeeds() {
 async fn fetch_subjects_by_class_returns_correct_data() {
     use domain::class::{AddClassInput, SubjectInput};
     use infra::settings::SettingService;
-    use leptos_question_bank::server_function::academic_setting::subjects;
 
     use crate::helpers::spawn_app;
 

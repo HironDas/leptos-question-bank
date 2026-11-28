@@ -125,7 +125,7 @@ impl IntoResponse for ApiError {
 
 #[cfg(test)]
 mod tests {
-    use validator::ValidationError;
+    // use validator::ValidationError;
 
     use super::*;
 

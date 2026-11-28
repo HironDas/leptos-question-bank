@@ -48,13 +48,9 @@ use sqlx::PgPool;
 
 #[cfg(feature = "ssr")]
 use crate::configuration::{ApplicationSettings, DatabaseSettings};
-#[cfg(feature = "ssr")]
-use crate::util::error::AppError;
-#[cfg(feature = "ssr")]
-use crate::{app::shell, configuration::Settings};
 
 #[cfg(feature = "ssr")]
-use axum::routing::IntoMakeService;
+use crate::{app::shell, configuration::Settings};
 
 #[cfg(feature = "ssr")]
 pub struct Application {
